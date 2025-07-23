@@ -2,23 +2,25 @@
 
 This is a dashboard that provides real-time information on water quality at various coastal and inland beaches in the state of California. It is designed to help users make informed decisions about swimming safety based on the latest water quality data, based on the most recent risk assessment policy using bacteria data from the California State Water Resources Control Board (SWRCB).
 
-## Features
-
 - **Real-time Data**: Displays the latest water quality data for each site.
-- **Risk Assessment**: Provides a risk assessment based on bacteria levels, indicating whether there is an elevated risk of gastro-intestinal illness from water contact.
+- **Risk Assessment**: Provides a risk assessment based on bacteria levels, indicating whether there is an elevated risk of gastrointestinal illness from water contact.
 - **Interactive Map**: Users can view the locations of sampling sites on a map and click for a risk history of each site.
-- **Data Access**: Users can download data used in the dashboard for further analysis.
+- **Data Discovery and Access**: Users can download data used in the dashboard for further analysis.
 - **User-Friendly Interface**: Designed for easy navigation and quick access to information.
+
+## Data Sources
+
+Data is sourced from the [California Open Data Portal](https://data.ca.gov/), specifically the [Surface Water - Indicator Bacteria Results](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results) dataset. This dataset is updated daily and provides composited information on water quality at various sampling sites across California.
 
 ## Maintenance
 
 ### Updating layout and styles
 
-This dashboard was built as a static site using Observable Framework. After making edits to source code (JavaScript, HTML, CSS), the site can be rebuilt by running `npm run build` in the terminal. 
+This dashboard was built as a static site using Observable Framework. After making edits to source code (JavaScript, HTML, CSS), the site can be rebuilt by running `npm run build` in the terminal. The built files will be placed in the `dist` directory. During development, the dashboard can be run locally using `npm run dev`, which will start a local server and open the dashboard in a web browser. For deployment to GitHub Pages, a GitHub Actions workflow is set up to automatically build the site when changes are pushed to the `main` branch.
 
 ### Updating data
 
-Data is fetched from *Surface Water - Indicator Bacteria Results* dataset on the California Open Data Portal. This dataset is updated daily, and the dashboard fetches the latest data automatically. 
+Data is fetched from *Surface Water - Indicator Bacteria Results* dataset on the California Open Data Portal. This dataset is updated daily, and the dashboard fetches the latest data automatically.
 
 ## Contributing
 
