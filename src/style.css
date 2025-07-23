@@ -1,0 +1,102 @@
+@import url("observablehq:default.css");
+
+:root {
+  --theme-foreground: #1a365d; /* Deep ocean blue for text */
+  --theme-foreground-focus: #0ea5e9; /* Bright ocean blue for focus/links */
+  --theme-background: #f0fdff; /* Very light blue-white background */
+  --theme-background-alt: #e0f7fa; /* Light cyan for cards/sections */
+  --theme-foreground-alt: var(--theme-foreground);
+}
+
+:root {
+  --theme-foreground-muted: color-mix(in srgb, var(--theme-foreground) 60%, var(--theme-background));
+  --theme-foreground-faint: color-mix(in srgb, var(--theme-foreground) 50%, var(--theme-background));
+  --theme-foreground-fainter: color-mix(in srgb, var(--theme-foreground) 30%, var(--theme-background));
+  --theme-foreground-faintest: color-mix(in srgb, var(--theme-foreground) 14%, var(--theme-background));
+}
+
+:root {
+  /* Syntax highlighting with ocean theme */
+  --syntax-keyword: #0369a1; /* Ocean blue */
+  --syntax-entity: #7c3aed; /* Purple for entities */
+  --syntax-constant: #0891b2; /* Cyan for constants */
+  --syntax-string: #059669; /* Green for strings */
+  --syntax-variable: #dc2626; /* Red for variables */
+  --syntax-comment: var(--theme-foreground-muted);
+  --syntax-entity-tag: #0d9488; /* Teal for tags */
+  --syntax-storage-modifier-import: #374151;
+  --syntax-markup-heading: #1e40af;
+  --syntax-markup-list: #0891b2;
+  --syntax-markup-italic: #374151;
+  --syntax-markup-bold: #374151;
+  --syntax-markup-inserted: #10b981;
+  --syntax-markup-inserted-background: #ecfdf5;
+  --syntax-markup-deleted: #ef4444;
+  --syntax-markup-deleted-background: #fef2f2;
+}
+
+body {
+  font-family: var(--sans-serif);
+  background: linear-gradient(180deg, var(--theme-background) 0%, #e6fffa 100%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--serif);
+  color: var(--theme-foreground);
+}
+
+#observablehq-main p a[href] {
+  text-decoration: underline;
+  color: var(--theme-foreground-focus);
+}
+
+/* Enhanced card styling for water theme */
+.card {
+  background: var(--theme-background);
+  border: 1px solid color-mix(in srgb, #0891b2 20%, transparent);
+  box-shadow: 0 4px 6px -1px color-mix(in srgb, #0891b2 10%, transparent);
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--theme-background-alt), color-mix(in srgb, #0891b2 5%, var(--theme-background-alt)));
+  border-bottom: 1px solid color-mix(in srgb, #0891b2 20%, transparent);
+}
+
+/* Hero section styles */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  font-family: var(--sans-serif);
+  margin: 1rem 0 1rem;
+  text-wrap: balance;
+  text-align: left;
+}
+
+.hero h1 {
+  margin: 1rem 0;
+  padding: 0.5rem 0;
+  max-width: none;
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(30deg, var(--theme-foreground-focus), currentColor);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero h2 {
+  margin: 0;
+  max-width: 34em;
+  font-size: 1.1rem;
+  font-style: initial;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--theme-foreground-muted);
+}
