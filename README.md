@@ -14,7 +14,7 @@ This is a dashboard that provides real-time information on water quality at vari
 
 ### Updating layout and styles
 
-This dashboard was built as a static site using Observable Framework. After making edits to source code (JavaScript, HTML, CSS), the site can be rebuilt by running `npm run build` in the terminal. The built files will be placed in the `dist` directory and are deployed to the `gh-pages` branch of the repository during development.
+This dashboard was built as a static site using Observable Framework. After making edits to source code (JavaScript, HTML, CSS), the site can be rebuilt by running `npm run build` in the terminal. 
 
 ### Updating data
 
