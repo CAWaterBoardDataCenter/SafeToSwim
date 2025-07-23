@@ -2,7 +2,7 @@
 title: Extended Information
 ---
 
-This page provides comprehensive documentation for the Safe To Swim dashboard, including data sources, methodology, and water quality standards.
+This page provides comprehensive documentation for the Safe To Swim dashboard, including data sources, methodology, and water quality standards. 
 
 ## Data
 
