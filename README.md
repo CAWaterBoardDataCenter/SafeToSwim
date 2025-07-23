@@ -12,7 +12,13 @@ This is a dashboard that provides real-time information on water quality at vari
 
 ## Maintenance
 
-This dashboard was built using Observable Framework and hosted by the SWRCB.
+### Updating layout and styles
+
+This dashboard was built as a static site using Observable Framework. After making edits to source code (JavaScript, HTML, CSS), the site can be rebuilt by running `npm run build` in the terminal. The built files will be placed in the `dist` directory and are deployed to the `gh-pages` branch of the repository during development.
+
+### Updating data
+
+Data is fetched from *Surface Water - Indicator Bacteria Results* dataset on the California Open Data Portal. This dataset is updated daily, and the dashboard fetches the latest data automatically. 
 
 ## Contributing
 
