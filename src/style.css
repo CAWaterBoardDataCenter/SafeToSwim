@@ -1,11 +1,16 @@
 @import url("observablehq:default.css");
 
 :root {
-  --theme-foreground: #1a365d; /* Deep ocean blue for text */
-  --theme-foreground-focus: #0ea5e9; /* Bright ocean blue for focus/links */
-  --theme-background: #f0fdff; /* Very light blue-white background */
-  --theme-background-alt: #e0f7fa; /* Light cyan for cards/sections */
+  --theme-foreground: #454241; /* Dark gray for text */
+  --theme-foreground-focus: #5dafdc; /* Blue for focus/links */
+  --theme-background: #f9f7f3; /* Light cream background */
+  --theme-background-alt: #ffffff; /* White for cards/sections */
   --theme-foreground-alt: var(--theme-foreground);
+  
+  /* Additional palette colors */
+  --color-accent-1: #eddea4; /* Warm beige */
+  --color-accent-2: #f7a072; /* Coral/peach */
+  --color-blue: #5dafdc; /* Blue accent */
 }
 
 :root {
@@ -16,28 +21,14 @@
 }
 
 :root {
-  /* Syntax highlighting with ocean theme */
-  --syntax-keyword: #0369a1; /* Ocean blue */
-  --syntax-entity: #7c3aed; /* Purple for entities */
-  --syntax-constant: #0891b2; /* Cyan for constants */
-  --syntax-string: #059669; /* Green for strings */
-  --syntax-variable: #dc2626; /* Red for variables */
-  --syntax-comment: var(--theme-foreground-muted);
-  --syntax-entity-tag: #0d9488; /* Teal for tags */
-  --syntax-storage-modifier-import: #374151;
-  --syntax-markup-heading: #1e40af;
-  --syntax-markup-list: #0891b2;
-  --syntax-markup-italic: #374151;
-  --syntax-markup-bold: #374151;
-  --syntax-markup-inserted: #10b981;
-  --syntax-markup-inserted-background: #ecfdf5;
-  --syntax-markup-deleted: #ef4444;
-  --syntax-markup-deleted-background: #fef2f2;
+  /* Water quality status colors using your palette */
+  --color-safe: #5dafdc; /* Blue for safe water */
+  --color-caution: #f7a072; /* Coral for caution */
+  --color-unsafe: #454241; /* Dark gray for unsafe */
 }
 
 body {
   font-family: var(--sans-serif);
-  background: linear-gradient(180deg, var(--theme-background) 0%, #e6fffa 100%);
 }
 
 h1,
@@ -55,25 +46,25 @@ h6 {
   color: var(--theme-foreground-focus);
 }
 
-/* Enhanced card styling for water theme */
+/* Card styling */
 .card {
-  background: var(--theme-background);
-  border: 1px solid color-mix(in srgb, #0891b2 20%, transparent);
-  box-shadow: 0 4px 6px -1px color-mix(in srgb, #0891b2 10%, transparent);
+  background: var(--theme-background-alt);
+  border: 0px solid var(--color-accent-1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
-  background: linear-gradient(135deg, var(--theme-background-alt), color-mix(in srgb, #0891b2 5%, var(--theme-background-alt)));
-  border-bottom: 1px solid color-mix(in srgb, #0891b2 20%, transparent);
+  background: var(--color-accent-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--theme-foreground) 20%, transparent);
 }
 
 /* Hero section styles */
 .hero {
   display: flex;
   flex-direction: column;
-  align-items: left;
+  align-items: flex-start;
   font-family: var(--sans-serif);
-  margin: 1rem 0 1rem;
+  margin: 2rem 0 4rem;
   text-wrap: balance;
   text-align: left;
 }
@@ -85,10 +76,7 @@ h6 {
   font-size: 3rem;
   font-weight: 700;
   line-height: 1;
-  background: linear-gradient(30deg, var(--theme-foreground-focus), currentColor);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--theme-foreground);
 }
 
 .hero h2 {
@@ -99,4 +87,15 @@ h6 {
   font-weight: 400;
   line-height: 1.5;
   color: var(--theme-foreground-muted);
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .hero h2 {
+    font-size: 1rem;
+  }
 }

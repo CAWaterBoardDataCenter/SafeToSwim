@@ -11,16 +11,14 @@ export default {
   ],
   // The path to the source root.
   root: "src",
-
-  // Some additional configuration options and their defaults:
-  // theme: ["glacier", "alt", "wide"], // try "light", "dark", "slate", etc.
+  // style sheet
   style: "style.css",
   // header: "", // what to show in the header (HTML)
   footer: "some footer text", // what to show in the footer (HTML)
-  // sidebar: true, // whether to show the sidebar
+  sidebar: true, // enable the sidebar
   // toc: true, // whether to show the table of contents
   pager: false, // whether to show previous & next links in the footer
-  // output: "dist", // path to the output root for build
+  output: "dist", // path to the output root for build
   // search: true, // activate search
   linkify: true, // convert URLs in Markdown to links
   // typographer: false, // smart quotes and other typographic improvements
