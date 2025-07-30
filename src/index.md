@@ -6,16 +6,16 @@ sidebar: false
 
 <div class="hero">
   <h1>Safe To Swim Map</h1>
-  <h2>Explore the water quality of beaches in California</h2>
+  <h2>The California recreational water quality tool for nerds and adventurers.</h2>
 </div>
 
-<div class="card"><h1>Find a site</h1>
+<div class="card"><h1>Find stations</h1>
 
 ```js
 const stationCode = view(Inputs.text(
   {label: "Search by station code", 
   placeholder: "Enter code", 
-  value: "DHS108"
+  value: "DHS108" // Venice Beach, for example
   }));
 ```
 
@@ -52,6 +52,8 @@ const stationCode = view(Inputs.text(
   ```js
   const resource_id = "15a63495-8d9f-4a49-b43a-3092ef3106b9";
 
+  let stationName = null
+
   if (stationCode && stationCode.trim() !== "") {
     const sql = `
       SELECT "StationCode","StationName","TargetLatitude","TargetLongitude"
@@ -68,6 +70,7 @@ const stationCode = view(Inputs.text(
       if (record) {
         const lat = parseFloat(record.TargetLatitude);
         const lon = parseFloat(record.TargetLongitude);
+        stationName = record.StationName.split('-').slice(1).join('-').trim();
 
         // If marker was removed previously, recreate it
         if (!map.hasLayer(marker)) {
@@ -75,7 +78,7 @@ const stationCode = view(Inputs.text(
         }
 
         marker.setLatLng([lat, lon])
-              .bindPopup(`${record.StationName} (${record.StationCode})`)
+              .bindPopup(`${stationName}`)
               .openPopup();
 
         // Optional: keep zoom the same, just pan if far
@@ -105,12 +108,20 @@ const stationCode = view(Inputs.text(
 
   </div>
 
-  <div class="card grid-colspan-1"><h1>Site summary</h1>
+  <div class="card grid-colspan-1">
+
+  ```js
+  html`
+  <h1><strong>${stationName}</strong></h1>
+  <p><strong>Station Code:</strong> <span id="station-code">${stationCode}</span></p>
+  <h2>Status:</h2>
+  </div>
+  `
+  ```
+
   </div>
 
-</div>
-
-<div class="card grid-colspan-1"><h1>Data</h1>
+<div class="card grid-colspan-3"><h1>Data</h1>
 
 ```js
 const analyte = view(Inputs.select(
