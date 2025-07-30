@@ -256,15 +256,16 @@ def classify_sites(gdf_sites, saltwater_polygons):
     return gdf_sites
 
 
-def save_results(gdf_sites, output_path="../data/site_saltwater_flags.csv"):
+def save_results(gdf_sites, cache_dir, output_name="site_saltwater_flags.csv"):
     """
     Save classification results to CSV file.
     
     Args:
         gdf_sites (gpd.GeoDataFrame): Classified sites
-        output_path (str): Output file path
+        output_name (str): Output file name
     """
     # Ensure output directory exists
+    output_path = os.path.join(cache_dir, output_name)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     # Save only station code and classification flag
@@ -298,7 +299,7 @@ def main():
     gdf_sites = classify_sites(gdf_sites, saltwater_polygons)
     
     # Save results
-    save_results(gdf_sites)
+    save_results(gdf_sites, cache_dir)
     
     print("Saltwater classification process completed successfully!")
 
