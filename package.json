@@ -2,19 +2,19 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "clean": "rimraf src/.observablehq/cache",
-    "build": "observable build",
-    "dev": "observable preview",
-    "deploy": "observable deploy",
-    "observable": "observable"
+  "build-config": "node scripts/build-config.js",
+  "dev": "npm run build-config && npx observable preview"
   },
   "dependencies": {
     "@observablehq/framework": "^1.13.3",
-    "d3-dsv": "^3.0.1",
     "d3-time-format": "^4.1.0",
     "leaflet": "^1.9.4"
   },
   "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "csvtojson": "^2.0.10",
+    "d3-dsv": "^3.0.1",
+    "js-yaml": "^4.1.0",
     "rimraf": "^5.0.5"
   },
   "engines": {

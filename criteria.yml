@@ -1,0 +1,64 @@
+# Last updated: 2025-07-29
+# Notes: Status criteria for safe to swim map, following the 
+# 2019 California Water Resources Control Board bacteria objectives.
+
+# Modify thresholds or status names here, then rebuild site.
+
+statuses:
+  closure:
+    name: "Closure"
+    description: "Beach closed to public use"
+    priority: 1        # Higher priority overrides lower statuses
+    color: "#FF0000"
+    map_icon_path: "static/icons/closure.svg"
+
+  low_risk:
+    name: "Low risk"
+    description: "Bacteria levels are within safe limits"
+    priority: 3
+    color: "#00FF00"
+    map_icon_path: "static/icons/low_risk.svg"
+
+  use_caution:
+    name: "Use caution"
+    description: "Bacteria levels exceed one or more safety limits"
+    priority: 4
+    color: "#FFFF00"
+    map_icon_path: "static/icons/use_caution.svg"
+
+  not_enough_data:
+    name: "Not enough data"
+    description: "Insufficient recent samples to assess status"
+    priority: 5
+    color: "#CCCCCC"
+    map_icon_path: "static/icons/not_enough_data.svg"
+
+rules:
+  default:
+    # Applied if no specific rules matched
+    status: not_enough_data
+
+  overrides:
+    # Placeholder for future manual closure data
+    closure_field: "manual_closure_flag"  # Will come from another data source
+
+  waterbody_types:
+    saltwater:
+      bacteria: "enterococcus"
+      low_risk:
+        six_week_geomean:
+          max: 30        # CFU/100 ml
+        p90_30day:
+          max: 110       # CFU/100 ml
+        min_samples_six_week: 5
+      else_status: use_caution
+
+    freshwater:
+      bacteria: "e_coli"
+      low_risk:
+        six_week_geomean:
+          max: 100
+        p90_30day:
+          max: 320
+        min_samples_six_week: 5
+      else_status: use_caution

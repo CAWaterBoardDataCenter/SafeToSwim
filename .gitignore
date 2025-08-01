@@ -6,3 +6,5 @@ src/.observablehq/
 data_cache/
 scripts/data_cache/
 scripts/create_saltwater_flags_test.ipynb
+src/data/criteria.json
+src/data/site_saltwater_flags.json
