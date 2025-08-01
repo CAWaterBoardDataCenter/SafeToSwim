@@ -7,6 +7,7 @@ export default {
   // all pages will be listed in alphabetical order. Listing pages explicitly
   // lets you organize them into sections and have unlisted pages.
   pages: [
+    {name: "Map Home", path: "/index"},
     {name: "Extended Information", path: "/extended-information"}
   ],
   // The path to the source root.
@@ -14,7 +15,7 @@ export default {
   // style sheet
   style: "style.css",
   // header: "", // what to show in the header (HTML)
-  footer: "some footer text", // what to show in the footer (HTML)
+  footer: `See <a href="/extended-information" target="_blank">extended information</a> about the map and state bacteria objectives.`,
   sidebar: true, // enable the sidebar
   // toc: true, // whether to show the table of contents
   pager: false, // whether to show previous & next links in the footer
