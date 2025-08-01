@@ -3,7 +3,6 @@ toc: false
 sidebar: false
 ---
 
-
 <div class="hero">
   <h1>Safe To Swim Map</h1>
   <h2>The California recreational water quality tool for nerds and adventurers.</h2>
@@ -11,67 +10,63 @@ sidebar: false
 
 <div class="card"><h1>Find stations</h1>
 
-```js
-const stationCode = view(Inputs.text(
-  {label: "Search by station code", 
-  placeholder: "Enter code", 
-  value: "DHS108" // Venice Beach, for example
-  }));
-```
-
-```js
-let stationRecord = [];
-
-if (stationCode && stationCode.trim() !== "") {
-  const resource_id = "15a63495-8d9f-4a49-b43a-3092ef3106b9";
-  let offset = 0;
-  const pageSize = 500;
-
-  while (true) {
-    const url = `https://data.ca.gov/api/3/action/datastore_search?resource_id=${resource_id}&limit=${pageSize}&offset=${offset}&filters=${encodeURIComponent(JSON.stringify({ StationCode: stationCode }))}`;
-    const response = await fetch(url);
-    const json = await response.json();
-    const records = json.result.records;
-
-    if (records.length === 0) break; // no more rows
-
-    // Keep only desired fields
-    const filtered = records.map(r => ({
-      StationCode: r.StationCode,
-      StationName: r.StationName,
-      TargetLatitude: r.TargetLatitude,
-      TargetLongitude: r.TargetLongitude,
-      SampleDate: r.SampleDate,
-      Analyte: r.Analyte,
-      Unit: r.Unit,
-      Result: r.Result,
-      QACode: r.QACode,
-      "30DayGeoMean": r["30DayGeoMean"], // string because valid identifiers can't start with a number
-      "30DayCount": r["30DayCount"],
-      "30DayCutoffDate": r["30DayCutoffDate"],
-      "6WeekGeoMean": r["6WeekGeoMean"],
-      "6WeekCount": r["6WeekCount"],
-      "6WeekCutoffDate": r["6WeekCutoffDate"]
+  ```js
+  const stationCode = view(Inputs.text(
+    {label: "Search by station code", 
+    placeholder: "Enter code", 
+    value: "DHS108" // Venice Beach, for example
     }));
+  ```
 
-    stationRecord = stationRecord.concat(filtered);
+  ```js
+  let stationRecord = [];
 
-    offset += pageSize;
-    if (records.length < pageSize) break; // last page
+  if (stationCode && stationCode.trim() !== "") {
+    const resource_id = "15a63495-8d9f-4a49-b43a-3092ef3106b9";
+    let offset = 0;
+    const pageSize = 500;
+
+    while (true) {
+      const url = `https://data.ca.gov/api/3/action/datastore_search?resource_id=${resource_id}&limit=${pageSize}&offset=${offset}&filters=${encodeURIComponent(JSON.stringify({ StationCode: stationCode }))}`;
+      const response = await fetch(url);
+      const json = await response.json();
+      const records = json.result.records;
+
+      if (records.length === 0) break; // no more rows
+
+      // Keep only desired fields
+      const filtered = records.map(r => ({
+        StationCode: r.StationCode,
+        StationName: r.StationName,
+        TargetLatitude: r.TargetLatitude,
+        TargetLongitude: r.TargetLongitude,
+        SampleDate: r.SampleDate,
+        Analyte: r.Analyte,
+        Unit: r.Unit,
+        Result: r.Result,
+        QACode: r.QACode,
+        "30DayGeoMean": r["30DayGeoMean"], // string because valid identifiers can't start with a number
+        "30DayCount": r["30DayCount"],
+        "30DayCutoffDate": r["30DayCutoffDate"],
+        "6WeekGeoMean": r["6WeekGeoMean"],
+        "6WeekCount": r["6WeekCount"],
+        "6WeekCutoffDate": r["6WeekCutoffDate"]
+      }));
+
+      stationRecord = stationRecord.concat(filtered);
+
+      offset += pageSize;
+      if (records.length < pageSize) break; // last page
+    }
   }
-}
-```
+  ```
 
 </div>
 
 <div class="grid grid-cols-3">
 
-</div>
+  <div class="card grid-colspan-2">
 
-<div class="grid grid-cols-3">
-  
-  <div class="grid grid-colspan-2">
-  
   ```js
   import * as L from "npm:leaflet";
   import {resize} from "npm:@observablehq/stdlib";
@@ -194,6 +189,8 @@ if (stationCode && stationCode.trim() !== "") {
   Status: ${status ? status.name : "Unknown"}
 
   </div>
+</div>
+
 
 <div class="card grid-colspan-3"><h1>Data</h1>
 
