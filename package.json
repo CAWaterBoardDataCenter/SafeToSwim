@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
   "build-config": "node scripts/build-config.js",
-  "dev": "npm run build-config && npx observable preview"
+  "dev": "npm run build-config && npx observable preview",
+  "build": "npm run build-config && npx observable build"
   },
   "dependencies": {
     "@observablehq/framework": "^1.13.3",

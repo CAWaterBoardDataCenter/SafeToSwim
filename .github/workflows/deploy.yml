@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Build site
-        run: npx observable build
+        run: npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
