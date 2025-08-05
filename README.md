@@ -24,4 +24,4 @@ Data is fetched from *Surface Water - Indicator Bacteria Results* dataset on the
 
 ## Contributing
 
-If you would like to contribute to this project, please fork the repository and submit a pull request. We welcome contributions that improve the functionality, usability, or design of the dashboard. Because the public site is hosted by the SWRCB, please note that changes to the public site will be reviewed and may take some time to be reflected on the live site. The development version of the dashboard is available as a GitHub Pages site.
+This dashboard is open for continual improvement by SWRCB staff. Public feedback can be directed to ______. Because the public site is hosted by the SWRCB, please note that changes to the public site may take some time to be reflected on the live site. The development version of the dashboard is available as a GitHub Pages site.
