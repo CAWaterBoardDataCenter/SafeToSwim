@@ -3,6 +3,13 @@ toc: false
 sidebar: false
 ---
 
+```js
+import * as L from "npm:leaflet";
+import { resize } from "npm:@observablehq/stdlib";
+import * as mod from "./modules.js";
+import { setSelectedStation, selectedStation } from "./station-state.js";
+```
+
 <div class="hero">
   <h1>Safe To Swim Map</h1>
   <h2>The California recreational water quality tool for nerds and adventurers.</h2>
@@ -11,54 +18,54 @@ sidebar: false
 <div class="card"><h1>Find stations</h1>
 
   ```js
-  const stationCode = view(Inputs.text(
-    {label: "Search by station code", 
-    placeholder: "Enter code", 
-    value: "DHS108" // Venice Beach, for example
-    }));
+  // Create once
+  const stationInput = Inputs.text({ label: "Station code", value: "" });
+  display(stationInput);
+
+  // Publish user edits -> state bus
+  const onInput = () => setSelectedStation(stationInput.value, "input");
+  stationInput.addEventListener("input", onInput);
+  invalidation.then(() => stationInput.removeEventListener("input", onInput));
   ```
 
   ```js
-  let stationRecord = [];
-
-  if (stationCode && stationCode.trim() !== "") {
-    const resource_id = "15a63495-8d9f-4a49-b43a-3092ef3106b9";
-    let offset = 0;
-    const pageSize = 500;
-
-    while (true) {
-      const url = `https://data.ca.gov/api/3/action/datastore_search?resource_id=${resource_id}&limit=${pageSize}&offset=${offset}&filters=${encodeURIComponent(JSON.stringify({ StationCode: stationCode }))}`;
-      const response = await fetch(url);
-      const json = await response.json();
-      const records = json.result.records;
-
-      if (records.length === 0) break; // no more rows
-
-      // Keep only desired fields
-      const filtered = records.map(r => ({
-        StationCode: r.StationCode,
-        StationName: r.StationName,
-        TargetLatitude: r.TargetLatitude,
-        TargetLongitude: r.TargetLongitude,
-        SampleDate: r.SampleDate,
-        Analyte: r.Analyte,
-        Unit: r.Unit,
-        Result: r.Result,
-        QACode: r.QACode,
-        "30DayGeoMean": r["30DayGeoMean"], // string because valid identifiers can't start with a number
-        "30DayCount": r["30DayCount"],
-        "30DayCutoffDate": r["30DayCutoffDate"],
-        "6WeekGeoMean": r["6WeekGeoMean"],
-        "6WeekCount": r["6WeekCount"],
-        "6WeekCutoffDate": r["6WeekCutoffDate"]
-      }));
-
-      stationRecord = stationRecord.concat(filtered);
-
-      offset += pageSize;
-      if (records.length < pageSize) break; // last page
-    }
+  selectedStation; // make this cell reactive
+  if (selectedStation?.source !== "input") {
+    const v = selectedStation?.code ?? "";
+    if (stationInput.value !== v) stationInput.value = v;
   }
+  ```
+
+  ```js
+  // Initialize Leaflet map
+  const div = document.createElement("div");
+  div.style = `height: 500px; border-radius: 8px; overflow: hidden; width: ${resize(width)}px;`;
+
+  const map = L.map(div, {
+    wheelPxPerZoomLevel: 60
+  }).setView([37, -119], 6); // Initial view centered on California
+
+  L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXYyD4ZCvqwBRS", {
+    attribution:
+      '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+  }).addTo(map);
+
+  const markersLayer = L.layerGroup().addTo(map);
+  const markerMap = {};
+
+  // Highlight marker + pan
+  const defaultIcon = L.icon({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    iconSize: [12, 20],
+    iconAnchor: [12, 20],
+    popupAnchor: [1, -34]
+  });
+  const highlightIcon = L.icon({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    iconSize: [25, 41],
+    iconAnchor: [25, 41],
+    popupAnchor: [0, -20]
+  });
   ```
 
 </div>
@@ -68,62 +75,67 @@ sidebar: false
   <div class="card grid-colspan-2">
 
   ```js
-  import * as L from "npm:leaflet";
-  import {resize} from "npm:@observablehq/stdlib";
-
-  const div = display(document.createElement("div"));
-  div.style = `height: 500px; border-radius: 8px; overflow: hidden; width: ${resize(width)}px;`;
-
-  // Create map and marker once
-  let map = L.map(div).setView([34, -118], 13);
-
-  L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXYyD4ZCvqwBRS", {
-    attribution:
-      '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
-  }).addTo(map);
-
-  let marker = L.marker([34, -118])
-    .addTo(map)
-    .bindPopup("A sample site")
-    .openPopup();
-
-  div
+  // show the map
+  display(div);
+  map.invalidateSize();
   ```
 
   ```js
-  let stationName = null;
+  // Fetch all station data (cached after first call)
+  const stations = await mod.fetchAllStationsWithStatus();
+  ```
 
-  if (stationRecord && stationRecord.length > 0) {
-    const lat = parseFloat(stationRecord[0].TargetLatitude);
-    const lon = parseFloat(stationRecord[0].TargetLongitude);
-    stationName = stationRecord[0].StationName.split('-').slice(1).join('-').trim();
+  ```js
 
-    const icon = L.icon({
-      iconUrl: status.map_icon_path,
-      iconSize: [25, 41],
-      iconAnchor: [12, 41],
-      popupAnchor: [1, -34]
-    });
+  // Add markers for all stations
+  for (const [code, st] of Object.entries(stations)) {
+    const { TargetLatitude, TargetLongitude } = st;
+    if (!TargetLatitude || !TargetLongitude) continue;
 
-    // If marker was removed previously, recreate it
-    if (!map.hasLayer(marker)) {
-      marker.addTo(map);
+    const formattedName = mod.formatStationName(st.StationName, code);
+
+    const marker = L.marker([TargetLatitude, TargetLongitude], { icon: defaultIcon })
+      .bindPopup(`<b>${formattedName}</b><br>Station Code: ${code}`);
+
+    // Click -> publish selection (source = "map" is optional but handy)
+    const onClick = () => setSelectedStation(code, "map");
+    marker.on("click", onClick);
+
+    // Cleanup on cell invalidation (Framework hot reload/navigation)
+    invalidation.then(() => marker.off("click", onClick));
+
+    markerMap[code] = marker;
+    markersLayer.addLayer(marker);
+  }
+  ```
+
+  ```js
+  selectedStation; // make this cell reactive
+
+  if (selectedStation?.code) {
+    const marker = markerMap[selectedStation.code];
+    if (marker) {
+      const ll = marker.getLatLng();
+      if (!map.getBounds().contains(ll)) map.panTo(ll);
+      marker.openPopup();
     }
+  } else {
+    map.closePopup();
+  }
+  ```
 
-    marker.setIcon(icon)
-          .setLatLng([lat, lon])
-          .bindPopup(`${stationName}`)
-          .openPopup();
+  ```js
+  // Keep the map’s popup in sync with the current selection.
+  selectedStation; // make this cell reactive
 
-    // Keep zoom the same, just pan if far
-    const currentCenter = map.getCenter();
-    if (map.distance(currentCenter, L.latLng(lat, lon)) > 5000) {
-      map.panTo([lat, lon]);
+  {
+    const sel = selectedStation?.code;
+    if (sel) {
+      const m = markerMap[sel];
+      if (m) {
+        map.panTo(m.getLatLng());
+        m.openPopup();
       }
-    } else {
-    // No input, remove marker
-    if (map.hasLayer(marker)) {
-      map.removeLayer(marker);
     }
   }
   ```
@@ -133,12 +145,56 @@ sidebar: false
   <div class="card grid-colspan-1">
 
   ```js
-  html`
-  <h1><strong>${stationName}</strong></h1>
-  <p><strong>Station Code:</strong> <span id="station-code">${stationCode}</span></p>
-  <p>Total samples: ${stationRecord.length}</p>
-  </div>
-  `
+  selectedStation; // make reactive
+
+  const code = selectedStation?.code;
+  let meta = null;
+
+  if (code && stations && stations[code]) {
+    const st = stations[code];
+
+    const formattedName = (mod.formatStationName)
+      ? mod.formatStationName(st.StationName, code)
+      : st.StationName;
+
+    // last sample date (string -> Date -> YYYY-MM-DD)
+    const lastSampleDateISO = st.lastSampleDate || null;           // e.g., "2024-07-15"
+    const lastSampleDateObj = lastSampleDateISO ? new Date(lastSampleDateISO) : null;
+    const lastSampleDate =
+      lastSampleDateObj && !isNaN(+lastSampleDateObj)
+        ? lastSampleDateObj.toISOString().slice(0, 10)
+        : null;
+
+    meta = {
+      formattedName,
+      code,
+      lat: st.TargetLatitude != null ? +st.TargetLatitude : null,
+      lon: st.TargetLongitude != null ? +st.TargetLongitude : null,
+      lastSampleDate
+    };
+  }
+  ```
+
+  ```js
+  meta
+    ? html`
+        <h1><strong>${meta.formattedName}</strong></h1>
+        <p><strong>Station Code:</strong> ${meta.code}</p>
+        <p><strong>Lat/Lon:</strong> ${meta.lat}, ${meta.lon}</p>
+        <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
+      `
+    : html`<p>Select a station to see details.</p>`
+  ```
+  
+  ```js
+  import { stationRecordFetch } from "./modules.js";
+
+  selectedStation; // reactive
+  let stationRecord = null;
+  const code = selectedStation?.code;
+  if (code) {
+    stationRecord = await stationRecordFetch(code);
+  }
   ```
 
   ```js
@@ -151,7 +207,7 @@ sidebar: false
   ```js
   // Determine if station is a saltwater or freshwater environment
   const saltwaterFlags = new Map(
-  saltwaterFlagsJson.map(d => [d.StationCode, d.saltwater === "True"])
+  saltwaterFlagsJson.map(d => [d.selectedStation, d.saltwater === "True"])
   );
   ```
 
@@ -162,7 +218,7 @@ sidebar: false
     status = null;
   } else {
     // Determine salt/fresh rules
-    const isSaltwater = saltwaterFlags.get(stationCode) === true;
+    const isSaltwater = saltwaterFlags.get(selectedStation) === true;
     const typeRules = criteria.rules.waterbody_types[isSaltwater ? "saltwater" : "freshwater"];
 
     // Manual closure placeholder (if included in stationRecord)
@@ -203,7 +259,7 @@ const analyte = view(Inputs.select(
 
 ```js
 const data = stationRecord
-  .filter(d => d.Analyte === analyte)   // keep only selected bacteria type
+  ?.filter(d => d.Analyte === analyte)
   .map(d => ({
     date: new Date(d.SampleDate),
     result: +d.Result,
