@@ -170,7 +170,8 @@ import { setSelectedStation, selectedStation } from "./station-state.js";
       code,
       lat: st.TargetLatitude != null ? +st.TargetLatitude : null,
       lon: st.TargetLongitude != null ? +st.TargetLongitude : null,
-      lastSampleDate
+      lastSampleDate,
+      totalDataPoints: st.totalDataPoints ?? 0
     };
   }
   ```
@@ -182,6 +183,7 @@ import { setSelectedStation, selectedStation } from "./station-state.js";
         <p><strong>Station Code:</strong> ${meta.code}</p>
         <p><strong>Lat/Lon:</strong> ${meta.lat}, ${meta.lon}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
+        <p><strong>Total data points:</strong> ${meta.totalDataPoints}</p>
       `
     : html`<p>Select a station to see details.</p>`
   ```

@@ -39,7 +39,23 @@ export async function fetchAllStationsWithStatus(forceRefresh = false) {
 		lastByStation[r.StationCode] = r.LastSampleDate || null;
 	}
 
-  // 3) Recent data (last 6 weeks, Enterococcus & E. coli only)
+	// 3) Total data points per station
+	const sqlCounts = `
+    SELECT
+      "StationCode",
+      COUNT(*) AS "TotalDataPoints"
+    FROM "${resource_id}"
+    GROUP BY "StationCode"
+  `;
+  const countResponse = await fetch(
+    `https://data.ca.gov/api/3/action/datastore_search_sql?sql=${encodeURIComponent(sqlCounts)}`
+  );
+  const countJson = await countResponse.json();
+  const countRecords = countJson.result.records;
+  const countByStation = {};
+  for (const row of countRecords) countByStation[row.StationCode] = Number(row.TotalDataPoints) || 0;
+
+  // 4) Recent data (last 6 weeks, Enterococcus & E. coli only)
   const sixWeeksAgo = new Date();
   sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42);
   const sixWeeksAgoStr = sixWeeksAgo.toISOString().split("T")[0];
@@ -85,7 +101,6 @@ export async function fetchAllStationsWithStatus(forceRefresh = false) {
   for (const station of metaRecords) {
     const code = station.StationCode;
     const resultData = resultsByStation[code] || { latest: null, recentResults: [] };
-		const lastAny = lastByStation[code] || null;
 
     stationsObj[code] = {
       StationCode: code,
@@ -94,7 +109,8 @@ export async function fetchAllStationsWithStatus(forceRefresh = false) {
       TargetLongitude: parseFloat(station.TargetLongitude),
       latest: resultData.latest,
       recentResults: resultData.recentResults,
-			lastSampleDate: lastAny
+			lastSampleDate: lastByStation[code] || null,
+			totalDataPoints: countByStation[code] ?? 0
     };
   }
 
