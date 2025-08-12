@@ -64,7 +64,7 @@ h6 {
   flex-direction: column;
   align-items: flex-start;
   font-family: var(--sans-serif);
-  margin: 2rem 0 4rem;
+  margin: -1rem 0 2rem;
   text-wrap: balance;
   text-align: left;
 }
