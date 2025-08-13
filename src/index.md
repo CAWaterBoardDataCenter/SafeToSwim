@@ -11,52 +11,6 @@ import { setSelectedStation, selectedStation } from "./station-state.js";
 ```
 
 ```js
-import {csv} from "npm:d3-fetch@3";
-
-const criteria = FileAttachment("data/criteria.json").json();
-const saltwaterFlagsJson = FileAttachment("data/site_saltwater_flags.json").json();
-```
-
-```js
-// Determine if station is a saltwater or freshwater environment
-const saltwaterFlags = new Map(
-saltwaterFlagsJson.map(d => [d.selectedStation, d.saltwater === "True"])
-);
-```
-
-```js
-let status = null;
-
-if (!stationRecord || stationRecord.length === 0) {
-  status = null;
-} else {
-  // Determine salt/fresh rules
-  const isSaltwater = saltwaterFlags.get(selectedStation) === true;
-  const typeRules = criteria.rules.waterbody_types[isSaltwater ? "saltwater" : "freshwater"];
-
-  // Manual closure placeholder (if included in stationRecord)
-  if (stationRecord.manualClosureFlag) {
-    status = criteria.statuses.closure;
-  } else {
-    // Use existing precomputed metrics
-    const sampleCount6W = +stationRecord[0]["6WeekCount"];   // assuming uniform per station
-    const geoMean6W = +stationRecord[0]["6WeekGeoMean"];
-    const p90 = +stationRecord[0]["30DayGeoMean"];           // Note: dataset gives "30DayGeoMean" (check if that's p90 or geomean)
-
-    if (sampleCount6W < typeRules.low_risk.min_samples_six_week) {
-      status = criteria.statuses.not_enough_data;
-    } else if (geoMean6W <= typeRules.low_risk.six_week_geomean.max &&
-              p90 <= typeRules.low_risk.p90_30day.max) {
-      status = criteria.statuses.low_risk;
-    } else {
-      status = criteria.statuses[typeRules.else_status];
-    }
-  }
-}
-```
-  
-
-```js
 // Initialize Leaflet map
 const div = document.createElement("div");
 div.style = `height: 600px; border-radius: 8px; overflow: hidden; width: ${resize(width)}px;`;
@@ -73,26 +27,49 @@ L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXY
 const markersLayer = L.layerGroup().addTo(map);
 const markerMap = {};
 
-// Highlight marker + pan
-const defaultIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconSize: [12, 20],
-  iconAnchor: [12, 20],
-  popupAnchor: [1, -34]
+// Custom icons for different statuses
+const LowRiskIcon = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/chloeyn/SafeToSwim/refs/heads/main/src/assets/icons/low_risk.png",
+  iconSize: [10, 10],
+  iconAnchor: [5, 5],
+  popupAnchor: [0, -5]
 });
-const highlightIcon = L.icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [25, 41],
-  popupAnchor: [0, -20]
+const UseCautionIcon = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/chloeyn/SafeToSwim/refs/heads/main/src/assets/icons/use_caution.png",
+  iconSize: [10, 10],
+  iconAnchor: [5, 5],
+  popupAnchor: [0, -5]
 });
+const NotEnoughDataIcon = L.icon({
+  iconUrl: "https://raw.githubusercontent.com/chloeyn/SafeToSwim/refs/heads/main/src/assets/icons/not_enough_data.png",
+  iconSize: [10, 10],
+  iconAnchor: [5, 5],
+  popupAnchor: [0, -5]
+});
+
+const iconMap = {
+  "Low risk": LowRiskIcon,
+  "Use caution": UseCautionIcon,
+  "Not enough data": NotEnoughDataIcon
+};
 ```
 
 ```js
 // Fetch all station data (cached after first call)
-const stations = await mod.fetchAllStationsWithStatus();
-```
+const stations = await mod.fetchAllStations();
 
+import { computeAllStatuses } from "./modules.js";
+
+// Use stations object directly
+const statusesByCode = await computeAllStatuses(
+  new Map(Object.entries(stations).map(([code, st]) => [code, st.recentResults]))
+);
+
+// Attach status to each station
+for (const [code, st] of Object.entries(stations)) {
+  st.status = statusesByCode.get(code);
+}
+```
 
 <div class="hero">
   <h1>Safe To Swim Map</h1>
@@ -108,13 +85,14 @@ const stations = await mod.fetchAllStationsWithStatus();
 <div class="card" id="map-card" style="min-height: 600px; margin: 0">
 
 ```js
-// show the map
 display(div);
 map.invalidateSize();
+
+// Ensure markers layer is on the map
+markersLayer.addTo(map);
 ```
 
 ```js
-
 // Add markers for all stations
 for (const [code, st] of Object.entries(stations)) {
   const { TargetLatitude, TargetLongitude } = st;
@@ -122,7 +100,7 @@ for (const [code, st] of Object.entries(stations)) {
 
   const formattedName = mod.formatStationName(st.StationName, code);
 
-  const marker = L.marker([TargetLatitude, TargetLongitude], { icon: defaultIcon })
+  const marker = L.marker([TargetLatitude, TargetLongitude], { icon: iconMap[st.status.name] || LowRiskIcon })
     .bindPopup(`<b>${formattedName}</b><br>Station Code: ${code}`);
 
   // Click -> publish selection
@@ -134,21 +112,6 @@ for (const [code, st] of Object.entries(stations)) {
 
   markerMap[code] = marker;
   markersLayer.addLayer(marker);
-}
-```
-
-```js
-selectedStation; // make this cell reactive
-
-if (selectedStation?.code) {
-  const marker = markerMap[selectedStation.code];
-  if (marker) {
-    const ll = marker.getLatLng();
-    if (!map.getBounds().contains(ll)) map.panTo(ll);
-    marker.openPopup();
-  }
-} else {
-  map.closePopup();
 }
 ```
 
@@ -229,7 +192,8 @@ selectedStation; // make this cell reactive
       lat: st.TargetLatitude != null ? +st.TargetLatitude : null,
       lon: st.TargetLongitude != null ? +st.TargetLongitude : null,
       lastSampleDate,
-      totalDataPoints: st.totalDataPoints ?? 0
+      totalDataPoints: st.totalDataPoints ?? 0,
+      recentDataPoints: st.recentResults.length ?? 0
     };
   }
   ```
@@ -242,6 +206,7 @@ selectedStation; // make this cell reactive
         <p><strong>Lat/Lon:</strong> ${meta.lat}, ${meta.lon}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
         <p><strong>Total data points:</strong> ${meta.totalDataPoints}</p>
+        <p><strong>Data points in last 6 weeks:</strong> ${meta.recentDataPoints}</p>
       `
     : html`<p>Select a station to see details.</p>`
   ```
@@ -256,216 +221,18 @@ selectedStation; // make this cell reactive
     stationRecord = await stationRecordFetch(code);
   }
   ```
-
-  Status: ${status ? status.name : "Unknown"}
-  </div>
-  </div>
-</div>
-</div>
-
-
-<!-- <div class="card"><h1>Find stations</h1>
-
-  ```js
-  // Create once
-  const stationInput = Inputs.text({ label: "Station code", value: "" });
-  display(stationInput);
-
-  // Publish user edits -> state bus
-  const onInput = () => setSelectedStation(stationInput.value, "input");
-  stationInput.addEventListener("input", onInput);
-  invalidation.then(() => stationInput.removeEventListener("input", onInput));
-  ```
-
-  ```js
-  selectedStation; // make this cell reactive
-  if (selectedStation?.source !== "input") {
-    const v = selectedStation?.code ?? "";
-    if (stationInput.value !== v) stationInput.value = v;
-  }
-  ```
-
-</div>
-
-<div class="grid grid-cols-3">
-
-  <div class="card grid-colspan-2">
-
-  ```js
-  // show the map
-  display(div);
-  map.invalidateSize();
-  ```
-
-  ```js
-  // Fetch all station data (cached after first call)
-  const stations = await mod.fetchAllStationsWithStatus();
-  ```
-
-  ```js
-
-  // Add markers for all stations
-  for (const [code, st] of Object.entries(stations)) {
-    const { TargetLatitude, TargetLongitude } = st;
-    if (!TargetLatitude || !TargetLongitude) continue;
-
-    const formattedName = mod.formatStationName(st.StationName, code);
-
-    const marker = L.marker([TargetLatitude, TargetLongitude], { icon: defaultIcon })
-      .bindPopup(`<b>${formattedName}</b><br>Station Code: ${code}`);
-
-    // Click -> publish selection (source = "map" is optional but handy)
-    const onClick = () => setSelectedStation(code, "map");
-    marker.on("click", onClick);
-
-    // Cleanup on cell invalidation (Framework hot reload/navigation)
-    invalidation.then(() => marker.off("click", onClick));
-
-    markerMap[code] = marker;
-    markersLayer.addLayer(marker);
-  }
-  ```
-
-  ```js
-  selectedStation; // make this cell reactive
-
-  if (selectedStation?.code) {
-    const marker = markerMap[selectedStation.code];
-    if (marker) {
-      const ll = marker.getLatLng();
-      if (!map.getBounds().contains(ll)) map.panTo(ll);
-      marker.openPopup();
-    }
-  } else {
-    map.closePopup();
-  }
-  ```
-
-  ```js
-  // Keep the map’s popup in sync with the current selection.
-  selectedStation; // make this cell reactive
-
-  {
-    const sel = selectedStation?.code;
-    if (sel) {
-      const m = markerMap[sel];
-      if (m) {
-        map.panTo(m.getLatLng());
-        m.openPopup();
-      }
-    }
-  }
-  ```
-
-  </div>
-
-  <div class="card grid-colspan-1">
-
-  ```js
-  selectedStation; // make reactive
-
-  const code = selectedStation?.code;
-  let meta = null;
-
-  if (code && stations && stations[code]) {
-    const st = stations[code];
-
-    const formattedName = (mod.formatStationName)
-      ? mod.formatStationName(st.StationName, code)
-      : st.StationName;
-
-    // last sample date (string -> Date -> YYYY-MM-DD)
-    const lastSampleDateISO = st.lastSampleDate || null;           // e.g., "2024-07-15"
-    const lastSampleDateObj = lastSampleDateISO ? new Date(lastSampleDateISO) : null;
-    const lastSampleDate =
-      lastSampleDateObj && !isNaN(+lastSampleDateObj)
-        ? lastSampleDateObj.toISOString().slice(0, 10)
-        : null;
-
-    meta = {
-      formattedName,
-      code,
-      lat: st.TargetLatitude != null ? +st.TargetLatitude : null,
-      lon: st.TargetLongitude != null ? +st.TargetLongitude : null,
-      lastSampleDate,
-      totalDataPoints: st.totalDataPoints ?? 0
-    };
-  }
-  ```
-
-  ```js
-  meta
-    ? html`
-        <h1><strong>${meta.formattedName}</strong></h1>
-        <p><strong>Station Code:</strong> ${meta.code}</p>
-        <p><strong>Lat/Lon:</strong> ${meta.lat}, ${meta.lon}</p>
-        <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
-        <p><strong>Total data points:</strong> ${meta.totalDataPoints}</p>
-      `
-    : html`<p>Select a station to see details.</p>`
-  ```
   
-  ```js
-  import { stationRecordFetch } from "./modules.js";
+  ---
 
-  selectedStation; // reactive
-  let stationRecord = null;
-  const code = selectedStation?.code;
-  if (code) {
-    stationRecord = await stationRecordFetch(code);
-  }
-  ```
-
-  ```js
-  import {csv} from "npm:d3-fetch@3";
-
-  const criteria = FileAttachment("data/criteria.json").json();
-  const saltwaterFlagsJson = FileAttachment("data/site_saltwater_flags.json").json();
-  ```
-
-  ```js
-  // Determine if station is a saltwater or freshwater environment
-  const saltwaterFlags = new Map(
-  saltwaterFlagsJson.map(d => [d.selectedStation, d.saltwater === "True"])
-  );
-  ```
-
-  ```js
-  let status = null;
-
-  if (!stationRecord || stationRecord.length === 0) {
-    status = null;
-  } else {
-    // Determine salt/fresh rules
-    const isSaltwater = saltwaterFlags.get(selectedStation) === true;
-    const typeRules = criteria.rules.waterbody_types[isSaltwater ? "saltwater" : "freshwater"];
-
-    // Manual closure placeholder (if included in stationRecord)
-    if (stationRecord.manualClosureFlag) {
-      status = criteria.statuses.closure;
-    } else {
-      // Use existing precomputed metrics
-      const sampleCount6W = +stationRecord[0]["6WeekCount"];   // assuming uniform per station
-      const geoMean6W = +stationRecord[0]["6WeekGeoMean"];
-      const p90 = +stationRecord[0]["30DayGeoMean"];           // Note: dataset gives "30DayGeoMean" (check if that's p90 or geomean)
-
-      if (sampleCount6W < typeRules.low_risk.min_samples_six_week) {
-        status = criteria.statuses.not_enough_data;
-      } else if (geoMean6W <= typeRules.low_risk.six_week_geomean.max &&
-                p90 <= typeRules.low_risk.p90_30day.max) {
-        status = criteria.statuses.low_risk;
-      } else {
-        status = criteria.statuses[typeRules.else_status];
-      }
-    }
-  }
-  ```
-
-  Status: ${status ? status.name : "Unknown"}
+  ## **Status: ${selectedStation?.code ? stations[selectedStation.code]?.status.name : "—"}**  
+  ${selectedStation?.code
+  ? stations[selectedStation.code]?.status.description
+  : "No status available"}
 
   </div>
-</div> -->
-
+  </div>
+</div>
+</div>
 
 <div class="card grid-colspan-3"><h1>Data</h1>
 
