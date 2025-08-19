@@ -9,31 +9,27 @@ statuses:
     name: "Closure"
     description: "Beach closed to public use due to significant contamination."
     priority: 1        # Higher priority overrides lower statuses
-    color: "#FF0000"
-    map_icon_path: "static/icons/closure.svg"
+    color: "#f73b11"
 
   low_risk:
     name: "Low risk"
     description: "Bacteria levels do not exceed safety limits. 
       Swimming is considered safe."
     priority: 3
-    color: "#00FF00"
-    map_icon_path: "static/icons/low_risk.svg"
+    color: "#56c7f0"
 
   use_caution:
     name: "Use caution"
     description: "Bacteria levels exceed one or more safety limits. While a closure may 
       not be in effect, swimming poses an elevated risk of gastrointestinal illness."
     priority: 4
-    color: "#FFFF00"
-    map_icon_path: "static/icons/use_caution.svg"
+    color: "#f79f11"
 
   not_enough_data:
     name: "Not enough data"
     description: "Insufficient number of recent samples to assess risk status."
     priority: 5
-    color: "#CCCCCC"
-    map_icon_path: "static/icons/not_enough_data.svg"
+    color: "#cfcdcc"
 
 rules:
   default:

@@ -153,39 +153,6 @@ export function invalidateStationCache(code) {
   if (code) _cache.delete(code);
 }
 
-
-// ##### Status Determination #####
-
-// modules.js
-import {FileAttachment} from "observablehq:stdlib";
-
-/* -----------------------------
-   Lazy, memoized config loaders
------------------------------- */
-let _criteriaPromise = null;
-let _saltFlagsPromise = null;
-
-async function getCriteria() {
-  if (!_criteriaPromise) {
-    _criteriaPromise = FileAttachment("data/criteria.json").json();
-  }
-  return _criteriaPromise;
-}
-
-async function getSaltwaterFlags() {
-  if (!_saltFlagsPromise) {
-    _saltFlagsPromise = FileAttachment("data/site_saltwater_flags.json")
-      .json()
-      .then(rows => new Map(
-        rows.map(d => [
-          d.selectedStation,
-          String(d.saltwater).toLowerCase() === "true"
-        ])
-      ));
-  }
-  return _saltFlagsPromise;
-}
-
 /* -----------------------------
    Generic helpers (sync)
 ------------------------------ */
@@ -226,44 +193,275 @@ function endOfISOWeek(d) {
 /* -----------------------------
    Status logic (pure/sync core)
 ------------------------------ */
-function evaluateStatusFromMetrics(metrics, typeRules, criteria) {
-  // metrics: { sampleCount6W, geoMean6W, p90_30d, manualClosureFlag }
-  if (metrics.manualClosureFlag) return criteria.statuses.closure;
 
-  if (metrics.sampleCount6W < typeRules.low_risk.min_samples_six_week) {
-    return criteria.statuses.not_enough_data;
+import {FileAttachment} from "observablehq:stdlib";
+
+/* -----------------------------
+   Lazy, memoized config loaders
+------------------------------ */
+let _criteriaPromise = null;
+let _saltFlagsPromise = null;
+
+// Helper
+async function getCriteria() {
+  if (!_criteriaPromise) {
+    _criteriaPromise = FileAttachment("data/criteria.json").json();
   }
-
-  const okSixW = metrics.geoMean6W <= typeRules.low_risk.six_week_geomean.max;
-  const okP90  = metrics.p90_30d   <= typeRules.low_risk.p90_30day.max;
-
-  if (okSixW && okP90) return criteria.statuses.low_risk;
-  return criteria.statuses[typeRules.else_status];
+  return _criteriaPromise;
 }
 
-function computeWindowMetrics(records, asOfDate) {
+// Helper
+async function getSaltwaterFlags() {
+  if (!_saltFlagsPromise) {
+    _saltFlagsPromise = FileAttachment("data/site_saltwater_flags.json")
+      .json()
+      .then(rows => new Map(
+        rows.map(d => [
+          d.selectedStation,
+          String(d.saltwater).toLowerCase() === "true"
+        ])
+      ));
+  }
+  return _saltFlagsPromise;
+}
+
+// Helper: Preferred analyte lists if not provided in criteria
+const DEFAULT_ANALYTE_MAP = {
+  saltwater: ["Enterococcus", "Entero", "ENT"],
+  freshwater: ["E. coli", "E Coli", "E.Coli", "EC"]
+};
+
+// Helper: Pull analyte preferences out of criteria if available
+function analytePrefsFromCriteria(criteria) {
+  const c = criteria || {};
+  const prefs = c.analytes || c.rules?.analytes || {};
+  return {
+    saltwater: prefs.saltwater || DEFAULT_ANALYTE_MAP.saltwater,
+    freshwater: prefs.freshwater || DEFAULT_ANALYTE_MAP.freshwater
+  };
+}
+
+// Helper: Case-insensitive membership test
+function makeLowerSet(arr) {
+  const s = new Set();
+  for (const v of arr || []) if (v != null) s.add(String(v).toLowerCase());
+  return s;
+}
+
+// Helper: Choose analyte based on env + availability in records
+function pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria) {
+  const prefs = analytePrefsFromCriteria(criteria);
+  const wantedList = isSaltwater ? prefs.saltwater : prefs.freshwater;
+
+  const available = (stationRecord || []).map(r => r?.Analyte).filter(Boolean);
+  const availSet = makeLowerSet(available);
+
+  // 1) try preferred list in order
+  for (const name of wantedList) {
+    if (availSet.has(String(name).toLowerCase())) return name;
+  }
+
+  // 2) otherwise: pick most frequent analyte present
+  if (available.length) {
+    const counts = new Map();
+    for (const a of available) counts.set(a, (counts.get(a) || 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  }
+
+  return null; // no analytes found
+}
+
+// Computes window metrics for a station's records at a given date
+export function computeWindowMetrics(records, asOfDate) {
   const asOf = toDate(asOfDate);
   const msPerDay = 24 * 3600 * 1000;
 
-  const sixW = records.filter(r => {
+  // Window membership
+  const inLast = (r, days) => {
     const dt = toDate(r.SampleDate);
-    return dt <= asOf && (asOf - dt) <= 42 * msPerDay;
-  });
+    return dt <= asOf && (asOf - dt) <= days * msPerDay;
+  };
 
-  const thirtyD = records.filter(r => {
-    const dt = toDate(r.SampleDate);
-    return dt <= asOf && (asOf - dt) <= 30 * msPerDay;
-  });
+  // 42-day window (for geomean + count)
+  const sixW = records.filter(r => inLast(r, 42));
+  const sixWVals = sixW.map(r => +r.Result).filter(Number.isFinite);
 
-  const sixWVals = sixW.map(r => +r.Result);
-  const thirtyVals = thirtyD.map(r => +r.Result);
+  // 30-day window (for p90 + optional count)
+  const thirtyD = records.filter(r => inLast(r, 30));
+  const thirtyVals = thirtyD.map(r => +r.Result).filter(Number.isFinite);
 
   return {
-    sampleCount6W: sixWVals.filter(Number.isFinite).length,
+    sampleCount6W: sixWVals.length,
     geoMean6W: geomean(sixWVals),
     p90_30d: quantile(thirtyVals, 0.9),
+    sampleCount30D: thirtyVals.length,
     manualClosureFlag: sixW.some(r => r.manualClosureFlag === true)
   };
+}
+
+// Determines status of a station based on window metrics and type rules
+export function evaluateStatusFromMetrics(
+  metrics,
+  typeRules,
+  criteria,
+  opts = {}
+) {
+  const reasons = [];
+  const {
+    min_samples_six_week,
+    six_week_geomean,
+    p90_30day
+  } = typeRules.low_risk;
+
+  const elseName = typeRules.else_status; // e.g., "caution"
+  const S = criteria.statuses;
+
+  // 0) Hard override: manual closures
+  if (metrics.manualClosureFlag) {
+    reasons.push("manual_closure");
+    return withReasons(S.closure, reasons, metrics);
+  }
+
+  // 1) Data sufficiency checks (centralized here)
+  // Six-week min samples (primary gate)
+  if (!Number.isFinite(metrics.sampleCount6W) || metrics.sampleCount6W < min_samples_six_week) {
+    reasons.push("insufficient_samples_6w");
+    return withReasons(S.not_enough_data, reasons, metrics);
+  }
+
+  // 2) Metric validity (NaNs -> treat as insufficient)
+  if (!Number.isFinite(metrics.geoMean6W)) {
+    reasons.push("invalid_geomean_6w");
+    return withReasons(S.not_enough_data, reasons, metrics);
+  }
+  if (!Number.isFinite(metrics.p90_30d)) {
+    reasons.push("invalid_p90_30d");
+    return withReasons(S.not_enough_data, reasons, metrics);
+  }
+
+  // 3) Threshold checks (single source of truth)
+  const okSixW = metrics.geoMean6W <= six_week_geomean.max;
+  const okP90  = metrics.p90_30d   <= p90_30day.max;
+
+  if (okSixW && okP90) {
+    reasons.push("pass_geomean_6w", "pass_single_sample_p90_30d");
+    return withReasons(S.low_risk, reasons, metrics);
+  }
+
+  // 4) Else status and reasons
+  if (!okSixW) reasons.push("fail_geomean_6w");
+  if (!okP90)  reasons.push("fail_single_sample_p90_30d");
+  return withReasons(S[elseName], reasons, metrics);
+}
+
+function withReasons(status, reasons, metrics) {
+  return { ...status, _reasons: reasons, _metrics: metrics };
+}
+
+// Wrapper function for building status series; selects rules branch based on environment
+export async function buildStatusSeriesForStation(stationRecord) {
+  const code = stationRecord[0]?.StationCode;
+  const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
+  const isSaltwater = saltFlags.get(code) ?? false;
+  const analyte = pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria);
+  const typeRules = selectTypeRules(criteria, { isSaltwater, analyte });
+
+  // --- base series on sample dates ---
+  const base = buildStatusSeries(stationRecord, analyte, typeRules, criteria);
+
+  // --- ensure it extends to "today" ---
+  const today = toDate(new Date());
+  const lastDate = base.length ? toDate(base[base.length - 1].date) : null;
+
+  if (!lastDate || lastDate.getTime() < today.getTime()) {
+    // compute today's status using same metrics/evaluator
+    const recs = (stationRecord || [])
+      .filter(r => r?.Analyte === analyte && r?.SampleDate != null)
+      .map(r => ({ ...r, SampleDate: toDate(r.SampleDate) }))
+      .sort((a,b) => a.SampleDate - b.SampleDate);
+
+    const metricsToday = computeWindowMetrics(recs, today);
+    const statusToday  = evaluateStatusFromMetrics(metricsToday, typeRules, criteria);
+
+    base.push({
+      date: today,
+      status: statusToday,
+      status_name: statusToday?.name ?? null,
+      metrics: metricsToday
+    });
+  }
+
+  return base;
+}
+
+// Helper: Return the rule-set the evaluator needs
+export function selectTypeRules(criteria, { isSaltwater }) {
+  const c = criteria || {};
+  const wb = c.rules?.waterbody_types?.[isSaltwater ? "saltwater" : "freshwater"] || {};
+  return {
+    low_risk: wb.low_risk,                                     // { six_week_geomean:{max}, p90_30day:{max}, min_samples_six_week }
+    else_status: wb.else_status || c.rules?.default?.status    // e.g., "use_caution" (fallback to default status)
+  };
+}
+
+// Helper: Get the preferred bacteria/analyte label from criteria (e.g., "enterococcus" / "e_coli")
+export function preferredAnalyte(criteria, { isSaltwater }) {
+  const wb = criteria?.rules?.waterbody_types?.[isSaltwater ? "saltwater" : "freshwater"];
+  return wb?.bacteria || null;
+}
+
+// Optional: let callers read the closure field name from criteria (defaults to your existing one)
+export function closureFieldName(criteria) {
+  return criteria?.rules?.overrides?.closure_field || "manual_closure_flag";
+}
+
+
+// Build status time series.
+//
+// @param {Array<Object>} stationRecord
+// @param {string} analyte
+// @param {Object} typeRules
+// @param {Object} criteria
+// @returns {Array<{date: Date, status: any, status_name: string, metrics: object}>}
+export function buildStatusSeries(stationRecord, analyte, typeRules, criteria) {
+  // 1) Filter to analyte and normalize dates
+  const recs = (stationRecord || [])
+    .filter(r => r && r.Analyte === analyte && r.SampleDate != null)
+    .map(r => ({ ...r, SampleDate: toDate(r.SampleDate) })) // normalize to midnight
+    .sort((a, b) => a.SampleDate - b.SampleDate);
+
+  if (recs.length === 0) return [];
+
+  // 2) Unique sample dates (ascending)
+  const asOfDates = Array.from(new Set(recs.map(r => +r.SampleDate)))
+    .sort((a, b) => a - b)
+    .map(t => new Date(t));
+
+  // 3) Evaluate metrics + status per as-of date
+  return asOfDates.map(asOf => {
+    const metrics = computeWindowMetrics(recs, asOf);
+    const status = evaluateStatusFromMetrics(metrics, typeRules, criteria);
+    return {
+      date: asOf,
+      status,
+      status_name: status?.name ?? null,
+      metrics
+    };
+  });
+}
+
+// Determine the current status of a station
+export function latestStatus(stationRecord, analyte, typeRules, criteria, asOf = new Date()) {
+  const recs = (stationRecord || [])
+    .filter(r => r && r.Analyte === analyte && r.SampleDate != null)
+    .map(r => ({ ...r, SampleDate: toDate(r.SampleDate) }))
+    .sort((a, b) => a.SampleDate - b.SampleDate);
+
+  if (!recs.length) return null;
+
+  const metrics = computeWindowMetrics(recs, toDate(asOf));
+  const status = evaluateStatusFromMetrics(metrics, typeRules, criteria);
+  return { date: toDate(asOf), status, status_name: status?.name ?? null, metrics };
 }
 
 /* -----------------------------
@@ -290,7 +488,7 @@ export async function computeStatusAtDateForStation(stationCode, recordsForStati
   return evaluateStatusFromMetrics(metrics, typeRules, criteria);
 }
 
-// Current status for ALL stations using raw per-sample records
+// Current status for all stations using raw per-sample records
 // recordsByStation: Map(code -> sample[])
 export async function computeAllStatuses(recordsByStation, asOf = new Date()) {
   const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
@@ -299,26 +497,6 @@ export async function computeAllStatuses(recordsByStation, asOf = new Date()) {
     const isSalt = saltFlags.get(code) === true;
     const typeRules = criteria.rules.waterbody_types[isSalt ? "saltwater" : "freshwater"];
     const metrics = computeWindowMetrics(records ?? [], asOf);
-    out.set(code, evaluateStatusFromMetrics(metrics, typeRules, criteria));
-  }
-  return out;
-}
-
-// Current status for ALL stations using precomputed per-station metrics
-// stations: { [code]: { "6WeekCount", "6WeekGeoMean", "30DayP90" (or adjust), manualClosureFlag? } }
-export async function computeAllStatusesFast(stations) {
-  const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
-  const out = new Map();
-  for (const [code, st] of Object.entries(stations)) {
-    const isSalt = saltFlags.get(code) === true;
-    const typeRules = criteria.rules.waterbody_types[isSalt ? "saltwater" : "freshwater"];
-    const metrics = {
-      sampleCount6W: +st["6WeekCount"],
-      geoMean6W: +st["6WeekGeoMean"],
-      // If your upstream field is actually geomean (named 30DayGeoMean), change this to that field.
-      p90_30d: +st["30DayP90"],
-      manualClosureFlag: !!st.manualClosureFlag
-    };
     out.set(code, evaluateStatusFromMetrics(metrics, typeRules, criteria));
   }
   return out;
@@ -369,3 +547,11 @@ export function formatStationName(rawName = "", code = "") {
     return rawName;
   }
 
+export async function getStatusColors() {
+  const criteria = await getCriteria();
+  const mapping = {};
+  for (const [, info] of Object.entries(criteria.statuses)) {
+    mapping[info.name] = info.color;
+  }
+  return mapping;
+}

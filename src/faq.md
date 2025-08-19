@@ -1,5 +1,5 @@
 ---
-title: Extended Information
+title: Frequently Asked Questions (FAQ)
 ---
 
 This page provides comprehensive documentation for the Safe To Swim dashboard, including data sources, methodology, and water quality standards.

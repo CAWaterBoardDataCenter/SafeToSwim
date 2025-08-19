@@ -26,42 +26,13 @@ L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXY
 
 const markersLayer = L.layerGroup().addTo(map);
 const markerMap = {};
-
-// Custom icons for different statuses
-const LowRiskIcon = L.icon({
-  iconUrl: "https://raw.githubusercontent.com/chloeyn/SafeToSwim/refs/heads/main/src/assets/icons/low_risk.png",
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
-  popupAnchor: [0, -5]
-});
-const UseCautionIcon = L.icon({
-  iconUrl: "https://raw.githubusercontent.com/chloeyn/SafeToSwim/refs/heads/main/src/assets/icons/use_caution.png",
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
-  popupAnchor: [0, -5]
-});
-const NotEnoughDataIcon = L.icon({
-  iconUrl: "https://raw.githubusercontent.com/chloeyn/SafeToSwim/refs/heads/main/src/assets/icons/not_enough_data.png",
-  iconSize: [10, 10],
-  iconAnchor: [5, 5],
-  popupAnchor: [0, -5]
-});
-
-const iconMap = {
-  "Low risk": LowRiskIcon,
-  "Use caution": UseCautionIcon,
-  "Not enough data": NotEnoughDataIcon
-};
 ```
 
 ```js
 // Fetch all station data (cached after first call)
 const stations = await mod.fetchAllStations();
 
-import { computeAllStatuses } from "./modules.js";
-
-// Use stations object directly
-const statusesByCode = await computeAllStatuses(
+const statusesByCode = await mod.computeAllStatuses(
   new Map(Object.entries(stations).map(([code, st]) => [code, st.recentResults]))
 );
 
@@ -72,8 +43,15 @@ for (const [code, st] of Object.entries(stations)) {
 ```
 
 <div class="hero">
+
   <h1>Safe To Swim Map</h1>
+
   <h2>The California recreational water quality tool for nerds and adventurers.</h2>
+
+  *This map from the California State Water Resources Control Board shows the latest water quality data to help you make informed decisions about where to swim. See [How to Use](how-to-use) and our [FAQ](faq) for more information.*
+
+</div>
+
 </div>
 
 <div style="
@@ -93,42 +71,192 @@ markersLayer.addTo(map);
 ```
 
 ```js
-// Add markers for all stations
-for (const [code, st] of Object.entries(stations)) {
-  const { TargetLatitude, TargetLongitude } = st;
-  if (!TargetLatitude || !TargetLongitude) continue;
 
-  const formattedName = mod.formatStationName(st.StationName, code);
+const statusColors = await mod.getStatusColors();
+const BASE_SIZE = 7;
+const SELECTED_SIZE = 10;
 
-  const marker = L.marker([TargetLatitude, TargetLongitude], { icon: iconMap[st.status.name] || LowRiskIcon })
-    .bindPopup(`<b>${formattedName}</b><br>Station Code: ${code}`);
+// --- icon helpers (no images needed) ---
+function circleDivIcon({ size = BASE_SIZE, color = "#7f7f7f", ring = false }) {
+  const border = 2;
+  const inner = ring
+    ? `
+      background: ${color};
+      box-shadow:
+        0 0 0 ${border}px ${color},
+        0 0 0 ${border + 4}px rgba(230, 2, 255, 0.8);
+    `
+    : `
+      background: ${color};
+      border: ${border}px solid ${color};
+      box-shadow: 0 0 0 0.5px rgba(0,0,0);
+    `;
+  const half = size / 2; // center anchor
 
-  // Click -> publish selection
-  const onClick = () => setSelectedStation(code, "map");
-  marker.on("click", onClick);
+  return L.divIcon({
+    className: "station-circle",
+    iconSize: [size, size],
+    iconAnchor: [half, half],       
+    popupAnchor: [0, -half],        
+    html: `<div style="
+      width:${size}px;height:${size}px;border-radius:50%;
+      box-sizing:border-box;        /* border doesn't change center */
+      ${inner}
+    "></div>`
+  });
+}
 
-  // Cleanup on cell invalidation
-  invalidation.then(() => marker.off("click", onClick));
+function colorForStation(st) {
+  const status = st?.status?.name ?? "unknown";
+  return statusColors[status] || statusColors.unknown;
+}
 
-  markerMap[code] = marker;
-  markersLayer.addLayer(marker);
+// --- registry & selection state ---
+const divMarkerMap = Object.create(null); // code -> L.Marker
+let selectedCode = null;
+
+// --- draw markers as divIcons (fixed pixel size) ---
+function drawStationDivMarkers() {
+  for (const [code, st] of Object.entries(stations)) {
+    const lat = +st?.TargetLatitude, lon = +st?.TargetLongitude;
+    if (!lat || !lon) continue;
+
+    const color = colorForStation(st);
+    const icon  = circleDivIcon({ size: BASE_SIZE, color });
+
+    const marker = L.marker([lat, lon], {
+      icon,
+      zIndexOffset: 0 // raise selected marker
+    })
+    .bindPopup(`<b>${st.StationName}</b><br>Code: ${code}<br>Status: ${st.status?.name ?? "unknown"}`)
+    .on("click", () => {
+      setSelectedStation(code, "map");
+      highlightSelected(code);
+    })
+    .addTo(markersLayer);
+
+    // optional hover effect
+    marker.on("mouseover", () => {
+      marker._icon?.firstChild?.style && (marker._icon.firstChild.style.transform = "scale(1.3)");
+    });
+    marker.on("mouseout", () => {
+      marker._icon?.firstChild?.style && (marker._icon.firstChild.style.transform = "scale(1.0)");
+    });
+
+    divMarkerMap[code] = marker;
+  }
+
+  invalidation?.then(() => {
+    Object.values(divMarkerMap).forEach(m => {
+      m.off();
+      if (markersLayer.hasLayer?.(m)) markersLayer.removeLayer(m);
+    });
+  });
+}
+
+// --- call once after stations load ---
+drawStationDivMarkers();
+
+// --- selection highlighting (swap icon to ring + raise zIndex) ---
+selectedStation; // make this cell reactive
+const code = selectedStation?.code;
+
+function highlightSelected(code) {
+  if (selectedCode === code) { // toggle off
+    const cur = divMarkerMap[code];
+    if (cur) {
+      cur.setIcon(circleDivIcon({ size: BASE_SIZE, color: colorForStation(stations[code]) }));
+      cur.setZIndexOffset(0);
+    }
+    selectedCode = null;
+    return;
+  }
+
+  // reset previous
+  if (selectedCode && divMarkerMap[selectedCode]) {
+    const prev = divMarkerMap[selectedCode];
+    prev.setIcon(circleDivIcon({ size: BASE_SIZE, color: colorForStation(stations[selectedCode]) }));
+    prev.setZIndexOffset(0);
+  }
+
+  selectedCode = code;
+
+  const m = divMarkerMap[code], st = stations[code];
+  if (!m || !st) return;
+  const color = colorForStation(st);
+  m.setIcon(circleDivIcon({ size: SELECTED_SIZE, color, ring: true }));
+  m.setZIndexOffset(1000);
 }
 ```
 
 ```js
-// Keep the map’s popup in sync with the current selection.
-selectedStation; // make this cell reactive
-
-{
-  const sel = selectedStation?.code;
-  if (sel) {
-    const m = markerMap[sel];
-    if (m) {
-      map.panTo(m.getLatLng());
-      m.openPopup();
+// 1) Lightweight CSS (once)
+let legendStyleEl = document.getElementById("map-legend-style");
+if (!legendStyleEl) {
+  legendStyleEl = document.createElement("style");
+  legendStyleEl.id = "map-legend-style";
+  legendStyleEl.textContent = `
+    .leaflet-control.legend {
+      background: rgba(255,255,255,0.9);
+      padding: 8px 10px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      font: 12px/1.3 system-ui, Arial, sans-serif;
     }
-  }
+    .legend-title {
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 4px 0;
+      white-space: nowrap;
+    }
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-sizing: border-box;
+      border: 2px solid currentColor;
+    }
+  `;
+  document.head.appendChild(legendStyleEl);
 }
+
+// 2) Build the legend control
+const LegendControl = L.Control.extend({
+  options: { position: "bottomright", title: "Status" },
+  onAdd: function () {
+    const div = L.DomUtil.create("div", "leaflet-control legend");
+    // prevent map drag when interacting with legend
+    L.DomEvent.disableClickPropagation(div);
+
+    // Build items from statusColors
+    const itemsHtml = Object.entries(statusColors).map(([label, color]) => `
+      <div class="legend-item" style="color:${color}">
+        <span class="legend-swatch"></span>
+        <span>${label}</span>
+      </div>
+    `).join("");
+
+    div.innerHTML = `
+      <div class="legend-title">${this.options.title}</div>
+      ${itemsHtml}
+    `;
+    return div;
+  }
+});
+
+// 3) Add to map
+const legendCtl = new LegendControl({ title: "Safety status", position: "bottomleft" });
+map.addControl(legendCtl);
+
+invalidation?.then(() => {
+  if (legendCtl) map.removeControl(legendCtl);
+});
+
 ```
 
 </div>
@@ -179,7 +307,7 @@ selectedStation; // make this cell reactive
       : st.StationName;
 
     // last sample date (string -> Date -> YYYY-MM-DD)
-    const lastSampleDateISO = st.lastSampleDate || null;           // e.g., "2024-07-15"
+    const lastSampleDateISO = st.lastSampleDate || null;
     const lastSampleDateObj = lastSampleDateISO ? new Date(lastSampleDateISO) : null;
     const lastSampleDate =
       lastSampleDateObj && !isNaN(+lastSampleDateObj)
@@ -202,6 +330,33 @@ selectedStation; // make this cell reactive
   meta
     ? html`
         <h1><strong>${meta.formattedName}</strong></h1>
+      `
+    : html`<p>Select a station to see details.</p>`
+  ```
+
+  ```js
+  const code = selectedStation?.code ?? selectedStation;
+  const st = stations?.[code];
+  const status = st?.status?.name ?? "Unknown";
+
+  // Container for the status info, with background color applied
+  const container = document.createElement("div");
+  container.style.backgroundColor = statusColors[status] || "lightgray";
+  container.style.color = "white";          // make text readable on dark backgrounds
+  container.style.padding = "0.5rem 1rem";  // spacing inside
+  container.style.borderRadius = "6px";     // optional rounded corners
+
+  container.innerHTML = `
+    <br><strong>Status:</strong> ${status}<br>
+    <i>${st?.status?.description ?? "No status available."}</i><br><br>
+  `;
+
+  display(container);
+  ```
+
+  ```js
+  meta
+    ? html`
         <p><strong>Station Code:</strong> ${meta.code}</p>
         <p><strong>Lat/Lon:</strong> ${meta.lat}, ${meta.lon}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
@@ -210,7 +365,14 @@ selectedStation; // make this cell reactive
       `
     : html`<p>Select a station to see details.</p>`
   ```
-  
+
+  </div>
+  </div>
+</div>
+</div>
+
+<div class="card grid-colspan-3"><h1>Data</h1>
+
   ```js
   import { stationRecordFetch } from "./modules.js";
 
@@ -221,70 +383,184 @@ selectedStation; // make this cell reactive
     stationRecord = await stationRecordFetch(code);
   }
   ```
-  
+
+  ```js
+  const analyte = view(Inputs.select(
+    ["Enterococcus", "E. coli", "Total Coliform"], 
+    {label: "Change bacteria", value: "Enterococcus"}
+  ))
+
+  // TODO: make selection dynamic based on station
+  // TODO: shade out options with no data
+  ```
+
   ---
 
-  ## **Status: ${selectedStation?.code ? stations[selectedStation.code]?.status.name : "—"}**  
-  ${selectedStation?.code
-  ? stations[selectedStation.code]?.status.description
-  : "No status available"}
+  ```js
+  const statusSeries = await mod.buildStatusSeriesForStation(stationRecord);
 
-  </div>
-  </div>
-</div>
-</div>
+  const statusByDay = new Map(
+    statusSeries.map(s => [
+      s.date.toISOString().slice(0, 10),
+      s
+    ])
+  );
 
-<div class="card grid-colspan-3"><h1>Data</h1>
+  const data = stationRecord
+    ?.filter(d => d.Analyte === analyte)
+    .map(d => {
+      const date = new Date(d.SampleDate);
+      const iso = date.toISOString().slice(0, 10);
+      const st = statusByDay.get(iso);
 
-```js
-const analyte = view(Inputs.select(
-  ["Enterococcus", "E. coli", "Total Coliform"], 
-  {label: "Change bacteria", value: "Enterococcus"}
-))
-```
+      return {
+        date,
+        result: +d.Result,
+        thirtyDayGeoMean: +d["30DayGeoMean"],
+        analyte: d.Analyte,
+        unit: d.Unit,
+        status: st?.status?.name ?? st?.status_name ?? null,        // just the name
+        statusReason: st?.status?._reasons?.join(", ") ?? null      // joined reasons
+      };
+    });
 
-```js
-const data = stationRecord
-  ?.filter(d => d.Analyte === analyte)
-  .map(d => ({
-    date: new Date(d.SampleDate),
-    result: +d.Result,
-    analyte: d.Analyte,
-    unit: d.Unit
-  }));
-```
+  // floor to local midnight
+  function toDate(d){ const t=new Date(d); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
 
-```js
+  // extent from data
+  const dataExtent = d3.extent(data, d => toDate(d.date));
 
-if (!data.length) {
-  display(`No data for ${analyte} at this station.`);
-} else {
-  // use analyte and unit from the first row
-  const labelUnit = `${data[0].Analyte} (${data[0].Unit})`;
+  // extend upper bound to today if needed
+  const today = toDate(new Date());
+  const xDomain = [dataExtent[0], d3.max([dataExtent[1], today])];
 
-  const plot = Plot.plot({
-    marks: [
-      Plot.dot(data, {x: "date", y: "result", r: 2, fill: "steelblue"}),
-      Plot.ruleX(data, Plot.pointerX({x: "date", py: "result", stroke: "lightgray"})),
-      Plot.dot(data, Plot.pointerX({x: "date", y: "result", stroke: "red"})),
-      Plot.text(data, Plot.pointerX({
-        px: "date",
-        py: "result",
-        dy: -17,
-        frameAnchor: "top-right",
-        fontVariant: "tabular-nums",
-        text: (d) =>
-          [`Date ${Plot.formatIsoDate(d.date)}`, `${d.analyte} ${d.result.toFixed(2)}`].join("   ")
-      }))
-    ],
-    x: {label: "Date"},
-    y: {label: labelUnit, type: "log", nice: true},
-    width: width,
-    height: 200
+  ```
+
+
+  ```js
+  // Build segments with midpoints + reasons pulled from status objects
+  const day = 24 * 3600 * 1000;
+  const segments = statusSeries.map((s, i) => {
+    const x1 = toDate(s.date);
+    const x2 = i < statusSeries.length - 1 ? toDate(statusSeries[i + 1].date)
+                                          : new Date(+x1 + 7 * day);
+    const xm = new Date((+x1 + +x2) / 2); // midpoint for pointer snapping
+    const reasons = s.status?._reasons ?? [];
+    return {
+      x1, x2, xm,
+      color: s.status?.color ?? "#eee",
+      name:  s.status?.name ?? s.status_name ?? "",
+      reasons,
+      reasonStr: reasons.length ? reasons.join(", ") : "No specific reason"
+    };
   });
 
-  display(plot);
-}
-```
+  // Ribbon with pointer highlight + label
+  const ribbon = Plot.plot({
+    marks: [
+      // base band
+      Plot.rectY(segments, { x1: "x1", x2: "x2", y1: 0, y2: 1, fill: "color", title: d => d.name }),
+
+      // highlighted rect (nearest xm)
+      Plot.rectY(segments, Plot.pointerX({
+        x: "xm",         // snap by midpoint
+        x1: "x1", x2: "x2",
+        y1: 0,  y2: 1,
+        fill: "color",
+        stroke: "red",
+        strokeWidth: 1
+      })),
+
+      // label with status name + reasons (placed in the ribbon mid-height)
+      Plot.text(segments, Plot.pointerX({
+        x: "xm",
+        y: 0.8,
+        text: d => `${d.name}: ${d.reasonStr}`,
+        dx: 6, dy: -6,
+        frameAnchor: "top-left",
+        lineWidth: 2
+      }))
+    ],
+    x: { domain: xDomain, label: "Date" },
+    y: { axis: null, domain: [0, 1] },
+    height: 80,
+    width
+  });
+
+  display(ribbon);
+  ```
+
+  ```js
+  if (!data.length) {
+    display(`No data for ${analyte} at this station.`);
+  } else {
+    // use analyte and unit from the first row
+    const labelUnit = `${data[0].analyte} (${data[0].unit})`;
+
+    const pplot = Plot.plot({
+      marks: [
+        // Line for 30-day geomean
+        Plot.lineY(data, {x: "date", y: "thirtyDayGeoMean", stroke: "steelblue"}),
+
+        // Pointer reference line
+        Plot.ruleX(data, Plot.pointerX({x: "date", py: "thirtyDayGeoMean", stroke: "lightgray"})),
+
+        // Pointer dot
+        Plot.dot(data, Plot.pointerX({x: "date", y: "thirtyDayGeoMean", stroke: "red"})),
+
+        // Pointer label
+        Plot.text(data, Plot.pointerX({
+          px: "date",
+          py: "thirtyDayGeoMean",
+          dy: -17,
+          frameAnchor: "top-right",
+          fontVariant: "tabular-nums",
+          text: (d) =>
+            [`Date ${Plot.formatIsoDate(d.date)}`, `${d.analyte} ${d.thirtyDayGeoMean}`].join("   ")
+        }))
+      ],
+      x: {domain: xDomain, label: "Date"},
+      y: {label: labelUnit, type: "log", nice: true},
+      width: width,
+      height: 200
+    });
+
+    display(pplot);
+  }
+  ```
+
+  ```js
+  if (!data.length) {
+    display(`No data for ${analyte} at this station.`);
+  } else {
+    // use analyte and unit from the first row
+    const labelUnit = `${data[0].analyte} (${data[0].unit})`;
+
+    const plot = Plot.plot({
+      marks: [
+        Plot.dot(data, {x: "date", y: "result", r: 2, fill: "steelblue"}),
+        Plot.ruleX(data, Plot.pointerX({x: "date", py: "result", stroke: "lightgray"})),
+        Plot.dot(data, Plot.pointerX({x: "date", y: "result", stroke: "red"})),
+        Plot.text(data, Plot.pointerX({
+          px: "date",
+          py: "result",
+          dy: -17,
+          frameAnchor: "top-right",
+          fontVariant: "tabular-nums",
+          text: (d) =>
+            [`Date ${Plot.formatIsoDate(d.date)}`, `${d.analyte} ${d.result.toFixed(2)}`].join("   ")
+        }))
+      ],
+      x: { domain: xDomain, label: "Date"},
+      y: {label: labelUnit, type: "log", nice: true},
+      width: width,
+      height: 200
+    });
+
+    display(plot);
+  }
+  ```
+
+
 
 </div>

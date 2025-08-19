@@ -9,15 +9,20 @@ export default {
   // all pages will be listed in alphabetical order. Listing pages explicitly
   // lets you organize them into sections and have unlisted pages.
   pages: [
-    {name: "Map Home", path: "/index"},
-  {name: "FAQ", path: "/faq"}
+    {name: "Back to Map", path: "/index"},
+    {name: "How to Use", path: "/how-to-use"},
+    {name: "FAQ", path: "/faq"}
   ],
   // The path to the source root.
   root: "src",
   // style sheet
   style: "style.css",
   // header: "", // what to show in the header (HTML)
-  footer: `See <a href="/extended-information" target="_blank">extended information</a> about the map and state bacteria objectives.`,
+  footer: `<strong>Resources</strong><br>
+  <a href="/how-to-use" target="_blank">How to use this map</a><br>
+  <a href="/faq" target="_blank">FAQ</a>: details about the map and state bacteria objectives.<br>
+  <a href="https://www.waterboards.ca.gov/" target="_blank">California State Water Resources Control Board</a><br>
+  <a href="https://mywaterquality.ca.gov/" target="_blank">California Water Quality Monitoring Council</a><br>`,
   sidebar: true, // enable the sidebar
   // toc: true, // whether to show the table of contents
   pager: false, // whether to show previous & next links in the footer
