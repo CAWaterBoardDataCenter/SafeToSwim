@@ -158,9 +158,6 @@ function drawStationDivMarkers() {
 drawStationDivMarkers();
 
 // --- selection highlighting (swap icon to ring + raise zIndex) ---
-selectedStation; // make this cell reactive
-const code = selectedStation?.code;
-
 function highlightSelected(code) {
   if (selectedCode === code) { // toggle off
     const cur = divMarkerMap[code];
