@@ -10,7 +10,7 @@ export default {
   // lets you organize them into sections and have unlisted pages.
   pages: [
     {name: "Map Home", path: "/index"},
-    {name: "Extended Information", path: "/extended-information"}
+  {name: "FAQ", path: "/faq"}
   ],
   // The path to the source root.
   root: "src",
