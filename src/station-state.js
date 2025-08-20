@@ -1,20 +1,21 @@
 // Station selection management
-
 import { Generators } from "@observablehq/stdlib";
 
 // --- Internal state ---
 const selectedStationBus = new EventTarget();
 let _selected = null;
 
-// --- Public setter ---
+// --- Public setter (allow clearing by passing null) ---
 export function setSelectedStation(code, source = "unknown") {
-  _selected = { code, source, ts: Date.now() };
+  _selected = code ? { code, source, ts: Date.now() } : null;
   selectedStationBus.dispatchEvent(new CustomEvent("change", { detail: _selected }));
 }
 
-// --- Reactive stream ---
+// --- Reactive stream (emit immediately) ---
 export const selectedStation = Generators.observe((notify) => {
-  if (_selected) notify(_selected); // emit immediately if exists
+  // Emit the current value right away (null on fresh load)
+  notify(_selected);
+
   const onChange = (e) => notify(e.detail);
   selectedStationBus.addEventListener("change", onChange);
   return () => selectedStationBus.removeEventListener("change", onChange);
