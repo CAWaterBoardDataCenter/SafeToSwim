@@ -112,14 +112,18 @@ function colorForStation(st) {
 }
 
 // --- registry & selection state ---
-const divMarkerMap = Object.create(null); // code -> L.Marker
-let selectedCode = null;
+const __state = (globalThis.__wbfMapState ??= {});   // one global bucket
 
-// --- draw markers as divIcons (fixed pixel size) ---
+__state.divMarkerMap ??= Object.create(null);
+__state.selectedCode ??= null;
+
+const divMarkerMap = __state.divMarkerMap;   // use these throughout the cell
+
+// --- draw markers as divIcons ---
 function drawStationDivMarkers() {
   for (const [code, st] of Object.entries(stations)) {
     const lat = +st?.TargetLatitude, lon = +st?.TargetLongitude;
-    if (!lat || !lon) continue;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
 
     const color = colorForStation(st);
     const icon  = circleDivIcon({ size: BASE_SIZE, color });
@@ -158,31 +162,53 @@ function drawStationDivMarkers() {
 drawStationDivMarkers();
 
 // --- selection highlighting (swap icon to ring + raise zIndex) ---
-function highlightSelected(code) {
-  if (selectedCode === code) { // toggle off
-    const cur = divMarkerMap[code];
-    if (cur) {
-      cur.setIcon(circleDivIcon({ size: BASE_SIZE, color: colorForStation(stations[code]) }));
-      cur.setZIndexOffset(0);
-    }
-    selectedCode = null;
-    return;
-  }
+function highlightSelected(code, { pan = true, openPopup = true } = {}) {
+  const prevCode = __state.selectedCode;
 
-  // reset previous
-  if (selectedCode && divMarkerMap[selectedCode]) {
-    const prev = divMarkerMap[selectedCode];
-    prev.setIcon(circleDivIcon({ size: BASE_SIZE, color: colorForStation(stations[selectedCode]) }));
+  // reset previous if different
+  if (prevCode && prevCode !== code && divMarkerMap[prevCode]) {
+    const prev = divMarkerMap[prevCode];
+    prev.setIcon(circleDivIcon({
+      size: BASE_SIZE,
+      color: colorForStation(stations[prevCode])
+    }));
     prev.setZIndexOffset(0);
+    prev._icon?.firstChild && (prev._icon.firstChild.style.transform = "scale(1.0)");
   }
 
-  selectedCode = code;
+  // apply highlight
+  __state.selectedCode = code;
 
-  const m = divMarkerMap[code], st = stations[code];
-  if (!m || !st) return;
+  const st = stations?.[code];
+  const m  = divMarkerMap?.[code];
+  if (!st || !m) return;
+
   const color = colorForStation(st);
   m.setIcon(circleDivIcon({ size: SELECTED_SIZE, color, ring: true }));
   m.setZIndexOffset(1000);
+
+  if (pan) {
+    const lat = +st.TargetLatitude, lon = +st.TargetLongitude;
+    if (Number.isFinite(lat) && Number.isFinite(lon)) {
+      const targetZoom = map?.getZoom?.() ?? 10;
+      map.setView([lat, lon], targetZoom, { animate: true });
+    }
+  }
+
+  if (openPopup) {
+    m.openPopup();
+  }
+}
+```
+
+```js
+// Reset highlighted station
+selectedStation;
+{
+  const code = selectedStation?.code ?? selectedStation ?? null;
+  if (code && stations?.[code] && divMarkerMap?.[code]) {
+    highlightSelected(code, { pan: true, openPopup: true });
+  }
 }
 ```
 
