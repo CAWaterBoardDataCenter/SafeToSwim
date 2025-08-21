@@ -118,8 +118,6 @@ export async function fetchAllStations(forceRefresh = false) {
   return cachedStartupData;
 }
 
-
-
 // Station-specific full history
 const _cache = new Map(); // code -> records
 
@@ -196,9 +194,6 @@ function endOfISOWeek(d) {
 
 import {FileAttachment} from "observablehq:stdlib";
 
-/* -----------------------------
-   Lazy, memoized config loaders
------------------------------- */
 let _criteriaPromise = null;
 let _saltFlagsPromise = null;
 
@@ -210,17 +205,14 @@ async function getCriteria() {
   return _criteriaPromise;
 }
 
-// Helper
 async function getSaltwaterFlags() {
   if (!_saltFlagsPromise) {
     _saltFlagsPromise = FileAttachment("data/site_saltwater_flags.json")
       .json()
-      .then(rows => new Map(
-        rows.map(d => [
-          d.selectedStation,
-          String(d.saltwater).toLowerCase() === "true"
-        ])
-      ));
+      .then(rows => new Map(rows.map(d => [
+        String(d.StationCode).trim(),
+        d.saltwater === true || d.saltwater === "True"
+      ])));
   }
   return _saltFlagsPromise;
 }
@@ -318,24 +310,24 @@ export function evaluateStatusFromMetrics(
 
   // 0) Hard override: manual closures
   if (metrics.manualClosureFlag) {
-    reasons.push("manual_closure");
+    reasons.push("Manual closure");
     return withReasons(S.closure, reasons, metrics);
   }
 
   // 1) Data sufficiency checks (centralized here)
   // Six-week min samples (primary gate)
   if (!Number.isFinite(metrics.sampleCount6W) || metrics.sampleCount6W < min_samples_six_week) {
-    reasons.push("insufficient_samples_6w");
+    reasons.push("Insufficient samples");
     return withReasons(S.not_enough_data, reasons, metrics);
   }
 
   // 2) Metric validity (NaNs -> treat as insufficient)
   if (!Number.isFinite(metrics.geoMean6W)) {
-    reasons.push("invalid_geomean_6w");
+    reasons.push("Invalid geomean (6w)");
     return withReasons(S.not_enough_data, reasons, metrics);
   }
   if (!Number.isFinite(metrics.p90_30d)) {
-    reasons.push("invalid_p90_30d");
+    reasons.push("Invalid p90 (30d)");
     return withReasons(S.not_enough_data, reasons, metrics);
   }
 
@@ -344,13 +336,13 @@ export function evaluateStatusFromMetrics(
   const okP90  = metrics.p90_30d   <= p90_30day.max;
 
   if (okSixW && okP90) {
-    reasons.push("pass_geomean_6w", "pass_single_sample_p90_30d");
+    reasons.push("Pass geomean", "Pass single sample");
     return withReasons(S.low_risk, reasons, metrics);
   }
 
   // 4) Else status and reasons
-  if (!okSixW) reasons.push("fail_geomean_6w");
-  if (!okP90)  reasons.push("fail_single_sample_p90_30d");
+  if (!okSixW) reasons.push("Fail geomean");
+  if (!okP90)  reasons.push("Fail single sample");
   return withReasons(S[elseName], reasons, metrics);
 }
 
@@ -476,7 +468,15 @@ export async function initStatusModule() {
 // Is a station saltwater?
 export async function isSaltwaterStation(stationCode) {
   const flags = await getSaltwaterFlags();
-  return flags.get(stationCode) === true;
+  const code = normalizeCode(stationCode);
+  if (flags.has(code)) return flags.get(code);
+
+  // Fallback: case-insensitive match if upstream code casing varies
+  const lower = code.toLowerCase();
+  for (const [k, v] of flags) {
+    if (k.toLowerCase() === lower) return v;
+  }
+  return false;
 }
 
 // Compute status for ONE station at a given as-of date, from raw samples
@@ -554,4 +554,55 @@ export async function getStatusColors() {
     mapping[info.name] = info.color;
   }
   return mapping;
+}
+
+// Return: { isSaltwater, bacteria, thresholds: { geomean, single_sample } }
+export async function getStationAssessmentSpec(stationCode) {
+  const [saltFlags, criteria] = await Promise.all([getSaltwaterFlags(), getCriteria()]);
+  const isSaltwater = !!saltFlags.get(stationCode);
+  const envKey = isSaltwater ? "saltwater" : "freshwater";
+
+  const env = criteria?.rules?.waterbody_types?.[envKey] || {};
+  const bacteria = env.bacteria ?? null;
+
+  const geomean =
+    env?.low_risk?.six_week_geomean?.max ?? null;
+  const singleSample =
+    env?.low_risk?.p90_30day?.max ?? null;
+
+  return {
+    isSaltwater,
+    bacteria,
+    thresholds: {
+      geomean,
+      single_sample: singleSample
+    }
+  };
+}
+
+// helper: extract one environment's spec from your criteria shape
+function envSpec(criteria, envKey) {
+  const env = criteria?.rules?.waterbody_types?.[envKey] || {};
+  return {
+    bacteria: env.bacteria ?? null,
+    thresholds: {
+      geomean: env?.low_risk?.six_week_geomean?.max ?? null,
+      single_sample: env?.low_risk?.p90_30day?.max ?? null,
+      min_samples_six_week: env?.low_risk?.min_samples_six_week ?? null
+    },
+    else_status: env?.else_status ?? null
+  };
+}
+
+// Return all thresholds from criteria for both environments.
+export async function getAllThresholds() {
+  const criteria = await getCriteria();
+  const salt = envSpec(criteria, "saltwater");
+  const fresh = envSpec(criteria, "freshwater");
+
+  // { enterococcus: {...}, e_coli: {...} }
+  return {
+    [salt.bacteria]: salt.thresholds,
+    [fresh.bacteria]: fresh.thresholds
+  };
 }
