@@ -6,6 +6,8 @@ title: How to Use
 
 The Safe to Swim map provides near real-time water quality data for California's recreational waters. Here's how to use it effectively. Data is organized into "stations," each representing a specific location where water has been monitored. Stations are color-coded based on their safety status, which is determined by levels of certain types of bacteria (i.e. E. coli). Selecting a station will show its current status as well as historical data.
 
+The full Safe to Swim map dataset is updated daily on weekdays, depending on staff availability. The dataset is available for download on the California Open Data Portal.
+
 ---
 
 ## Exploring the map
