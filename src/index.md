@@ -270,9 +270,11 @@ const LegendControl = L.Control.extend({
     // prevent map drag when interacting with legend
     L.DomEvent.disableClickPropagation(div);
 
-    // Build items from statusColors
-    const itemsHtml = Object.entries(statusColors).map(([label, color]) => `
-      <div class="legend-item" style="color:${color}">
+    // Explicit whitelist + order
+    const legendItems = ["Low risk", "Use caution", "Not enough data"];
+
+    const itemsHtml = legendItems.map(label => `
+      <div class="legend-item" style="color:${statusColors[label]}">
         <span class="legend-swatch"></span>
         <span>${label}</span>
       </div>
@@ -384,7 +386,7 @@ invalidation?.then(() => {
   container.style.borderRadius = "6px";     // optional rounded corners
 
   container.innerHTML = `
-    <br><strong>Status:</strong> ${status}
+    <br><strong>Status: ${status}</strong><br>
     <br><i>${st?.status?.description ?? "<br>"}</i><br><br>
   `;
 
@@ -395,7 +397,7 @@ invalidation?.then(() => {
   meta
     ? html`
         <p><strong>Station Code:</strong> ${meta.code}</p>
-        <p><strong>Lat/Lon:</strong> ${meta.lat}, ${meta.lon}</p>
+        <p><strong>Lat/Lon:</strong> ${meta.lat.toFixed(5)}, ${meta.lon.toFixed(5)}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
         <p><strong>Total data points:</strong> ${meta.totalDataPoints}</p>
         <p><strong>Data points in last 6 weeks:</strong> ${meta.recentDataPoints}</p>
@@ -448,7 +450,7 @@ invalidation?.then(() => {
   ---
 
   ```js
-  // Guard: if no station selected, show placeholder plots
+  // Guard: if no station selected, show single placeholder plot with message
   if (!stationRecord) {
     const today = toDate(new Date());
     const fiveYearsAgo = new Date(today);
@@ -481,6 +483,7 @@ invalidation?.then(() => {
       ])
     );
 
+    // Process data for plots
     const data = stationRecord
       ?.filter(d => d.Analyte === analyte)
       .map(d => {
@@ -494,10 +497,13 @@ invalidation?.then(() => {
           thirtyDayGeoMean: +d["30DayGeoMean"],
           analyte: d.Analyte,
           unit: d.Unit,
-          status: st?.status?.name ?? st?.status_name ?? null,        // just the name
-          statusReason: st?.status?._reasons?.join(", ") ?? null      // reasons
+          status: st?.status?.name ?? st?.status_name ?? null,
+          statusReason: st?.status?._reasons?.join(", ") ?? null
         };
-      });
+      })
+      // sort ascending by date
+      .sort((a, b) => a.date - b.date);
+
 
     // extent from data
     const dataExtent = d3.extent(data, d => toDate(d.date));
@@ -523,7 +529,7 @@ invalidation?.then(() => {
       };
     });
 
-    // Ribbon with pointer highlight + label
+    // Status ribbon plot ------------------------------
     const ribbon = Plot.plot({
       title: `Status history`,
       marks: [
@@ -560,6 +566,7 @@ invalidation?.then(() => {
 
     display(ribbon);
 
+    // 30-day geomean plot ------------------------------
 
     if (!data.length) {
       display(`No data for ${analyte} at this station.`);
@@ -568,26 +575,30 @@ invalidation?.then(() => {
       const labelUnit = `${data[0].analyte} (${data[0].unit})`;
 
       // Threshold for highlighting
-
       const T = (await mod.getAllThresholds())[analyte].geomean;
       const y = d => d.thirtyDayGeoMean;
-      
+      const sorted = data.slice().sort((a,b) => +a.date - +b.date);
+      const segments = mod.segmentsAboveThreshold(sorted, y, T);
+      const areaMarks = segments.map(seg =>
+        Plot.areaY(seg, {
+          x: "date",
+          y,
+          y1: T,
+          fill: "orange",
+          fillOpacity: 0.5,
+          curve: "linear",
+          clip: true
+        })
+      );
 
       const pplot = Plot.plot({
-        title: `30-day geomean`,
+        title: `30-day average (geometric mean)`,
         marks: [
           // fill ABOVE threshold (height only when y >= T)
-          Plot.areaY(data, {
-            x: "date",
-            y: d => Math.max(y(d), T),
-            y1: T,
-            fill: "orange",
-            fillOpacity: 0.5,
-            curve: "monotone-x" // optional, match your line curve if used
-          }),
+          ...areaMarks,
 
           // Line for 30-day geomean
-          Plot.lineY(data, {x: "date", y: "thirtyDayGeoMean", stroke: "steelblue"}),
+          Plot.lineY(data, {x: "date", y: "thirtyDayGeoMean", stroke: "steelblue", curve: "linear"}),
 
           // Pointer
           Plot.ruleX(data, Plot.pointerX({x: "date", py: "thirtyDayGeoMean", stroke: "lightgray"})),
@@ -611,6 +622,7 @@ invalidation?.then(() => {
       display(pplot);
     }
   
+    // Single results plot ------------------------------
     if (!data.length) {
       display(`No data for ${analyte} at this station.`);
     } else {
@@ -618,7 +630,7 @@ invalidation?.then(() => {
       const labelUnit = `${data[0].analyte} (${data[0].unit})`;
       const T = (await mod.getAllThresholds())[analyte].single_sample;
       const plot = Plot.plot({
-        title: `Raw sample results`,
+        title: `Single sample results`,
         marks: [
           Plot.dot(data, {
             x: "date", 

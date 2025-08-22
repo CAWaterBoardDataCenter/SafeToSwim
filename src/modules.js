@@ -606,3 +606,47 @@ export async function getAllThresholds() {
     [fresh.bacteria]: fresh.thresholds
   };
 }
+
+//  Slice a timeseries into contiguous segments where y(d) >= T,
+//  inserting exact crossing points at the threshold.
+//  
+//  @param {Array} data  - sorted array of objects with .date and value
+//  @param {Function} y  - accessor for the numeric value
+//  @param {Number} T    - threshold
+//  @returns {Array[]}   - array of segments (each segment is an array of points)
+//  
+export function segmentsAboveThreshold(data, y, T) {
+  const segs = [];
+  let cur = [];
+
+  for (let i = 0; i < data.length - 1; i++) {
+    const a = data[i], b = data[i + 1];
+    const ya = y(a),   yb = y(b);
+
+    const aAbove = ya >= T, bAbove = yb >= T;
+
+    if (aAbove) cur.push(a);
+
+    if (aAbove !== bAbove) {
+      // linear interpolate crossing at y = T
+      const ta = +a.date, tb = +b.date;
+      const t = (T - ya) / (yb - ya);
+      const xCross = new Date(ta + t * (tb - ta));
+      const cross = {...a, date: xCross, thirtyDayGeoMean: T};
+
+      cur.push(cross);
+      if (cur.length) segs.push(cur);
+      cur = [];
+
+      if (bAbove) {
+        // start new segment with crossing point
+        cur.push(cross);
+      }
+    }
+  }
+
+  if (y(data.at(-1)) >= T) cur.push(data.at(-1));
+  if (cur.length) segs.push(cur);
+
+  return segs;
+}
