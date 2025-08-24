@@ -8,8 +8,6 @@ This page provides further information about the Safe To Swim dashboard by categ
 
 ## Water quality and health
 
-### How does water quality affect health?
-
 Poor water quality can pose significant health risks to individuals who engage in recreational activities such as swimming, surfing, or wading. Exposure to contaminated water can lead to a variety of illnesses, particularly gastrointestinal infections, skin rashes, and respiratory issues. Vulnerable populations, including children, the elderly, and individuals with compromised immune systems, are at greater risk.
 
 ### What kind of activities are considered recreational?
@@ -22,9 +20,11 @@ The term *indicator bacteria* refers to bacteria used to assess the safety of re
 
 ## Data sources and collection
 
-### Where is the water quality data sourced from?
+### Where does this dashboard get its water quality data?
 
 The data shown on this map are sourced from the [California Environmental Data Exchange Network (CEDEN)](http://www.ceden.org/), [BeachWatch](https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html) database, and [Lower American River E. coli Monitoring Results](https://arcg.is/0ea0zq) interactive map. Data from the Lower American River area is also included in the CEDEN database, but this data is updated more frequently in the Lower American River E. coli Monitoring Results interactive map.
+
+TODO: which databases are publicly accessible?
 
 ### How is the data collected?
 
@@ -91,7 +91,7 @@ Fecal coliforms and total coliforms are older indicators that have been largely 
 
 Water quality data is inherently limited by the frequency and locations of sampling. Not all water bodies are monitored, and conditions can change rapidly due to weather, pollution events, and other factors. While this dashboard provides valuable information, it should not be the sole basis for making decisions about water recreation.
 
-1. **Incomplete coverage:** Not all recreational water bodies in California are monitored. Some areas may lack data entirely, while others may have infrequent sampling. Users should be aware that the absence of data does not imply safety.
+1. **Incomplete coverage:** Not all recreational water bodies in California are monitored. Some areas may lack data entirely, while others may have infrequent sampling. Users should be aware that the absence of data does not imply safety. Additionally, statuses are estimates based on point data and may not represent conditions at other locations within the same water body.
 
 2. **Data lag:** Data is collected and processed by hand, which can introduce delays. There may be a lag of several days between sample collection and data availability on the dashboard. Users should consider this lag when interpreting the data.
 
