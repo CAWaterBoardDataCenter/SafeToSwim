@@ -436,15 +436,33 @@ invalidation?.then(() => {
   ```
 
   ```js
-  // Select analyte, default based on station type
-  const analyte = view(Inputs.select(
-    ["Enterococcus", "E. coli"], 
-    {label: "Display data by bacteria", value: bacteria}
-  ))
+  let analyte = null;
 
-  // TODO: make selection dynamic based on station
-  // TODO: shade out options with no data
-  
+  if (selectedStation) {
+    const candidates = Array.from(new Set([bacteria, "Enterococcus", "E. coli"].filter(Boolean)));
+
+    const hasData = name =>
+      stationRecord?.some(d => d.Analyte === name && Number.isFinite(+d.Result)) ?? false;
+
+    const disabledValues = candidates.filter(name => !hasData(name));
+
+    const defaultAnalyte =
+      (bacteria && hasData(bacteria)) ? bacteria :
+      (candidates.find(hasData) ?? candidates[0]);
+
+    analyte = view(
+      Inputs.select(candidates, {
+        label: "Display data by bacteria",
+        value: defaultAnalyte,
+        format: v => hasData(v) ? v : `${v} (no data)`,
+        disabled: disabledValues
+      })
+    );
+  } else {
+    // optional placeholder text instead of dropdown
+    analyte = null;
+  }
+
   ```
 
   ---
