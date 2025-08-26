@@ -19,12 +19,13 @@ export default {
   // style sheet
   style: "style.css",
   // header: "", // what to show in the header (HTML)
-  footer: `<strong>Resources</strong><br>
+  footer: `<strong>Resources</strong><br><br>
   <a href="/how-to-use" target="_blank">How to use this map</a><br>
-  <a href="/faq" target="_blank">FAQ</a>: details about the map and state bacteria objectives.<br>
-  <a href="/workflow-guide" target="_blank">Development workflow guide</a>: details about data sources, processing, and display.<br><br>
+  <a href="/faq" target="_blank">FAQ</a><br>
+  <a href="/development-guide" target="_blank">Development guide</a><br><br>
   <a href="https://www.waterboards.ca.gov/" target="_blank">California State Water Resources Control Board</a><br>
-  <a href="https://mywaterquality.ca.gov/" target="_blank">California Water Quality Monitoring Council</a><br>`,
+  <a href="https://mywaterquality.ca.gov/" target="_blank">California Water Quality Monitoring Council</a><br><br>
+  Contact <a href="swamp@waterboards.ca.gov" target="__blank">swamp@waterboards.ca.gov</a> for questions and feedback<br>`,
   sidebar: true, // enable the sidebar
   // toc: true, // whether to show the table of contents
   pager: false, // whether to show previous & next links in the footer

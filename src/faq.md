@@ -85,7 +85,7 @@ Fecal coliforms and total coliforms are older indicators that have been largely 
 
 ### What do the safety thresholds mean for health?
 
-[Details about the numerical standards and criteria used to determine safe, caution, and unsafe levels]
+The established thresholds we use in this dashboard have been shown to reflect conditions in which risk of gastrointestinal illness after water contact is measurably higher than the risk of gastrointestinal illness after no water contact. The language of risk is often challenging to communicate in public health settings—a site with a "Use caution" status cannot say with certainty that a particular swimmer's health will be impacted, but it is important for informing a percentage of swimmers that would contract an illness. We stress that a site with a "Use caution" status is not the same as a closure; the site may still be open, but it is more likely to become sick from water contact.
 
 ## Limitations
 
