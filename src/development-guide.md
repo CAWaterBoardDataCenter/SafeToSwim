@@ -63,6 +63,7 @@ To maintain the Safe to Swim Map, contributors should follow these deployment pr
 
 The Safe to Swim Map dashboard is organized into several key directories and files to facilitate development, data management, and deployment. Below is an overview of the file structure:
 
+```
 safe-to-swim/
 │├── src/                   # Source code for the dashboard
 │   ├── index.md            # Main dashboard page
@@ -87,6 +88,7 @@ safe-to-swim/
 │├── .gitignore             # Git ignore file
 │├── .github/               # GitHub configuration files
 │   ├── workflows/deploy.yml  # GitHub Actions workflow for GitHub Pages deployment
+```
 
 Each directory and file serves a specific purpose in the development and maintenance of the Safe to Swim Map dashboard. Contributors should familiarize themselves with this structure to effectively navigate and contribute to the project.
 
@@ -100,12 +102,30 @@ The status logic used to determine the safety status of each station is defined 
 
 Currently, the status logic requires each station to be classified as either saltwater or freshwater, as the thresholds differ between these two types of water bodies. The saltwater vs freshwater classification is determined using the `create_saltwater_flags.py` script, which is run when the site is built. The results are saved to a json file (`saltwater_flags.json`) that the dashboard can load. Changes to the saltwater vs freshwater classification (e.g., adding new saltwater bodies) will require running this script and rebuilding the site.
 
+## Dashboard interactivity
+
+The Safe to Swim Map dashboard is designed to be interactive and user-friendly. Users can explore the map, search for specific stations, and view detailed information about water quality at each location. Interactivity is primarily handled through JavaScript code in the `station-state.js` and `modules.js` files (as well as some JavaScript in the markdown files, but for code readability most logic is kept in the JS files). Key interactive features include:
+
+- **Map Interaction**: Users can click on station markers to view detailed information, including current status and historical data.
+- **Search Functionality**: A search bar allows users to quickly find stations by name or code.
+- **Dynamic Data Loading**: Data is fetched and processed in real-time as users interact with the dashboard.
+
+### Station selection
+
+One potentially sensitive aspect of interactivity is the handling of station selection and state management. The `station-state.js` file manages the current state of the selected station, ensuring that the correct data is displayed when a user interacts with the map or search bar. The station that is currently selected is stored as a reactive variable `selectedStation`, which is updated whenever a user clicks on a station marker or selects a station from the search results. This variable is then used to fetch and display the relevant data for the selected station. `selectedStation`, initialized to `null`, is updated via the `setSelectedStation` function (in `station-state.js` as an event bus) whenever a user interacts with the map or search bar. Other parts of the dashboard listen for changes to `selectedStation` and update the displayed information accordingly.
+
+### Plot interaction
+
+Plots in the Data panel are created using the Observable Plot library.  We use interactive features such as tooltips that display additional information when hovering over data points. These interactions are handled through Plot's built-in functionality.
+
+The data shown in the plots is dynamically updated based on the user-selected station, ensuring that users always see the most relevant information for the selected station. Each station's plots default to showing samples of the indicator bacteria used for that station environment (e.g. a saltwater station will show data for enterococcus by default). Additionally, the user can control the extent of the time domain displayed.
+
 ## Building the site
 
 Building the site means generating the static files that will be served to users. To build the site, run the following command:
 
 ```
-npm run build
+npx observable build
 ```
 
 This will generate the static files in the `dist/` directory, which can then be deployed to the official site. Alternatively, for development purposes, you can simply push changes to the `main` branch of the GitHub repository, which will automatically trigger a rebuild and deployment to the staging site via GitHub Actions. Files for the official site must be manually deployed by the State Water Board web team, and can be sourced from a local build or from the staging site.
@@ -120,7 +140,15 @@ to preview the site locally.
 
 ### What happens during a site build
 
-## When to rebuild the site
+The following occur when the command `npx observable build` is run.
+
+First, any pre-build scripts defined in `package.json` are run. Currently, the only pre-build script is `create_saltwater_flags.py`, which generates the saltwater flags for each station and saves them to a csv file. This script requires Python and the dependencies listed in `requirements.txt` to be installed. Then `build-config.js` is run, which converts `criteria.yml` and `site_saltwater_flags.csv` to json files that the dashboard can load. Next, the Observable Framework static site generator processes the markdown files in `src/`, along with any JavaScript and data files they reference, to generate the static files in the `dist/` directory.
+
+---
+
+## MAINTENTANCE
+
+---
 
 The site should be rebuilt when there are changes that affect the data processing, status logic, or site content. The only updates that do not need site rebuilds are changes to the Surface Water - Indicator Bacteria Results dataset values (e.g. if a lat/lon pair is corrected in the dataset, rows are added/deleted). Below are some examples of when a site rebuild is necessary:
 
@@ -150,21 +178,3 @@ Regular additions to the dataset will automatically update what is shown on the 
 - Changes to CSS styling
 - Changes to plots or other visualizations
 - Improvements to performance, user experience
-
-## Dashboard interactivity
-
-The Safe to Swim Map dashboard is designed to be interactive and user-friendly. Users can explore the map, search for specific stations, and view detailed information about water quality at each location. Interactivity is primarily handled through JavaScript code in the `station-state.js` and `modules.js` files (as well as some JavaScript in the markdown files, but for code readability most logic is kept in the JS files). Key interactive features include:
-
-- **Map Interaction**: Users can click on station markers to view detailed information, including current status and historical data.
-- **Search Functionality**: A search bar allows users to quickly find stations by name or code.
-- **Dynamic Data Loading**: Data is fetched and processed in real-time as users interact with the dashboard.
-
-### Station selection
-
-One potentially sensitive aspect of interactivity is the handling of station selection and state management. The `station-state.js` file manages the current state of the selected station, ensuring that the correct data is displayed when a user interacts with the map or search bar. The station that is currently selected is stored as a reactive variable `selectedStation`, which is updated whenever a user clicks on a station marker or selects a station from the search results. This variable is then used to fetch and display the relevant data for the selected station. `selectedStation`, initialized to `null`, is updated via the `setSelectedStation` function (in `station-state.js` as an event bus) whenever a user interacts with the map or search bar. Other parts of the dashboard listen for changes to `selectedStation` and update the displayed information accordingly.
-
-### Plot interaction
-
-Plots in the Data panel are created using the Observable Plot library.  We use interactive features such as tooltips that display additional information when hovering over data points. These interactions are handled through Plot's built-in functionality.
-
-The data shown in the plots is dynamically updated based on the user-selected station, ensuring that users always see the most relevant information for the selected station. Each station's plots default to showing samples of the indicator bacteria used for that station environment (e.g. a saltwater station will show data for enterococcus by default). Additionally, the user can control the extent of the time domain displayed.
