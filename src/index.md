@@ -525,7 +525,7 @@ invalidation?.then(() => {
         color: s.status?.color ?? "#eee",
         name:  s.status?.name ?? s.status_name ?? "",
         reasons,
-        reasonStr: reasons.length ? reasons.join("\n") : "No specific reason"
+        reasonStr: reasons.length ? reasons.join("\n") : " "
       };
     });
 

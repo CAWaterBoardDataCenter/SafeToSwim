@@ -350,41 +350,111 @@ function withReasons(status, reasons, metrics) {
   return { ...status, _reasons: reasons, _metrics: metrics };
 }
 
-// Wrapper function for building status series; selects rules branch based on environment
+// // Wrapper function for building status series; selects rules branch based on environment
+// export async function buildStatusSeriesForStation(stationRecord) {
+//   const code = stationRecord[0]?.StationCode;
+//   const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
+//   const isSaltwater = saltFlags.get(code) ?? false;
+//   const analyte = pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria);
+//   const typeRules = selectTypeRules(criteria, { isSaltwater, analyte });
+
+//   // --- base series on sample dates ---
+//   const base = buildStatusSeries(stationRecord, analyte, typeRules, criteria);
+
+//   // --- ensure it extends to "today" ---
+//   const today = toDate(new Date());
+//   const lastDate = base.length ? toDate(base[base.length - 1].date) : null;
+
+//   if (!lastDate || lastDate.getTime() < today.getTime()) {
+//     // compute today's status using same metrics/evaluator
+//     const recs = (stationRecord || [])
+//       .filter(r => r?.Analyte === analyte && r?.SampleDate != null)
+//       .map(r => ({ ...r, SampleDate: toDate(r.SampleDate) }))
+//       .sort((a,b) => a.SampleDate - b.SampleDate);
+
+//     const metricsToday = computeWindowMetrics(recs, today);
+//     const statusToday  = evaluateStatusFromMetrics(metricsToday, typeRules, criteria);
+
+//     base.push({
+//       date: today,
+//       status: statusToday,
+//       status_name: statusToday?.name ?? null,
+//       metrics: metricsToday
+//     });
+//   }
+
+//   return base;
+// }
+
+// DAILY status grid → change points (compatible with your current plotting)
 export async function buildStatusSeriesForStation(stationRecord) {
-  const code = stationRecord[0]?.StationCode;
+  const code = stationRecord?.[0]?.StationCode;
   const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
   const isSaltwater = saltFlags.get(code) ?? false;
-  const analyte = pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria);
+
+  const analyte   = pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria);
   const typeRules = selectTypeRules(criteria, { isSaltwater, analyte });
 
-  // --- base series on sample dates ---
-  const base = buildStatusSeries(stationRecord, analyte, typeRules, criteria);
+  // helpers
+  const toDay = (d) => toDate(d);
+  const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate() + n); return toDay(x); };
+  const canonicalizeReasons = (arr) =>
+    (arr ?? [])
+      .filter(Boolean)
+      .map(s => String(s).trim())
+      .filter(s => s.length)         // drop empty after trim
+      .sort((a,b) => a.localeCompare(b))
+      .join("|");                    // order-insensitive key
 
-  // --- ensure it extends to "today" ---
-  const today = toDate(new Date());
-  const lastDate = base.length ? toDate(base[base.length - 1].date) : null;
+  const windowDays = typeRules?.window_days ?? criteria?.rules?.default?.window_days ?? 30;
 
-  if (!lastDate || lastDate.getTime() < today.getTime()) {
-    // compute today's status using same metrics/evaluator
-    const recs = (stationRecord || [])
-      .filter(r => r?.Analyte === analyte && r?.SampleDate != null)
-      .map(r => ({ ...r, SampleDate: toDate(r.SampleDate) }))
-      .sort((a,b) => a.SampleDate - b.SampleDate);
+  // normalize & sort records
+  const recs = (stationRecord || [])
+    .filter(r => r?.Analyte === analyte && r?.SampleDate != null)
+    .map(r => ({ ...r, SampleDate: toDay(r.SampleDate) }))
+    .sort((a,b) => a.SampleDate - b.SampleDate);
 
-    const metricsToday = computeWindowMetrics(recs, today);
-    const statusToday  = evaluateStatusFromMetrics(metricsToday, typeRules, criteria);
+  const today = toDay(new Date());
+  const firstSample = recs.length ? recs[0].SampleDate : today;
+  const start = addDays(firstSample, -(windowDays - 1));
 
-    base.push({
-      date: today,
-      status: statusToday,
-      status_name: statusToday?.name ?? null,
-      metrics: metricsToday
+  // 1) daily grid
+  const daily = [];
+  for (let d = start; d <= today; d = addDays(d, 1)) {
+    const m = computeWindowMetrics(recs, d);
+    let status = evaluateStatusFromMetrics(m, typeRules, criteria) || criteria?.statuses?.not_enough_data;
+
+    // pull reasons from status or metrics (whichever your evaluator populates)
+    const reasons = status?._reasons ?? m?._reasons ?? [];
+    const reasonsKey = canonicalizeReasons(reasons);
+
+    daily.push({
+      date: d,
+      status,
+      status_name: status?.name ?? null,
+      metrics: m,
+      reasons,
+      reasonsKey,
+      reasonStr: reasons.length ? reasons.join("\n") : "No specific reason"
     });
+  }
+
+  // 2) compress to change points by (status, reasonsKey)
+  const keyOf = (row) => `${row.status?.name ?? row.status_name ?? ""}||${row.reasonsKey}`;
+  const base = [];
+  for (let i = 0; i < daily.length; i++) {
+    if (i === 0 || keyOf(daily[i]) !== keyOf(daily[i - 1])) base.push(daily[i]);
+  }
+
+  // ensure last point is today
+  if (!base.length || +toDay(base[base.length - 1].date) !== +today) {
+    base.push(daily[daily.length - 1]);
   }
 
   return base;
 }
+
+
 
 // Helper: Return the rule-set the evaluator needs
 export function selectTypeRules(criteria, { isSaltwater }) {
