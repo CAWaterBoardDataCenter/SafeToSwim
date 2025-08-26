@@ -2,7 +2,7 @@
 toc: true
 ---
 
-# Workflow Guide
+# Development Guide
 
 This document details the dataflow used in the Safe to Swim Map, including data sources, processing steps, and deployment procedures. The goal is to provide clear documentation for contributors to understand and maintain the dashboard. The workflow guide should be continually updated to reflect changes to the dashboard.
 
@@ -26,9 +26,11 @@ These data are filtered, transformed, and compiled into a database in the Califo
 
 In addition to the main water quality datasets, a few ancillary datasets are critical the functionality of the dashboard by providing a freshwater vs saltwater classification for each station. We assume that all water bodies are freshwater unless they are specifically identified as saltwater. The saltwater bodies we account for are:
 
-- Saline lakes: These are lakes with a high concentration of saltwater, typically found in coastal areas or regions with high evaporation rates.
-- Saline wetlands: These are wetlands that are influenced by saltwater, often found in coastal regions or areas with tidal fluctuations.
-- Coastlines: These are areas where land meets the ocean.
+- Saline lakes: These are lakes with a high concentration of saltwater, typically found in coastal areas or regions with high evaporation rates. Source: [U.S. Department of the Interior](https://catalog.data.gov/dataset/saline-lake-ecosystems-iwaa-lakes)
+- Saline wetlands: These are wetlands that are influenced by saltwater, often found in coastal regions or areas with tidal fluctuations. Source: [California Department of Fish and Wildlife](https://data.ca.gov/dataset/saline-wetlands-ace-ds28641)
+- Coastlines: These are areas where land meets the ocean. Source: [California Natural Resources Agency](https://data.ca.gov/dataset/terrestrial-and-marine-reference)
+
+While the wetlands and coastline data can be programmatically downloaded, the saline lakes dataset must be manually downloaded as a zip file to where `create_saltwater_flags.py` can read it.
 
 ## Dashboard data processing
 
@@ -36,7 +38,7 @@ Water quality data is fetched fresh from the compiled dataset each time a user l
 
 - **Getting recent station data for the map**: This involves querying the compiled dataset for the most recent water quality data at each monitoring station, with just enough information to display on the map and include status logic.
 - **Getting all historical data for a selected station**: When a user selects a station on the map, additional data is queried from the compiled dataset to show historical water quality trends for that specific location.
-- **Determining saltwater vs freshwater stations**: A Python script (`create_saltwater_flags.py`) is used to classify each station as either saltwater or freshwater based on its geographic location and other criteria. This classification is important for applying the correct water quality standards. Note that this script is run when the site is built, and the results are saved to a json file (`saltwater_flags.json`) that the dashboard can load.
+- **Determining saltwater vs freshwater stations**: A Python script (`create_saltwater_flags.py`) is used to classify each station as either saltwater or freshwater based on its geographic location and other criteria. This classification is important for applying the correct water quality standards. Note that this script is run on build as a pre-build script, and the results are saved to a csv file (`site_saltwater_flags.csv`). This is converted to a json file (`saltwater_flags.json`) that the dashboard can load.
 - **Applying status logic**: The dashboard uses predefined thresholds to determine the safety status of each station based on the most recent water quality data. This logic is applied both when loading the map (current status) and when viewing detailed station information (historical status).
 - **Preparing data for visualization**: Specific visualizations require additional data processing steps, such as calculating time windows or summary statistics.
 

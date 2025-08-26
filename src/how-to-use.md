@@ -29,3 +29,9 @@ When you click on a station, a popup will appear on the map with the name and st
 ## Understanding the data used
 
 The most important data in this dashboard are bacteria concentrations measured from water samples at each station. To obtain a safety status for a station, these data are compared to thresholds that have been connected with differences in health outcomes from swimming. That is, if concentrations exceed a certain level, the station is considered less safe to swim around. The method used to determine status uses two versions of the data: single samples from the last 6 weeks, and the geometric mean (of the single samples) from the last 30 days. Both versions of data are shown in the Data panel.
+
+## Disclaimer
+
+This map is intended for informational purposes only and should not be used as the sole basis for making decisions about water contact activities. Always follow local advisories and guidelines when engaging in recreational activities in natural water bodies. The data can change at any time and should not be used for any particular purpose other than general reference.
+
+In addition, the safety statuses we provide are approximations of how official state bacteria objectives are applied ([check here for current details](https://www.waterboards.ca.gov/bacterialobjectives/)); we do not recommend using these statuses directly for regulatory or legal purposes. Assessments of water quality for regulatory purposes should be conducted on a case-by-case basis from the original data by up-to-date standards, which is available for download on the [California Open Data Portal](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results).

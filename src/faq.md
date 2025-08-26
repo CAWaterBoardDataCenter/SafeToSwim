@@ -12,7 +12,7 @@ Poor water quality can pose significant health risks to individuals who engage i
 
 ### What kind of activities are considered recreational?
 
-Recreational activities in water bodies include swimming, surfing, wading, boating, fishing, and other water sports. These activities often involve direct contact with the water, which can increase the risk of exposure to harmful bacteria and pathogens if the water quality is poor.
+Recreational activities here refer to water contact recreation as defined by the REC-1 beneficial use category, including swimming, surfing, wading, boating, fishing, and other water sports. These activities often involve direct contact with the water and the possibility of ingestion, which can increase the risk of exposure to harmful bacteria and pathogens if the water quality is poor.
 
 ### What are "indicator bacteria"?
 
@@ -24,11 +24,11 @@ The term *indicator bacteria* refers to bacteria used to assess the safety of re
 
 The data shown on this map are sourced from the [California Environmental Data Exchange Network (CEDEN)](http://www.ceden.org/), [BeachWatch](https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html) database, and [Lower American River E. coli Monitoring Results](https://arcg.is/0ea0zq) interactive map. Data from the Lower American River area is also included in the CEDEN database, but this data is updated more frequently in the Lower American River E. coli Monitoring Results interactive map.
 
-TODO: which databases are publicly accessible?
-
 ### How is the data collected?
 
 Most samples are collected by local public health agencies, environmental organizations, and other partners. Samples are typically obtained via grab sampling at designated stations along beaches, rivers, and lakes. The samples are then analyzed in laboratories to measure levels of indicator bacteria such as E. coli and enterococcus. 
+
+Currently, there exist many methods of measuring bacteria concentrations, typically involving culturing bacteria from a water sample. Some local agencies have begun using rapid testing methods such as quantitative real-time PCR (qPCR) and droplet digital PCR (ddPCR). Further information about the latest studies on methodology can be found at the [U.S. EPA's website](https://www.epa.gov/water-research/monitoring-recreational-water-quality).
 
 ### Why do I see different units (CFU vs MPN) for bacteria concentrations?
 
@@ -81,7 +81,7 @@ Yes, California has its own set of water quality standards that may differ from 
 
 ### Why aren't fecal coliforms or total coliforms used in this dashboard?
 
-Fecal coliforms and total coliforms are older indicators that have been largely replaced by E. coli and enterococcus for assessing recreational water quality. E. coli is a more specific indicator of fecal contamination from warm-blooded animals, and so is here used for freshwater sites, while enterococcus is particularly useful for marine and estuarine waters. Both E. coli and enterococcus have been shown to correlate better with the presence of pathogens that can cause illness in humans, making them more reliable indicators for protecting public health in recreational waters. See 
+Fecal coliforms and total coliforms are frequently used as indicators of water quality, but have been largely replaced by E. coli and enterococcus for assessing recreational water quality by the U.S. Environmental Protection Agency (EPA). Both E. coli and enterococcus have been shown to correlate better with the presence of pathogens that can cause illness in humans than metrics like fecal coliforms and total coliforms, according to 
 
 ### What do the safety thresholds mean for health?
 
