@@ -572,36 +572,6 @@ export async function computeAllStatuses(recordsByStation, asOf = new Date()) {
   return out;
 }
 
-// Weekly series for plotting for ONE station (uses prior 6 weeks for each week)
-export async function buildWeeklyStatusSeriesForStation(stationCode, recordsForStation, opts = {}) {
-  const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
-  const isSalt = saltFlags.get(stationCode) === true;
-
-  const records = (recordsForStation ?? []).slice();
-  if (records.length === 0) return [];
-
-  const dates = records.map(r => toDate(r.SampleDate)).sort((a,b) => a - b);
-  const start = startOfISOWeek(opts.from ?? dates[0]);
-  const end   = endOfISOWeek(opts.to ?? dates[dates.length - 1]);
-
-  const series = [];
-  for (let t = new Date(start); t <= end; t.setDate(t.getDate() + 7)) {
-    const asOf = endOfISOWeek(t);
-    const typeRules = criteria.rules.waterbody_types[isSalt ? "saltwater" : "freshwater"];
-    const metrics = computeWindowMetrics(records, asOf);
-    const status = evaluateStatusFromMetrics(metrics, typeRules, criteria);
-    series.push({
-      station: stationCode,
-      week_start: new Date(t),
-      week_end: new Date(asOf),
-      status_key: status.name ?? status.key ?? "unknown",
-      status
-    });
-  }
-  return series;
-}
-
-
 // ##### Misc #####
 
 export function formatStationName(rawName = "", code = "") {
@@ -719,4 +689,18 @@ export function segmentsAboveThreshold(data, y, T) {
   if (cur.length) segs.push(cur);
 
   return segs;
+}
+
+
+export function isWithinWeeks(isoDateStr, weeks = 6, today = new Date()) {
+  if (!isoDateStr) return false;
+  const d = new Date(isoDateStr);
+  if (isNaN(+d)) return false;
+
+  // Compare by UTC calendar day to avoid TZ wobble
+  const utcToday = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+  const cutoff = new Date(utcToday);
+  cutoff.setUTCDate(cutoff.getUTCDate() - weeks * 7);
+
+  return d >= cutoff;
 }

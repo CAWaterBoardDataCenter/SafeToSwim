@@ -327,6 +327,58 @@ invalidation?.then(() => {
   }
   ```
 
+  ```js
+  const recentOnly = view(
+    Inputs.toggle({
+      label: "Only show stations sampled in the last 6 weeks",
+      value: true
+    })
+  );
+  ```
+
+  ```js
+  stations; // reactive
+  const today = new Date();
+  const hasRecent = new Map(
+    Object.entries(stations || {}).map(([code, st]) => [
+      code,
+      mod.isWithinWeeks(st?.lastSampleDate ?? null, 6, today)
+    ])
+  );
+  ```
+
+  ```js
+  function updateMarkerVisibility({ recentOnly, hasRecent, divMarkerMap }) {
+    if (!divMarkerMap) return;
+    for (const [code, marker] of Object.entries(divMarkerMap)) {
+      // keep if toggle is off OR station is recent
+      const visible = !recentOnly || hasRecent.get(code) || code === selectedStation?.code;
+      // Fast + simple: hide the marker’s DOM element
+      const el = marker.getElement?.();
+      if (el) {
+        el.style.display = visible ? "" : "none";
+        el.style.pointerEvents = visible ? "" : "none";
+      }
+    }
+  }
+
+  recentOnly; hasRecent; divMarkerMap; // make reactive
+  {
+    updateMarkerVisibility({ recentOnly, hasRecent, divMarkerMap });
+
+    // (Optional) show a tiny summary
+    const total = divMarkerMap ? Object.keys(divMarkerMap).length : 0;
+    const visible = divMarkerMap
+      ? Object.keys(divMarkerMap).filter(c => !recentOnly || hasRecent.get(c)).length
+      : 0;
+    // display(`${visible}/${total} stations visible`);
+  }
+  ```
+
+  ```js
+
+  ```
+
   </div>
 
   <div class="card" id="station-info-card" style="margin: 0;">
@@ -349,7 +401,11 @@ invalidation?.then(() => {
     const lastSampleDateObj = lastSampleDateISO ? new Date(lastSampleDateISO) : null;
     const lastSampleDate =
       lastSampleDateObj && !isNaN(+lastSampleDateObj)
-        ? lastSampleDateObj.toISOString().slice(0, 10)
+        ? lastSampleDateObj.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+          })
         : null;
 
     meta = {
@@ -398,7 +454,6 @@ invalidation?.then(() => {
         <p><strong>Station Code:</strong> ${meta.code}</p>
         <p><strong>Lat/Lon:</strong> ${meta.lat.toFixed(5)}, ${meta.lon.toFixed(5)}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
-        <p><strong>Total data points:</strong> ${meta.totalDataPoints}</p>
         <p><strong>Samples in last 6 weeks:</strong> ${meta.recentDataPoints}</p>
       `
     : html` `
@@ -672,9 +727,16 @@ invalidation?.then(() => {
             dy: -17,
             frameAnchor: "top-right",
             fontVariant: "tabular-nums",
-            text: (d) =>
-              [`${d.sixWeekGeoMean} ${d.unit}`, `${Plot.formatIsoDate(new Date(d.date.getTime() - 30*24*60*60*1000))} – ${Plot.formatIsoDate(d.date)}`].join("\n")
-          }))
+            text: d => {
+              const fmt = date =>
+                date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+              const start = new Date(d.date.getTime() - 30 * 24 * 60 * 60 * 1000);
+              const end = d.date;
+
+              return [`${d.sixWeekGeoMean} ${d.unit}`, `${fmt(start)} – ${fmt(end)}`].join("\n");
+            }
+          })) 
         ],
         x: {domain: xDomain, label: "Date"},
         y: {label: labelUnit, type: "log", nice: true},
@@ -693,7 +755,7 @@ invalidation?.then(() => {
       const labelUnit = `${data[0].analyte} (${data[0].unit})`;
       const T = (await mod.getAllThresholds())[analyte].single_sample;
       const plot = Plot.plot({
-        title: `Single sample results`,
+        title: `Single sample results (${data?.length ?? 0} samples, all time)`,
         marks: [
           // Line for threshold
           Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: d => `Threshold: ${T} ${data[0].unit}`}),
@@ -718,9 +780,12 @@ invalidation?.then(() => {
             dy: -17,
             frameAnchor: "top-right",
             fontVariant: "tabular-nums",
-            text: (d) =>
-              [`${d.result.toFixed(2)} ${d.unit}`, `${Plot.formatIsoDate(d.date)}`].join("\n")
-          }))
+            text: d => {
+            const fmt = date =>
+              date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+            return [`${d.result.toFixed(2)} ${d.unit}`, fmt(d.date)].join("\n");
+          }}))
         ],
         x: { domain: xDomain, label: "Date"},
         y: {label: labelUnit, type: "log", nice: true},
