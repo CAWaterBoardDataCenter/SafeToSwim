@@ -85,7 +85,6 @@ markersLayer.addTo(map);
 ```
 
 ```js
-
 const statusColors = await mod.getStatusColors();
 const BASE_SIZE = 7;
 const SELECTED_SIZE = 10;
@@ -400,7 +399,7 @@ invalidation?.then(() => {
         <p><strong>Lat/Lon:</strong> ${meta.lat.toFixed(5)}, ${meta.lon.toFixed(5)}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
         <p><strong>Total data points:</strong> ${meta.totalDataPoints}</p>
-        <p><strong>Data points in last 6 weeks:</strong> ${meta.recentDataPoints}</p>
+        <p><strong>Samples in last 6 weeks:</strong> ${meta.recentDataPoints}</p>
       `
     : html` `
   ```
@@ -430,7 +429,7 @@ invalidation?.then(() => {
   meta
     ? html`
         <p><i>Showing past results from <strong>${meta.formattedName}</strong>.<br>
-        This station is classified as a <strong>${isSaltwater ? "saltwater" : "freshwater"}</strong> station, where status is based on concentrations of the indicator bacteria <strong>${bacteria}.</strong></i></p>
+        This station is classified as a <strong>${isSaltwater ? "saltwater" : "freshwater"}</strong> station, where status is based on culture samples of the indicator bacteria <strong>${bacteria}.</strong></i></p>
       `
     : html` `
   ```
@@ -462,21 +461,52 @@ invalidation?.then(() => {
     // optional placeholder text instead of dropdown
     analyte = null;
   }
+  ```
 
+  ```js
+  let timePreset = null;
+  if (selectedStation) {
+    // pick time window
+    const PRESETS = new Map([
+      ["Last 1 year", { kind: "preset", years: 1 }],
+      ["Last 5 years", { kind: "preset", years: 5 }],
+      ["All data",     { kind: "all" }]
+    ]);
+
+    timePreset = view(Inputs.select(PRESETS, {
+      label: "Time range",
+      value: PRESETS.get("All data")
+    }));
+  } else { timePreset = null; }
+  ```
+
+  ```js
+  const today = toDate(new Date());
+
+  // Domain is either [start, end] or null (for "All data")
+
+  const uiDomain =
+    timePreset?.kind === "preset"
+      ? (() => {
+          const start = toDate(new Date(today));
+          start.setFullYear(today.getFullYear() - timePreset.years);
+          return [start, today];
+        })()
+      : null; // "All data" → let plots use data extent policy
   ```
 
   ---
 
   ```js
-  // Guard: if no station selected, show single placeholder plot with message
+  // If no station is selected, show single placeholder plot with message
   if (!stationRecord) {
     const today = toDate(new Date());
-    const fiveYearsAgo = new Date(today);
-    fiveYearsAgo.setFullYear(today.getFullYear() - 5);
-    
+
+    const defaultDomain = uiDomain ?? [toDate(new Date(today.getFullYear() - 5, today.getMonth(), today.getDate())), today];
+
     const placeholder = (msg) => Plot.plot({
       width, height: 200,
-      x: { domain: [toDate(fiveYearsAgo), today], label: "Date"},
+      x: { domain: defaultDomain, label: "Date"},
       y: {label: analyte},
       marks: [
         Plot.text([{}], {
@@ -488,7 +518,7 @@ invalidation?.then(() => {
       ]
     });
 
-    display(placeholder("Select a station to see status history, 30-day geomean, and raw results"));
+    display(placeholder("Select a station to see status history, 6-week geomean, and single-sample results"));
 
   } else {
 
@@ -512,7 +542,7 @@ invalidation?.then(() => {
         return {
           date,
           result: +d.Result,
-          thirtyDayGeoMean: +d["30DayGeoMean"],
+          sixWeekGeoMean: +d["6WeekGeoMean"],
           analyte: d.Analyte,
           unit: d.Unit,
           status: st?.status?.name ?? st?.status_name ?? null,
@@ -522,13 +552,24 @@ invalidation?.then(() => {
       // sort ascending by date
       .sort((a, b) => a.date - b.date);
 
-
-    // extent from data
-    const dataExtent = d3.extent(data, d => toDate(d.date));
-
-    // extend upper bound to today if needed
+    const hasData = data && data.length > 0;
+    const dataExtent = hasData ? d3.extent(data, d => toDate(d.date)) : [null, null];
     const today = toDate(new Date());
-    const xDomain = [dataExtent[0], d3.max([dataExtent[1], today])];
+
+    let xDomain;
+
+    if (uiDomain) {
+      // If user picked a preset, honor it
+      xDomain = uiDomain;
+    } else if (dataExtent[0] && dataExtent[1]) {
+      // If we have data, use its extent but extend right edge to today
+      xDomain = [dataExtent[0], d3.max([dataExtent[1], today])];
+    } else {
+      // No data → fallback default (last 5 years)
+      const start = toDate(new Date(today));
+      start.setFullYear(today.getFullYear() - 5);
+      xDomain = [start, today];
+    }
 
     // Build segments with midpoints + reasons pulled from status objects
     const day = 24 * 3600 * 1000;
@@ -584,7 +625,7 @@ invalidation?.then(() => {
 
     display(ribbon);
 
-    // 30-day geomean plot ------------------------------
+    // 6-week geomean plot ------------------------------
 
     if (!data.length) {
       display(`No data for ${analyte} at this station.`);
@@ -594,7 +635,7 @@ invalidation?.then(() => {
 
       // Threshold for highlighting
       const T = (await mod.getAllThresholds())[analyte].geomean;
-      const y = d => d.thirtyDayGeoMean;
+      const y = d => d.sixWeekGeoMean;
       const sorted = data.slice().sort((a,b) => +a.date - +b.date);
       const segments = mod.segmentsAboveThreshold(sorted, y, T);
       const areaMarks = segments.map(seg =>
@@ -610,25 +651,29 @@ invalidation?.then(() => {
       );
 
       const pplot = Plot.plot({
-        title: `30-day average (geometric mean)`,
+        title: `6-week average (geometric mean)`,
         marks: [
-          // fill ABOVE threshold (height only when y >= T)
+          // fill above threshold (height only when y >= T)
           ...areaMarks,
 
-          // Line for 30-day geomean
-          Plot.lineY(data, {x: "date", y: "thirtyDayGeoMean", stroke: "steelblue", curve: "linear"}),
+          // Line for threshold
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: d => `Threshold: ${T} ${data[0].unit}`}),
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: d => `Threshold: ${T} ${data[0].unit}`}),
+
+          // Line for 6-week geomean
+          Plot.lineY(data, {x: "date", y: "sixWeekGeoMean", stroke: "steelblue", curve: "linear"}),
 
           // Pointer
-          Plot.ruleX(data, Plot.pointerX({x: "date", py: "thirtyDayGeoMean", stroke: "lightgray"})),
-          Plot.dot(data, Plot.pointerX({x: "date", y: "thirtyDayGeoMean", stroke: "red"})),
+          Plot.ruleX(data, Plot.pointerX({x: "date", py: "sixWeekGeoMean", stroke: "lightgray"})),
+          Plot.dot(data, Plot.pointerX({x: "date", y: "sixWeekGeoMean", stroke: "red"})),
           Plot.text(data, Plot.pointerX({
             px: "date",
-            py: "thirtyDayGeoMean",
+            py: "sixWeekGeoMean",
             dy: -17,
             frameAnchor: "top-right",
             fontVariant: "tabular-nums",
             text: (d) =>
-              [`${d.thirtyDayGeoMean} ${d.unit}`, `${Plot.formatIsoDate(new Date(d.date.getTime() - 30*24*60*60*1000))} – ${Plot.formatIsoDate(d.date)}`].join("\n")
+              [`${d.sixWeekGeoMean} ${d.unit}`, `${Plot.formatIsoDate(new Date(d.date.getTime() - 30*24*60*60*1000))} – ${Plot.formatIsoDate(d.date)}`].join("\n")
           }))
         ],
         x: {domain: xDomain, label: "Date"},
@@ -650,14 +695,21 @@ invalidation?.then(() => {
       const plot = Plot.plot({
         title: `Single sample results`,
         marks: [
+          // Line for threshold
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: d => `Threshold: ${T} ${data[0].unit}`}),
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: d => `Threshold: ${T} ${data[0].unit}`}),
+
+          // Points for single results
           Plot.dot(data, {
             x: "date", 
             y: "result", 
             r: 2, 
             fill: "steelblue",
             stroke: d => d.result > T ? "orange" : "none",
-            strokeWidth: d => d.result > T ? 0.8 : 0
+            strokeWidth: d => d.result > T ? 1 : 0
           }),
+
+          // Pointer
           Plot.ruleX(data, Plot.pointerX({x: "date", py: "result", stroke: "lightgray"})),
           Plot.dot(data, Plot.pointerX({x: "date", y: "result", stroke: "red"})),
           Plot.text(data, Plot.pointerX({

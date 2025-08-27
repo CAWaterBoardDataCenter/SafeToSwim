@@ -702,7 +702,7 @@ export function segmentsAboveThreshold(data, y, T) {
       const ta = +a.date, tb = +b.date;
       const t = (T - ya) / (yb - ya);
       const xCross = new Date(ta + t * (tb - ta));
-      const cross = {...a, date: xCross, thirtyDayGeoMean: T};
+      const cross = {...a, date: xCross, sixWeekGeoMean: T};
 
       cur.push(cross);
       if (cur.length) segs.push(cur);
