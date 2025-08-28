@@ -121,6 +121,10 @@ function makeDot(code, st) {
   const lat = +st?.TargetLatitude, lon = +st?.TargetLongitude;
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
 
+  const formattedName = (mod.formatStationName)
+    ? mod.formatStationName(st.StationName, code)
+    : st.StationName ?? "(unknown)";
+
   const dot = L.circleMarker([lat, lon], {
     renderer: sharedRenderer,   // <— single canvas
     interactive: true,          // <— must be true for events
@@ -128,13 +132,18 @@ function makeDot(code, st) {
     stroke: true, color: OUTLINE, weight: OUTLINE_W,
     fillColor: colorForStation(st), fillOpacity: 0.95
   })
-    .bindPopup(`<b>${st.StationName ?? "(unknown)"}<\/b><br>Code: ${code}<br>Status: ${st.status?.name ?? "unknown"}`)
+    .bindPopup(
+      `<b>${formattedName}</b><br>
+       Code: ${code}<br>
+       Status: ${st.status?.name ?? "unknown"}`
+    )
     .on("click", () => { setSelectedStation(code, "map"); highlightSelected(code); })
     .on("mouseover", () => { dot.setStyle({ radius: BASE_R * 1.3 }); dot.bringToFront(); })
     .on("mouseout",  () => { dot.setStyle({ radius: __state.selectedCode===code ? SELECTED_R : BASE_R }); });
 
   return dot;
 }
+
 
 // Draw all stations as Canvas dots once
 function drawStationDots() {
