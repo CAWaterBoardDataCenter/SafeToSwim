@@ -603,7 +603,7 @@ invalidation?.then(() => {
       ]
     });
 
-    display(placeholder("Select a station to see status history, 6-week geomean, and single-sample results"));
+    display(placeholder("Select a station to see status history, 6-week averages, and single-sample results"));
 
   } else {
 
@@ -719,7 +719,12 @@ invalidation?.then(() => {
       const labelUnit = `${data[0].analyte} (${data[0].unit})`;
 
       // Threshold for highlighting
-      const T = (await mod.getAllThresholds())[analyte].geomean;
+      const T = thresholds?.[analyte]?.geomean ?? null;
+      if (T == null) {
+        // skip threshold marks or show a subtle “no threshold available” note
+      } else {
+        marks.push(Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25 }));
+      }
       const y = d => d.sixWeekGeoMean;
       const sorted = data.slice().sort((a,b) => +a.date - +b.date);
       const segments = mod.segmentsAboveThreshold(sorted, y, T);
@@ -783,7 +788,12 @@ invalidation?.then(() => {
     } else {
       // use analyte and unit from the first row
       const labelUnit = `${data[0].analyte} (${data[0].unit})`;
-      const T = (await mod.getAllThresholds())[analyte].single_sample;
+      const T = thresholds?.[analyte]?.single_sample ?? null;
+      if (T == null) {
+        // skip threshold marks or show a subtle “no threshold available” note
+      } else {
+        marks.push(Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25 }));
+      }
       const plot = Plot.plot({
         title: `Single sample results (${data?.length ?? 0} samples, all time)`,
         marks: [
