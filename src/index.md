@@ -716,7 +716,7 @@ invalidation?.then(() => {
         }))
       ],
       x: { domain: xDomain, label: "Date" },
-      y: { axis: null, domain: [0, 1] },
+      y: { domain: [0,1], axis: "left", tickSize: 0, label: null, tickFormat: () => "" },
       height: 80,
       width
     });
