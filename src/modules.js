@@ -420,7 +420,7 @@ export async function getStationAssessmentSpec(stationCode) {
 
   const geomean =
     env?.low_risk?.six_week_geomean?.max ?? null;
-  const singleSample =
+  const single_sample =
     env?.low_risk?.p90_30day?.max ?? null;
 
   return {
@@ -428,46 +428,43 @@ export async function getStationAssessmentSpec(stationCode) {
     bacteria,
     thresholds: {
       geomean,
-      single_sample: singleSample
+      single_sample
     }
   };
 }
 
-// helper: extract one environment's spec from your criteria shape
+// envSpec helper
 function envSpec(criteria, envKey) {
   const env = criteria?.rules?.waterbody_types?.[envKey] || {};
   return {
-    bacteria: env.bacteria ?? null,
+    analyteKey: env?.bacteria,  // "Enterococcus" / "E. coli"
     thresholds: {
       geomean: env?.low_risk?.six_week_geomean?.max ?? null,
       single_sample: env?.low_risk?.p90_30day?.max ?? null,
       min_samples_six_week: env?.low_risk?.min_samples_six_week ?? null
-    },
-    else_status: env?.else_status ?? null
+    }
   };
 }
 
-// Return all thresholds from criteria for both environments.
 export async function getAllThresholds() {
   const criteria = await getCriteria();
   const salt = envSpec(criteria, "saltwater");
   const fresh = envSpec(criteria, "freshwater");
 
-  // { enterococcus: {...}, e_coli: {...} }
-  return {
-    [salt.bacteria]: salt.thresholds,
-    [fresh.bacteria]: fresh.thresholds
-  };
+  const out = {};
+  if (salt.analyteKey) out[salt.analyteKey] = salt.thresholds;
+  if (fresh.analyteKey) out[fresh.analyteKey] = fresh.thresholds;
+
+  return out;
+}
+
+// convenience
+export function thresholdsFor(all, analyte) {
+  return all?.[analyte] ?? null;
 }
 
 //  Slice a timeseries into contiguous segments where y(d) >= T,
 //  inserting exact crossing points at the threshold.
-//  
-//  @param {Array} data  - sorted array of objects with .date and value
-//  @param {Function} y  - accessor for the numeric value
-//  @param {Number} T    - threshold
-//  @returns {Array[]}   - array of segments (each segment is an array of points)
-//  
 export function segmentsAboveThreshold(data, y, T) {
   const segs = [];
   let cur = [];

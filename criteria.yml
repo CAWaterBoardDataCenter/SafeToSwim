@@ -42,7 +42,7 @@ rules:
 
   waterbody_types:
     saltwater:
-      bacteria: "enterococcus"
+      bacteria: "Enterococcus"
       low_risk:
         six_week_geomean:
           max: 30        # CFU/100 ml
@@ -52,7 +52,7 @@ rules:
       else_status: use_caution
 
     freshwater:
-      bacteria: "e_coli"
+      bacteria: "E. coli"
       low_risk:
         six_week_geomean:
           max: 100

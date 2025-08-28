@@ -719,8 +719,11 @@ invalidation?.then(() => {
       const labelUnit = `${data[0].analyte} (${data[0].unit})`;
 
       // Threshold for highlighting
-      const thresholds = await mod.getAllThresholds();
-      const T = thresholds?.Enterococcus?.geomean ?? null;
+      
+      const all = await mod.getAllThresholds();
+      const th = mod.thresholdsFor(all, analyte);
+      const T = th?.geomean ?? null;
+
       const y = d => d.sixWeekGeoMean;
       const sorted = data.slice().sort((a,b) => +a.date - +b.date);
       const segments = mod.segmentsAboveThreshold(sorted, y, T);
@@ -784,8 +787,12 @@ invalidation?.then(() => {
     } else {
       // use analyte and unit from the first row
       const labelUnit = `${data[0].analyte} (${data[0].unit})`;
-      const thresholds = await mod.getAllThresholds();
-      const T = thresholds?.[analyte]?.single_sample ?? null;
+      
+      // Threshold for highlighting
+      const all = await mod.getAllThresholds();
+      const th = mod.thresholdsFor(all, analyte);
+      const T = th?.single_sample ?? null;
+
       const plot = Plot.plot({
         title: `Single sample results (${data?.length ?? 0} samples, all time)`,
         marks: [
