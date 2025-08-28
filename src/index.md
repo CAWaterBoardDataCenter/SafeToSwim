@@ -617,44 +617,48 @@ invalidation?.then(() => {
     );
 
     // Process data for plots
-    const data = stationRecord
+    const mapped = stationRecord
       ?.filter(d => d.Analyte === analyte)
       .map(d => {
         const date = new Date(d.SampleDate);
         const iso = date.toISOString().slice(0, 10);
         const st = statusByDay.get(iso);
+        const ddpcr = mod.isDdPCR?.(d) ?? false; // requires the helper above
 
         return {
           date,
-          result: +d.Result,
-          sixWeekGeoMean: +d["6WeekGeoMean"],
+          result: d.Result != null ? +d.Result : null,
+          sixWeekGeoMean: d["6WeekGeoMean"] != null ? +d["6WeekGeoMean"] : null,
           analyte: d.Analyte,
           unit: d.Unit,
+          MethodName: d.MethodName ?? null,
+          isDdPCR: ddpcr,
           status: st?.status?.name ?? st?.status_name ?? null,
           statusReason: st?.status?._reasons?.join(", ") ?? null
         };
       })
-      // sort ascending by date
-      .sort((a, b) => a.date - b.date);
+      .sort((a, b) => a.date - b.date) || [];
 
-    const hasData = data && data.length > 0;
-    const dataExtent = hasData ? d3.extent(data, d => toDate(d.date)) : [null, null];
+    const dataCulture = mapped.filter(d => !d.isDdPCR);
+    const dataDdPCR   = mapped.filter(d =>  d.isDdPCR);
+
+    // choose extent from culture; if none, fall back to ddPCR so users still see something
+    const baseForExtent = dataCulture.length ? dataCulture : dataDdPCR;
+    const hasData = baseForExtent.length > 0;
+    const dataExtent = hasData ? d3.extent(baseForExtent, d => toDate(d.date)) : [null, null];
     const today = toDate(new Date());
 
     let xDomain;
-
     if (uiDomain) {
-      // If user picked a preset, honor it
       xDomain = uiDomain;
     } else if (dataExtent[0] && dataExtent[1]) {
-      // If we have data, use its extent but extend right edge to today
       xDomain = [dataExtent[0], d3.max([dataExtent[1], today])];
     } else {
-      // No data → fallback default (last 5 years)
       const start = toDate(new Date(today));
       start.setFullYear(today.getFullYear() - 5);
       xDomain = [start, today];
     }
+
 
     // Build segments with midpoints + reasons pulled from status objects
     const day = 24 * 3600 * 1000;
@@ -712,128 +716,117 @@ invalidation?.then(() => {
 
     // 6-week geomean plot ------------------------------
 
-    if (!data.length) {
-      display(`No data for ${analyte} at this station.`);
+    if (!dataCulture.length) {
+      display(`No culture-method data for ${analyte} at this station.`);
     } else {
-      // use analyte and unit from the first row
-      const labelUnit = `${data[0].analyte} (${data[0].unit})`;
+      const labelUnit = `${dataCulture[0].analyte} (${dataCulture[0].unit})`;
 
-      // Threshold for highlighting
-      
       const all = await mod.getAllThresholds();
       const th = mod.thresholdsFor(all, analyte);
       const T = th?.geomean ?? null;
 
       const y = d => d.sixWeekGeoMean;
-      const sorted = data.slice().sort((a,b) => +a.date - +b.date);
-      const segments = mod.segmentsAboveThreshold(sorted, y, T);
-      const areaMarks = segments.map(seg =>
+      const sorted = dataCulture.slice().sort((a,b) => +a.date - +b.date);
+      const segmentsFill = mod.segmentsAboveThreshold(sorted, y, T);
+      const areaMarks = segmentsFill.map(seg =>
         Plot.areaY(seg, {
-          x: "date",
-          y,
-          y1: T,
-          fill: "orange",
-          fillOpacity: 0.5,
-          curve: "linear",
-          clip: true
+          x: "date", y, y1: T, fill: "orange", fillOpacity: 0.5, curve: "linear", clip: true
         })
       );
 
       const pplot = Plot.plot({
         title: `6-week average (geometric mean)`,
         marks: [
-          // fill above threshold (height only when y >= T)
           ...areaMarks,
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
+          Plot.lineY(dataCulture, { x: "date", y: "sixWeekGeoMean", stroke: "steelblue", curve: "linear"}),
 
-          // Line for threshold
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: d => `Threshold: ${T} ${data[0].unit}`}),
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: d => `Threshold: ${T} ${data[0].unit}`}),
-
-          // Line for 6-week geomean
-          Plot.lineY(data, {x: "date", y: "sixWeekGeoMean", stroke: "steelblue", curve: "linear"}),
-
-          // Pointer
-          Plot.ruleX(data, Plot.pointerX({x: "date", py: "sixWeekGeoMean", stroke: "lightgray"})),
-          Plot.dot(data, Plot.pointerX({x: "date", y: "sixWeekGeoMean", stroke: "red"})),
-          Plot.text(data, Plot.pointerX({
-            px: "date",
-            py: "sixWeekGeoMean",
-            dy: -17,
-            frameAnchor: "top-right",
-            fontVariant: "tabular-nums",
+          Plot.ruleX(dataCulture, Plot.pointerX({ x: "date", py: "sixWeekGeoMean", stroke: "lightgray"})),
+          Plot.dot(dataCulture,   Plot.pointerX({ x: "date", y: "sixWeekGeoMean", stroke: "red"})),
+          Plot.text(dataCulture,  Plot.pointerX({
+            px: "date", py: "sixWeekGeoMean", dy: -17, frameAnchor: "top-right", fontVariant: "tabular-nums",
             text: d => {
-              const fmt = date =>
-                date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-
+              const fmt = date => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
               const start = new Date(d.date.getTime() - 30 * 24 * 60 * 60 * 1000);
               const end = d.date;
-
               return [`${d.sixWeekGeoMean} ${d.unit}`, `${fmt(start)} – ${fmt(end)}`].join("\n");
             }
-          })) 
+          }))
         ],
-        x: {domain: xDomain, label: "Date"},
-        y: {label: labelUnit, type: "log", nice: true},
-        width: width,
-        height: 200
+        x: { domain: xDomain, label: "Date" },
+        y: { label: labelUnit, type: "log", nice: true },
+        width, height: 200
       });
 
       display(pplot);
     }
+
   
     // Single results plot ------------------------------
-    if (!data.length) {
-      display(`No data for ${analyte} at this station.`);
+    if (!dataCulture.length) {
+      display(`No culture-method data for ${analyte} at this station.`);
     } else {
-      // use analyte and unit from the first row
-      const labelUnit = `${data[0].analyte} (${data[0].unit})`;
-      
-      // Threshold for highlighting
+      const labelUnit = `${dataCulture[0].analyte} (${dataCulture[0].unit})`;
+
       const all = await mod.getAllThresholds();
       const th = mod.thresholdsFor(all, analyte);
       const T = th?.single_sample ?? null;
 
       const plot = Plot.plot({
-        title: `Single sample results (${data?.length ?? 0} samples, all time)`,
+        title: `Single sample results (${dataCulture.length} samples)`,
         marks: [
-          // Line for threshold
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: d => `Threshold: ${T} ${data[0].unit}`}),
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: d => `Threshold: ${T} ${data[0].unit}`}),
-
-          // Points for single results
-          Plot.dot(data, {
-            x: "date", 
-            y: "result", 
-            r: 2, 
-            fill: "steelblue",
-            stroke: d => d.result > T ? "orange" : "none",
-            strokeWidth: d => d.result > T ? 1 : 0
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
+          Plot.dot(dataCulture, {
+            x: "date", y: "result", r: 2, fill: "steelblue",
+            stroke: d => (T != null && d.result > T) ? "orange" : "none",
+            strokeWidth: d => (T != null && d.result > T) ? 1 : 0
           }),
-
-          // Pointer
-          Plot.ruleX(data, Plot.pointerX({x: "date", py: "result", stroke: "lightgray"})),
-          Plot.dot(data, Plot.pointerX({x: "date", y: "result", stroke: "red"})),
-          Plot.text(data, Plot.pointerX({
-            px: "date",
-            py: "result",
-            dy: -17,
-            frameAnchor: "top-right",
-            fontVariant: "tabular-nums",
+          Plot.ruleX(dataCulture, Plot.pointerX({ x: "date", py: "result", stroke: "lightgray"})),
+          Plot.dot(dataCulture,   Plot.pointerX({ x: "date", y: "result", stroke: "red"})),
+          Plot.text(dataCulture,  Plot.pointerX({
+            px: "date", py: "result", dy: -17, frameAnchor: "top-right", fontVariant: "tabular-nums",
             text: d => {
-            const fmt = date =>
-              date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-
-            return [`${d.result.toFixed(2)} ${d.unit}`, fmt(d.date)].join("\n");
-          }}))
+              const fmt = date => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+              return [`${d.result?.toFixed?.(2) ?? d.result} ${d.unit}`, fmt(d.date)].join("\n");
+            }
+          }))
         ],
-        x: { domain: xDomain, label: "Date"},
-        y: {label: labelUnit, type: "log", nice: true},
-        width: width,
-        height: 200
+        x: { domain: xDomain, label: "Date" },
+        y: { label: labelUnit, type: "log", nice: true },
+        width, height: 200
       });
 
       display(plot);
     }
+
+    // ddPCR results plot ------------------------------
+    if (dataDdPCR.length) {
+      const labelUnitDPCR = `${dataDdPCR[0].analyte} (${dataDdPCR[0].unit})`;
+      const plotDPCR = Plot.plot({
+        title: `ddPCR results (not used for status) — ${dataDdPCR.length} samples`,
+        marks: [
+          Plot.ruleY([{}], { y: 1413, stroke: "gray", opacity: 0.25, strokeWidth: 1, title: `Threshold: 1,413 ${dataDdPCR[0].unit}`}),
+          Plot.dot(dataDdPCR, { x: "date", y: "result", r: 2, strokeWidth: 1 }),
+          Plot.ruleX(dataDdPCR, Plot.pointerX({ x: "date", py: "result", stroke: "lightgray"})),
+          Plot.dot(dataDdPCR,   Plot.pointerX({ x: "date", y: "result", stroke: "red"})),
+          Plot.text(dataDdPCR,  Plot.pointerX({
+            px: "date", py: "result", dy: -17, frameAnchor: "top-right", fontVariant: "tabular-nums",
+            text: d => {
+              const fmt = date => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+              return [`${d.result?.toFixed?.(2) ?? d.result} ${d.unit}`, fmt(d.date)].join("\n");
+            }
+          }))
+        ],
+        x: { domain: xDomain, label: "Date" },
+        y: { label: labelUnitDPCR, type: "log", nice: true },
+        width, height: 200
+      });
+
+      display(plotDPCR);
+    }
+
   }
   ```
 

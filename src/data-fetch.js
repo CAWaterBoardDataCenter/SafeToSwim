@@ -46,7 +46,7 @@ export async function loadAllStationsAtStartup({
     `;
     // 4) recent window (for latest/recentResults)
     const recentQ = `
-      SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount"
+      SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
       FROM "${id}"
       WHERE "SampleDate" >= '${sinceISO}' AND "Analyte" IN (${analyteList})
     `;
@@ -103,7 +103,8 @@ export async function loadAllStationsAtStartup({
             SampleDate: r.SampleDate,
             Analyte: r.Analyte,
             Unit: r.Unit,
-            Result: r.Result
+            Result: r.Result,
+            MethodName: r.MethodName ?? null
           });
           if (!entry.latest || r.SampleDate > entry.latest.SampleDate) {
             entry.latest = r;
@@ -140,7 +141,7 @@ async function sqlFetchStation(resourceId, stationCode, { signal, analytes = ANA
   const list = analytes.map(a => `'${esc(a)}'`).join(",");
   const whereSince = since ? `AND "SampleDate" >= '${since}'` : "";
   const sql = `
-    SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount"
+    SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
     FROM "${resourceId}"
     WHERE "StationCode"='${esc(stationCode)}'
       AND "Analyte" IN (${list})
@@ -157,7 +158,7 @@ async function sqlFetchStation(resourceId, stationCode, { signal, analytes = ANA
 async function sqlFetchStationOlder(resourceId, stationCode, { signal, analytes = ANALYTES, olderThan }) {
   const list = analytes.map(a => `'${esc(a)}'`).join(",");
   const sql = `
-    SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount"
+    SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
     FROM "${resourceId}"
     WHERE "StationCode"='${esc(stationCode)}'
       AND "Analyte" IN (${list})
@@ -181,6 +182,7 @@ function normalizeRow(r, sourceLabel) {
     Result: r.Result != null ? +r.Result : null,
     "6WeekGeoMean": r["6WeekGeoMean"] != null ? +r["6WeekGeoMean"] : null,
     "6WeekCount": r["6WeekCount"] != null ? +r["6WeekCount"] : null,
+    MethodName: r.MethodName ?? null,
     _source: sourceLabel
   };
 }
@@ -191,6 +193,7 @@ function sameKey(a, b) {
     a.SampleDate === b.SampleDate &&
     a.Analyte === b.Analyte &&
     a.Unit === b.Unit &&
+    (a.MethodName ?? null) === (b.MethodName ?? null) &&
     Math.round((a.Result ?? NaN) * RESULT_SCALE) === Math.round((b.Result ?? NaN) * RESULT_SCALE)
   );
 }

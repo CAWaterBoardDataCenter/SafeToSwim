@@ -113,22 +113,39 @@ function pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria) {
 }
 
 // Computes window metrics for a station's records at a given date
-export function computeWindowMetrics(records, asOfDate) {
+// Safe default for the options bag so destructuring never throws
+export function computeWindowMetrics(records, asOfDate, opts = {}) {
+  const { indicatorAnalyte = null } = opts;
+
   const asOf = toDate(asOfDate);
   const msPerDay = 24 * 3600 * 1000;
 
-  // Window membership
+  const isValid = (r) => {
+    if (!r) return false;
+
+    // exclude ddPCR (be tolerant of null/undefined MethodName)
+    const method = (r.MethodName ?? "").toString().toLowerCase();
+    if (method.includes("ddpcr")) return false;
+
+    // only keep matching indicator bacteria (exact string match)
+    if (indicatorAnalyte && r.Analyte !== indicatorAnalyte) return false;
+
+    return true;
+  };
+
   const inLast = (r, days) => {
     const dt = toDate(r.SampleDate);
     return dt <= asOf && (asOf - dt) <= days * msPerDay;
   };
 
-  // 42-day window (for geomean + count)
-  const sixW = records.filter(r => inLast(r, 42));
+  const filterWindow = (days) => records.filter(r => isValid(r) && inLast(r, days));
+
+  // 42-day window (geomean + count)
+  const sixW = filterWindow(42);
   const sixWVals = sixW.map(r => +r.Result).filter(Number.isFinite);
 
-  // 30-day window (for p90 + optional count)
-  const thirtyD = records.filter(r => inLast(r, 30));
+  // 30-day window (p90 + count)
+  const thirtyD = filterWindow(30);
   const thirtyVals = thirtyD.map(r => +r.Result).filter(Number.isFinite);
 
   return {
@@ -139,6 +156,7 @@ export function computeWindowMetrics(records, asOfDate) {
     manualClosureFlag: sixW.some(r => r.manualClosureFlag === true)
   };
 }
+
 
 // Determines status of a station based on window metrics and type rules
 export function evaluateStatusFromMetrics(
@@ -299,22 +317,25 @@ export function closureFieldName(criteria) {
 // @param {Object} criteria
 // @returns {Array<{date: Date, status: any, status_name: string, metrics: object}>}
 export function buildStatusSeries(stationRecord, analyte, typeRules, criteria) {
-  // 1) Filter to analyte and normalize dates
+  // Treat only culture-method samples of the indicator analyte
+  const isCulture = (r) => !((r.MethodName ?? "").toString().toLowerCase().includes("ddpcr"));
+
+  // 1) Filter to indicator analyte AND exclude ddPCR; normalize dates
   const recs = (stationRecord || [])
-    .filter(r => r && r.Analyte === analyte && r.SampleDate != null)
+    .filter(r => r && r.Analyte === analyte && r.SampleDate != null && isCulture(r))
     .map(r => ({ ...r, SampleDate: toDate(r.SampleDate) })) // normalize to midnight
     .sort((a, b) => a.SampleDate - b.SampleDate);
 
   if (recs.length === 0) return [];
 
-  // 2) Unique sample dates (ascending)
+  // 2) Unique culture-sample dates only (ascending)
   const asOfDates = Array.from(new Set(recs.map(r => +r.SampleDate)))
     .sort((a, b) => a - b)
     .map(t => new Date(t));
 
-  // 3) Evaluate metrics + status per as-of date
+  // 3) Evaluate metrics + status per as-of date (metrics also exclude ddPCR)
   return asOfDates.map(asOf => {
-    const metrics = computeWindowMetrics(recs, asOf);
+    const metrics = computeWindowMetrics(recs, asOf, { indicatorAnalyte: analyte });
     const status = evaluateStatusFromMetrics(metrics, typeRules, criteria);
     return {
       date: asOf,
@@ -376,12 +397,28 @@ export async function computeStatusAtDateForStation(stationCode, recordsForStati
 export async function computeAllStatuses(recordsByStation, asOf = new Date()) {
   const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
   const out = new Map();
+
   for (const [code, records] of recordsByStation.entries()) {
-    const isSalt = saltFlags.get(code) === true;
-    const typeRules = criteria.rules.waterbody_types[isSalt ? "saltwater" : "freshwater"];
-    const metrics = computeWindowMetrics(records ?? [], asOf);
+    // normalize salt flag (handles boolean true or string "True")
+    const saltFlag = saltFlags.get(code);
+    const isSalt = saltFlag === true || (typeof saltFlag === "string" && saltFlag.toLowerCase() === "true");
+
+    // environment-specific rules
+    const typeRules = criteria?.rules?.waterbody_types?.[isSalt ? "saltwater" : "freshwater"] ?? {};
+
+    // pull indicator analyte from rules; fall back to convention if missing
+    const indicatorAnalyte =
+      typeRules?.bacteria ?? (isSalt ? "Enterococcus" : "E. coli");
+
+    // compute metrics restricted to:
+    //  - non-ddPCR
+    //  - indicator analyte for this environment
+    const metrics = computeWindowMetrics(records ?? [], asOf, { indicatorAnalyte });
+
+    // evaluate status using the thresholds in typeRules
     out.set(code, evaluateStatusFromMetrics(metrics, typeRules, criteria));
   }
+
   return out;
 }
 
@@ -513,4 +550,15 @@ export function isWithinWeeks(isoDateStr, weeks = 6, today = new Date()) {
   cutoff.setUTCDate(cutoff.getUTCDate() - weeks * 7);
 
   return d >= cutoff;
+}
+
+export function isDdPCR(row) {
+  const method = (row?.MethodName ?? "").toString().toLowerCase();
+  const unit = (row?.Unit ?? "").toString().toLowerCase();
+
+  if (method.includes("ddpcr") || method.includes("digital pcr")) return true;
+  // fallback heuristics based on typical ddPCR units
+  if (unit.includes("copies") || unit.includes("gc/") || unit.includes("gene") || unit.includes("cn/")) return true;
+
+  return false;
 }
