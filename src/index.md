@@ -3,13 +3,24 @@ toc: false
 sidebar: false
 ---
 
+<div class="hero">
+
+  <h1>Safe To Swim Map</h1>
+
+  <h2>The California recreational water quality tool for nerds and adventurers.</h2>
+
+  *This map from the California State Water Resources Control Board shows the latest water quality data to help you make informed decisions about where to swim. See [How to Use](how-to-use) and our [FAQ](faq) for more information.*
+
+</div>
+
 ```js
 import * as L from "npm:leaflet";
 import "npm:leaflet.fullscreen";
-
 import { resize } from "npm:@observablehq/stdlib";
-import * as mod from "./modules.js";
-import { setSelectedStation,selectedStation } from "./station-state.js";
+
+import * as mod from "./modules.js"; // utilities
+import * as stat from "./status.js"; // status helpers
+import { setSelectedStation, selectedStation } from "./station-state.js"; // station selection
 
 function toDate(d) { 
   const t=new Date(d); 
@@ -23,7 +34,7 @@ import { loadAllStationsAtStartup } from "./data-fetch.js";
 // Fetch all station data (cached after first call)
 let stations = await loadAllStationsAtStartup();
 
-const statusesByCode = await mod.computeAllStatuses(
+const statusesByCode = await stat.computeAllStatuses(
   new Map(Object.entries(stations).map(([code, st]) => [code, st.recentResults]))
 );
 
@@ -71,16 +82,6 @@ L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXY
     '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
 }).addTo(map);
 ```
-
-<div class="hero">
-
-  <h1>Safe To Swim Map</h1>
-
-  <h2>The California recreational water quality tool for nerds and adventurers.</h2>
-
-  *This map from the California State Water Resources Control Board shows the latest water quality data to help you make informed decisions about where to swim. See [How to Use](how-to-use) and our [FAQ](faq) for more information.*
-
-</div>
 
 </div>
 
@@ -483,12 +484,14 @@ invalidation?.then(() => {
   ```js
   import { stationRecordFetch } from "./data-fetch.js";
 
+  console.time("A_fetch");
   selectedStation; // reactive
   let stationRecordStartup = null;
   const code = selectedStation?.code;
   if (code) {
     stationRecordStartup = await stationRecordFetch(code);
   }
+  console.timeEnd("A_fetch");
 
   const { isSaltwater, bacteria, thresholds } =
     await mod.getStationAssessmentSpec(code);
@@ -616,7 +619,9 @@ invalidation?.then(() => {
 
   } else {
 
-    const statusSeries = await mod.buildStatusSeriesForStation(stationRecord);
+    console.time("status_series");
+
+    const statusSeries = await stat.buildStatusSeriesForStation(stationRecord);
 
     const statusByDay = new Map(
       statusSeries.map(s => [
@@ -624,7 +629,9 @@ invalidation?.then(() => {
         s
       ])
     );
+    console.timeEnd("status_series");
 
+    console.time("B_prepare");
     // Process data for plots
     const mapped = stationRecord
       ?.filter(d => d.Analyte === analyte)
@@ -647,7 +654,9 @@ invalidation?.then(() => {
         };
       })
       .sort((a, b) => a.date - b.date) || [];
+    console.timeEnd("B_prepare");
 
+    console.time("B_C");
     const dataCulture = mapped.filter(d => !d.isDdPCR);
     const dataDdPCR   = mapped.filter(d =>  d.isDdPCR);
 
@@ -668,7 +677,7 @@ invalidation?.then(() => {
       xDomain = [start, today];
     }
 
-
+    console.timeEnd("B_C");
     // Build segments with midpoints + reasons pulled from status objects
     const day = 24 * 3600 * 1000;
     const segments = statusSeries.map((s, i) => {
@@ -835,6 +844,7 @@ invalidation?.then(() => {
 
       display(plotDPCR);
     }
+    console.timeEnd("C_plot");
 
   }
   ```

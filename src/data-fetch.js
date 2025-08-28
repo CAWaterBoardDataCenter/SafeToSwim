@@ -1,8 +1,19 @@
-// ##### Data Fetching ######
+/*
+
+Data fetching for Safe To Swim app
+
+- load all stations at startup (meta + recent results)
+- station-specific fetch (with caching, windowing, analyte filtering)
+
+Author: Chloe Cheng
+
+*/
 
 import { DATASETS, DEFAULT_RESOURCE_ID } from "./data/data-config.js";
 
-// startup: load meta + recent results for all stations
+// ##### Startup fetch ######
+
+// load meta + recent results for all stations
 async function sql(endpoint) {
   const res = await fetch(
     `https://data.ca.gov/api/3/action/datastore_search_sql?sql=${encodeURIComponent(endpoint)}`
@@ -82,7 +93,7 @@ export async function loadAllStationsAtStartup({
         recentResults: []
       };
 
-      // prefer most recent dataset's meta (we're iterating recent→old)
+      // prefer most recent dataset's meta
       if (entry.StationName == null && m.StationName != null) entry.StationName = m.StationName;
       if (entry.TargetLatitude == null && m.TargetLatitude != null) entry.TargetLatitude = +m.TargetLatitude;
       if (entry.TargetLongitude == null && m.TargetLongitude != null) entry.TargetLongitude = +m.TargetLongitude;
@@ -116,11 +127,8 @@ export async function loadAllStationsAtStartup({
     }
   }
 
-  // finalize plain object
   return Object.fromEntries(registry.entries());
 }
-
-
 
 // ##### Station-specific fetch #####
 
@@ -136,7 +144,7 @@ function sinceISO(years = 5) {
 }
 const esc = s => String(s).replace(/'/g, "''");
 
-// --- SQL fetchers (ASC order, minimal columns) ---
+// SQL fetcher: from timecutoff (>= since) or all (since=null)
 async function sqlFetchStation(resourceId, stationCode, { signal, analytes = ANALYTES, since = null }) {
   const list = analytes.map(a => `'${esc(a)}'`).join(",");
   const whereSince = since ? `AND "SampleDate" >= '${since}'` : "";
@@ -154,7 +162,7 @@ async function sqlFetchStation(resourceId, stationCode, { signal, analytes = ANA
   return json.result?.records ?? [];
 }
 
-// older slice only (< cutoff)
+// SQL fetcher: older slice only (< cutoff)
 async function sqlFetchStationOlder(resourceId, stationCode, { signal, analytes = ANALYTES, olderThan }) {
   const list = analytes.map(a => `'${esc(a)}'`).join(",");
   const sql = `
@@ -198,7 +206,7 @@ function sameKey(a, b) {
   );
 }
 
-// merge multiple already-sorted lists, de-duping on the fly
+// merge multiple already-sorted lists, de-duping between resources
 function mergeSortedLists(lists) {
   if (lists.length === 1) return lists[0];
   const idx = Array(lists.length).fill(0);
@@ -277,7 +285,7 @@ export async function stationRecordFetch(
 
   // ===== Reuse paths to avoid refetching =====
 
-  // (A) WINDOW requested → derive from ALL if available (no network)
+  // (A) WINDOW requested: derive from ALL if available
   if (timePreset === "window" && _cache.has(allKey)) {
     const fromAll = _cache.get(allKey).filter(r => (r.ts ?? Date.parse(r.SampleDate)) >= Date.parse(cutoffISO));
     _cache.set(winKey, fromAll);
@@ -294,7 +302,7 @@ export async function stationRecordFetch(
     return await p;
   }
 
-  // (B) WINDOW requested → derive from any LONGER window in cache (e.g., 10y → 5y, 5y → 1y)
+  // (B) WINDOW requested: derive from any LONGER window in cache (e.g., 5y → 1y)
   if (timePreset === "window") {
     const supKey = findSupersetWindowKey({ scope, stationCode, cutoffISO, analyteKey: aKey });
     if (supKey) {
@@ -350,74 +358,3 @@ export async function stationRecordFetch(
     _inflight.delete(cacheKey);
   }
 }
-
-
-//
-
-// ---- ONE-REQUEST ALL-DATA FETCH (UNION ALL) ----
-// const _unionCache = new Map(); // key: station|a=enterococcus,e. coli -> rows[]
-
-// function analyteKey(analytes = ["Enterococcus", "E. coli"]) {
-//   return analytes.map(a => a.trim().toLowerCase()).sort().join(",");
-// }
-// const esc = s => String(s).replace(/'/g, "''");
-
-// function unionSqlForStation(stationCode, analytes, includeSource = true, hardLimit = null) {
-//   const list = analytes.map(a => `'${esc(a)}'`).join(",");
-//   const selects = DATASETS.map(ds => `
-//     SELECT
-//       "StationCode","SampleDate","Analyte","Unit","Result","30DayGeoMean","6WeekCount"
-//       ${includeSource ? `, '${esc(ds.label)}' AS "_source"` : ""}
-//     FROM "${ds.id}"
-//     WHERE "StationCode"='${esc(stationCode)}' AND "Analyte" IN (${list})
-//   `);
-//   return `
-//     ${selects.join("\nUNION ALL\n")}
-//     ORDER BY "SampleDate" ASC
-//     ${hardLimit ? `LIMIT ${Number(hardLimit)}` : ""}
-//   `;
-// }
-
-// export async function stationRecordFetch(
-//   stationCode,
-//   {
-//     analytes = ["Enterococcus", "E. coli"],
-//     includeSource = true,
-//     hardLimit = null,     // e.g., 500000 if you want a safety cap
-//     signal
-//   } = {}
-// ) {
-//   if (!stationCode?.trim()) return [];
-//   const aKey = analyteKey(analytes);
-//   const cacheKey = `${stationCode}|a=${aKey}`;
-//   if (_unionCache.has(cacheKey)) return _unionCache.get(cacheKey);
-
-//   const sql = unionSqlForStation(stationCode, analytes, includeSource, hardLimit);
-//   const url = `https://data.ca.gov/api/3/action/datastore_search_sql?sql=${encodeURIComponent(sql)}`;
-
-//   const t0 = performance.now();
-//   const resp = await fetch(url, { signal });
-//   const json = await resp.json();
-//   const rows = (json.result?.records ?? []);
-//   const t1 = performance.now();
-//   // console.debug("UNION fetch+parse", Math.round(t1 - t0), "ms", "rows:", rows.length);
-
-//   // Normalize in place; add numeric ts
-//   for (let i = 0; i < rows.length; i++) {
-//     const r = rows[i];
-//     const t = Date.parse(r.SampleDate);
-//     r.ts = Number.isFinite(t) ? t : null;
-//     if (r.Result != null) r.Result = +r.Result;
-//     if (r["30DayGeoMean"] != null) r["30DayGeoMean"] = +r["30DayGeoMean"];
-//     if (r["6WeekCount"]  != null) r["6WeekCount"]  = +r["6WeekCount"];
-//     // r._source is present if includeSource=true
-//   }
-
-//   _unionCache.set(cacheKey, rows);
-//   return rows; // already ASC by SampleDate
-// }
-
-// export function invalidateStationAllUnionCache(code, analytes = ["Enterococcus","E. coli"]) {
-//   if (!code) return;
-//   _unionCache.delete(`${code}|a=${analyteKey(analytes)}`);
-// }
