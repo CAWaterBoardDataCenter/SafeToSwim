@@ -1,5 +1,6 @@
-// Station selection management
 import { Generators } from "@observablehq/stdlib";
+
+// Station selection
 
 // --- Internal state ---
 const selectedStationBus = new EventTarget();

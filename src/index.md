@@ -9,7 +9,7 @@ import "npm:leaflet.fullscreen";
 
 import { resize } from "npm:@observablehq/stdlib";
 import * as mod from "./modules.js";
-import { setSelectedStation, selectedStation } from "./station-state.js";
+import { setSelectedStation,selectedStation } from "./station-state.js";
 
 function toDate(d) { 
   const t=new Date(d); 
@@ -18,33 +18,10 @@ function toDate(d) {
 ```
 
 ```js
-// Initialize Leaflet map
-const div = document.createElement("div");
-div.style = `height: 600px; border-radius: 8px; overflow: hidden; width: ${resize(width)}px;`;
+import { loadAllStationsAtStartup } from "./data-fetch.js";
 
-const map = L.map(div, {
-  wheelPxPerZoomLevel: 60,
-}).setView([37.5, -120], 6); // Initial view centered on California
-
-L.control.fullscreen({
-  position: "topleft",
-  // 👇 This shows as the native hover tooltip
-  title: "Tip: For best results, put your browser in full screen first",
-  titleCancel: "Exit fullscreen"
-}).addTo(map);
-
-L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXYyD4ZCvqwBRS", {
-  attribution:
-    '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
-}).addTo(map);
-
-const markersLayer = L.layerGroup().addTo(map);
-const markerMap = {};
-```
-
-```js
 // Fetch all station data (cached after first call)
-const stations = await mod.fetchAllStations();
+let stations = await loadAllStationsAtStartup();
 
 const statusesByCode = await mod.computeAllStatuses(
   new Map(Object.entries(stations).map(([code, st]) => [code, st.recentResults]))
@@ -54,6 +31,45 @@ const statusesByCode = await mod.computeAllStatuses(
 for (const [code, st] of Object.entries(stations)) {
   st.status = statusesByCode.get(code);
 }
+```
+
+```js
+
+// Initialize Leaflet map (div is placed later)
+const div = document.createElement("div");
+div.style = `height: 600px; border-radius: 8px; overflow: hidden; width: ${resize(width)}px;`;
+
+const map = L.map(div, {
+  wheelPxPerZoomLevel: 60,
+  preferCanvas: true,
+  zoomAnimation: true
+}).setView([37.5, -120], 6);    // Initial view centered on California
+
+map.createPane("historicalPane");
+map.getPane("historicalPane").style.zIndex = 385;
+map.getPane("historicalPane").style.pointerEvents = "auto";
+
+map.createPane("recentPane");
+map.getPane("recentPane").style.zIndex = 395;
+map.getPane("recentPane").style.pointerEvents = "auto";
+
+const sharedRenderer = L.canvas({ padding: 0.3 });
+
+// Two groups: fast toggle between recent vs historical
+const recentGroup = L.layerGroup().addTo(map);
+const historicGroup = L.layerGroup();        // start hidden
+const markerMap = {};
+
+L.control.fullscreen({
+  position: "topleft",
+  title: "Tip: For best results, put your browser in full screen first",
+  titleCancel: "Exit fullscreen"
+}).addTo(map);
+
+L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXYyD4ZCvqwBRS", {
+  attribution:
+    '<a href="https://www.maptiler.com/copyright/" target="_blank">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">&copy; OpenStreetMap contributors</a>'
+}).addTo(map);
 ```
 
 <div class="hero">
@@ -80,8 +96,8 @@ for (const [code, st] of Object.entries(stations)) {
 display(div);
 map.invalidateSize();
 
-// Ensure markers layer is on the map
-markersLayer.addTo(map);
+// // Ensure markers layer is on the map
+// markersLayer.addTo(map);
 ```
 
 ```js
@@ -89,128 +105,121 @@ const statusColors = await mod.getStatusColors();
 const BASE_SIZE = 7;
 const SELECTED_SIZE = 10;
 
-// --- icon helpers (no images needed) ---
-function circleDivIcon({ size = BASE_SIZE, color = "#7f7f7f", ring = false }) {
-  const border = 2;
-  const inner = ring
-    ? `
-      background: ${color};
-      box-shadow:
-        0 0 0 ${border}px ${color},
-        0 0 0 ${border + 4}px rgba(230, 2, 255, 0.8);
-    `
-    : `
-      background: ${color};
-      border: ${border}px solid ${color};
-      box-shadow: 0 0 0 0.5px rgba(0,0,0);
-    `;
-  const half = size / 2; // center anchor
-
-  return L.divIcon({
-    className: "station-circle",
-    iconSize: [size, size],
-    iconAnchor: [half, half],       
-    popupAnchor: [0, -half],        
-    html: `<div style="
-      width:${size}px;height:${size}px;border-radius:50%;
-      box-sizing:border-box;        /* border doesn't change center */
-      ${inner}
-    "></div>`
-  });
-}
+// 2) Colors & sizes
+const BASE_R = 4;
+const SELECTED_R = 7;
+const HILITE_RING = "rgba(230, 2, 255, 0.85)";
+const OUTLINE = "rgba(0,0,0,0.65)";
+const OUTLINE_W = 1;
 
 function colorForStation(st) {
   const status = st?.status?.name ?? "unknown";
   return statusColors[status] || statusColors.unknown;
 }
 
-// --- registry & selection state ---
-const __state = (globalThis.__wbfMapState ??= {});   // one global bucket
+function makeDot(code, st) {
+  const lat = +st?.TargetLatitude, lon = +st?.TargetLongitude;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
 
-__state.divMarkerMap ??= Object.create(null);
-__state.selectedCode ??= null;
+  const dot = L.circleMarker([lat, lon], {
+    renderer: sharedRenderer,   // <— single canvas
+    interactive: true,          // <— must be true for events
+    radius: BASE_R,
+    stroke: true, color: OUTLINE, weight: OUTLINE_W,
+    fillColor: colorForStation(st), fillOpacity: 0.95
+  })
+    .bindPopup(`<b>${st.StationName ?? "(unknown)"}<\/b><br>Code: ${code}<br>Status: ${st.status?.name ?? "unknown"}`)
+    .on("click", () => { setSelectedStation(code, "map"); highlightSelected(code); })
+    .on("mouseover", () => { dot.setStyle({ radius: BASE_R * 1.3 }); dot.bringToFront(); })
+    .on("mouseout",  () => { dot.setStyle({ radius: __state.selectedCode===code ? SELECTED_R : BASE_R }); });
 
-const divMarkerMap = __state.divMarkerMap;   // use these throughout the cell
+  return dot;
+}
 
-// --- draw markers as divIcons ---
-function drawStationDivMarkers() {
+// Draw all stations as Canvas dots once
+function drawStationDots() {
+  const today = new Date();
+
   for (const [code, st] of Object.entries(stations)) {
-    const lat = +st?.TargetLatitude, lon = +st?.TargetLongitude;
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    const dot = makeDot(code, st);
+    if (!dot) continue;
 
-    const color = colorForStation(st);
-    const icon  = circleDivIcon({ size: BASE_SIZE, color });
+    const isRecent = mod.isWithinWeeks(st?.lastSampleDate ?? null, 6, today);
+    (isRecent ? recentGroup : historicGroup).addLayer(dot);
+    markerMap[code] = dot;
 
-    const marker = L.marker([lat, lon], {
-      icon,
-      zIndexOffset: 0 // raise selected marker
-    })
-    .bindPopup(`<b>${st.StationName}</b><br>Code: ${code}<br>Status: ${st.status?.name ?? "unknown"}`)
-    .on("click", () => {
-      setSelectedStation(code, "map");
-      highlightSelected(code);
-    })
-    .addTo(markersLayer);
-
-    // optional hover effect
-    marker.on("mouseover", () => {
-      marker._icon?.firstChild?.style && (marker._icon.firstChild.style.transform = "scale(1.3)");
-    });
-    marker.on("mouseout", () => {
-      marker._icon?.firstChild?.style && (marker._icon.firstChild.style.transform = "scale(1.0)");
-    });
-
-    divMarkerMap[code] = marker;
+    if (isRecent) dot.bringToFront(); // ensure recent above historical in the shared canvas
   }
 
+  // safety: bring all recent layers front (e.g., after bulk adds)
+  recentGroup.eachLayer(l => l.bringToFront());
+
   invalidation?.then(() => {
-    Object.values(divMarkerMap).forEach(m => {
-      m.off();
-      if (markersLayer.hasLayer?.(m)) markersLayer.removeLayer(m);
-    });
+    recentGroup.clearLayers();
+    historicGroup.clearLayers();
+    for (const k of Object.keys(markerMap)) delete markerMap[k];
   });
 }
 
-// --- call once after stations load ---
-drawStationDivMarkers();
+drawStationDots();
 
-// --- selection highlighting (swap icon to ring + raise zIndex) ---
+// 6) Toggle helper: show/hide the whole historical group
+function setRecentOnly(on) {
+  if (on) {
+    map.removeLayer(historicGroup);
+  } else {
+    map.addLayer(historicGroup);
+    // reassert recent above historical after re-adding
+    recentGroup.eachLayer(l => l.bringToFront());
+  }
+}
+
+recentOnly; { setRecentOnly(recentOnly); }
+
+
+// 7) Selection highlighting (ring + bring to front)
+const __state = (globalThis.__wbfMapState ??= {});
+__state.selectedCode ??= null;
+
 function highlightSelected(code, { pan = true, openPopup = true } = {}) {
-  const prevCode = __state.selectedCode;
-
-  // reset previous if different
-  if (prevCode && prevCode !== code && divMarkerMap[prevCode]) {
-    const prev = divMarkerMap[prevCode];
-    prev.setIcon(circleDivIcon({
-      size: BASE_SIZE,
-      color: colorForStation(stations[prevCode])
-    }));
-    prev.setZIndexOffset(0);
-    prev._icon?.firstChild && (prev._icon.firstChild.style.transform = "scale(1.0)");
+  const prev = __state.selectedCode;
+  if (prev && prev !== code && markerMap[prev]) {
+    markerMap[prev].setStyle({
+      radius: BASE_R,
+      stroke: true,
+      color: OUTLINE,
+      weight: OUTLINE_W,
+      fillColor: colorForStation(stations[prev])
+    });
   }
 
-  // apply highlight
   __state.selectedCode = code;
 
-  const st = stations?.[code];
-  const m  = divMarkerMap?.[code];
-  if (!st || !m) return;
+  const st  = stations?.[code];
+  const dot = markerMap?.[code];
+  if (!st || !dot) return;
 
-  const color = colorForStation(st);
-  m.setIcon(circleDivIcon({ size: SELECTED_SIZE, color, ring: true }));
-  m.setZIndexOffset(1000);
+  dot.setStyle({
+    radius: SELECTED_R,
+    stroke: true,
+    color: HILITE_RING, // ring color
+    weight: 3,
+    fillColor: colorForStation(st)
+  });
+  dot.bringToFront(); // top of its pane
 
   if (pan) {
     const lat = +st.TargetLatitude, lon = +st.TargetLongitude;
     if (Number.isFinite(lat) && Number.isFinite(lon)) {
-      const targetZoom = map?.getZoom?.() ?? 10;
-      map.setView([lat, lon], targetZoom, { animate: true });
+      map.setView([lat, lon], map.getZoom(), { animate: true });
     }
   }
+  if (openPopup) dot.openPopup();
+}
 
-  if (openPopup) {
-    m.openPopup();
-  }
+recentOnly; // reactive
+{
+  setRecentOnly(recentOnly);
 }
 ```
 
@@ -219,13 +228,14 @@ function highlightSelected(code, { pan = true, openPopup = true } = {}) {
 selectedStation;
 {
   const code = selectedStation?.code ?? selectedStation ?? null;
-  if (code && stations?.[code] && divMarkerMap?.[code]) {
+  if (code && stations?.[code] && markerMap?.[code]) {
     highlightSelected(code, { pan: true, openPopup: true });
   }
 }
 ```
 
 ```js
+// LEGEND
 // 1) Lightweight CSS (once)
 let legendStyleEl = document.getElementById("map-legend-style");
 if (!legendStyleEl) {
@@ -294,7 +304,6 @@ map.addControl(legendCtl);
 invalidation?.then(() => {
   if (legendCtl) map.removeControl(legendCtl);
 });
-
 ```
 
 </div>
@@ -330,7 +339,7 @@ invalidation?.then(() => {
   ```js
   const recentOnly = view(
     Inputs.toggle({
-      label: "Only show stations sampled in the last 6 weeks",
+      label: "Recent data only (last 6 weeks)",
       value: true
     })
   );
@@ -348,12 +357,12 @@ invalidation?.then(() => {
   ```
 
   ```js
-  function updateMarkerVisibility({ recentOnly, hasRecent, divMarkerMap }) {
-    if (!divMarkerMap) return;
-    for (const [code, marker] of Object.entries(divMarkerMap)) {
+  function updateMarkerVisibility({ recentOnly, hasRecent, markerMap }) {
+    if (!markerMap) return;
+    for (const [code, marker] of Object.entries(markerMap)) {
       // keep if toggle is off OR station is recent
       const visible = !recentOnly || hasRecent.get(code) || code === selectedStation?.code;
-      // Fast + simple: hide the marker’s DOM element
+      // Fast + simple: hide the marker
       const el = marker.getElement?.();
       if (el) {
         el.style.display = visible ? "" : "none";
@@ -362,21 +371,17 @@ invalidation?.then(() => {
     }
   }
 
-  recentOnly; hasRecent; divMarkerMap; // make reactive
+  recentOnly; hasRecent; markerMap; // make reactive
   {
-    updateMarkerVisibility({ recentOnly, hasRecent, divMarkerMap });
+    updateMarkerVisibility({ recentOnly, hasRecent, markerMap });
 
     // (Optional) show a tiny summary
-    const total = divMarkerMap ? Object.keys(divMarkerMap).length : 0;
-    const visible = divMarkerMap
-      ? Object.keys(divMarkerMap).filter(c => !recentOnly || hasRecent.get(c)).length
+    const total = markerMap ? Object.keys(markerMap).length : 0;
+    const visible = markerMap
+      ? Object.keys(markerMap).filter(c => !recentOnly || hasRecent.get(c)).length
       : 0;
     // display(`${visible}/${total} stations visible`);
   }
-  ```
-
-  ```js
-
   ```
 
   </div>
@@ -467,13 +472,13 @@ invalidation?.then(() => {
 <div class="card grid-colspan-3"><h1>Data</h1>
 
   ```js
-  import { stationRecordFetch } from "./modules.js";
+  import { stationRecordFetch } from "./data-fetch.js";
 
   selectedStation; // reactive
-  let stationRecord = null;
+  let stationRecordStartup = null;
   const code = selectedStation?.code;
   if (code) {
-    stationRecord = await stationRecordFetch(code);
+    stationRecordStartup = await stationRecordFetch(code);
   }
 
   const { isSaltwater, bacteria, thresholds } =
@@ -496,7 +501,7 @@ invalidation?.then(() => {
     const candidates = Array.from(new Set([bacteria, "Enterococcus", "E. coli"].filter(Boolean)));
 
     const hasData = name =>
-      stationRecord?.some(d => d.Analyte === name && Number.isFinite(+d.Result)) ?? false;
+      stationRecordStartup?.some(d => d.Analyte === name && Number.isFinite(+d.Result)) ?? false;
 
     const disabledValues = candidates.filter(name => !hasData(name));
 
@@ -508,7 +513,7 @@ invalidation?.then(() => {
       Inputs.select(candidates, {
         label: "Display data by bacteria",
         value: defaultAnalyte,
-        format: v => hasData(v) ? v : `${v} (no data)`,
+        format: v => hasData(v) ? v : `${v} (no data in range)`,
         disabled: disabledValues
       })
     );
@@ -530,7 +535,7 @@ invalidation?.then(() => {
 
     timePreset = view(Inputs.select(PRESETS, {
       label: "Time range",
-      value: PRESETS.get("All data")
+      value: PRESETS.get("Last 5 years")
     }));
   } else { timePreset = null; }
   ```
@@ -550,11 +555,36 @@ invalidation?.then(() => {
       : null; // "All data" → let plots use data extent policy
   ```
 
+  ```js
+  import { stationRecordFetch } from "./data-fetch.js";
+
+  selectedStation; timePreset;
+  let stationRecord = (async () => {
+    const code = selectedStation?.code;
+    if (!code) return [];
+
+    // Abort if user switches station/preset mid-fetch
+    const ac = new AbortController();
+    invalidation.then(() => ac.abort());
+
+    // Map your UI preset → fetcher options
+    const presetKind  = timePreset?.kind === "all" ? "all" : "preset";
+    const sinceYears  = timePreset?.kind === "preset" ? timePreset.years : 5; // reuse your 5y default
+
+    return await stationRecordFetch(code, {
+      recentOnly: false,
+      timePreset: presetKind,
+      sinceYears,
+      signal: ac.signal
+    });
+  })();
+  ```
+
   ---
 
   ```js
   // If no station is selected, show single placeholder plot with message
-  if (!stationRecord) {
+  if (!selectedStation) {
     const today = toDate(new Date());
 
     const defaultDomain = uiDomain ?? [toDate(new Date(today.getFullYear() - 5, today.getMonth(), today.getDate())), today];
