@@ -26,8 +26,6 @@ export async function loadAllStationsAtStartup({
   windowDays = 42,
   analytes = ["Enterococcus", "E. coli"]
 } = {}) {
-  // Process datasets in priority order (1 = most recent first),
-  // so recent metadata wins and older only fills blanks.
   const ordered = DATASETS.slice().sort((a, b) => a.priority - b.priority);
 
   const registry = new Map(); // StationCode -> merged object
@@ -38,97 +36,113 @@ export async function loadAllStationsAtStartup({
   for (const ds of ordered) {
     const id = ds.id;
 
-    // 1) meta
-    const metaQ = `
-      SELECT DISTINCT "StationCode","StationName","TargetLatitude","TargetLongitude"
-      FROM "${id}"
-    `;
-    // 2) last sample date
-    const lastQ = `
-      SELECT "StationCode", MAX("SampleDate") AS "LastSampleDate"
-      FROM "${id}"
-      GROUP BY "StationCode"
-    `;
-    // 3) total count
-    const countQ = `
-      SELECT "StationCode", COUNT(*)::INT AS "TotalCount"
-      FROM "${id}"
-      GROUP BY "StationCode"
-    `;
-    // 4) recent window (for latest/recentResults)
-    const recentQ = `
-      SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
-      FROM "${id}"
-      WHERE "SampleDate" >= '${sinceISO}' AND "Analyte" IN (${analyteList})
-    `;
+        // 1) meta
+        const metaQ = `
+          SELECT DISTINCT "StationCode","StationName","TargetLatitude","TargetLongitude"
+          FROM "${id}"
+        `;
+        // 2) last sample date
+        const lastQ = `
+          SELECT "StationCode", MAX("SampleDate") AS "LastSampleDate"
+          FROM "${id}"
+          GROUP BY "StationCode"
+        `;
+        // 3) recent window (for latest/recentResults)
+        const recentQ = `
+          SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
+          FROM "${id}"
+          WHERE "SampleDate" >= '${sinceISO}' AND "Analyte" IN (${analyteList})
+        `;
+        // 4) analytes present in dataset (for filtering)
+        const analytesEverQ = `
+          SELECT DISTINCT "StationCode","Analyte"
+          FROM "${id}"
+          WHERE "Analyte" IN (${analyteList})
+        `;
 
-    const [metaRows, lastRows, countRows, recentRows] = await Promise.all([
-      sql(metaQ), sql(lastQ), sql(countQ), sql(recentQ)
-    ]);
+        const [metaRows, lastRows, recentRows, analytesEverRows] = await Promise.all([
+          sql(metaQ), sql(lastQ), sql(recentQ), sql(analytesEverQ)
+        ]);
 
-    const lastBy = Object.fromEntries(lastRows.map(r => [r.StationCode, r.LastSampleDate || null]));
-    const countBy = Object.fromEntries(countRows.map(r => [r.StationCode, Number(r.TotalCount) || 0]));
+        const lastBy = Object.fromEntries(lastRows.map(r => [r.StationCode, r.LastSampleDate || null]));
 
-    // group recent rows per station for this dataset
-    const recentBy = new Map();
-    for (const r of recentRows) {
-      const arr = recentBy.get(r.StationCode) ?? [];
-      arr.push(r);
-      recentBy.set(r.StationCode, arr);
-    }
+        // group recent rows per station for this dataset
+        const recentBy = new Map();
+        for (const r of recentRows) {
+          const arr = recentBy.get(r.StationCode) ?? [];
+          arr.push(r);
+          recentBy.set(r.StationCode, arr);
+        }
 
-    // merge into registry
-    for (const m of metaRows) {
-      const code = m.StationCode;
-      const prev = registry.get(code);
-      const entry = prev ?? {
-        StationCode: code,
-        StationName: null,
-        TargetLatitude: null,
-        TargetLongitude: null,
-        lastSampleDate: null,
-        totalDataPoints: 0,
-        datasets: [],
-        latest: null,
-        recentResults: []
-      };
+        // group EVER analytes per station for this dataset
+        const everBy = new Map(); // code -> Set of analytes
+        for (const r of analytesEverRows) {
+          const code = r.StationCode;
+          const a = String(r.Analyte ?? "").trim();
+          if (!a) continue;
+          if (!everBy.has(code)) everBy.set(code, new Set());
+          everBy.get(code).add(a);
+        }
 
-      // prefer most recent dataset's meta
-      if (entry.StationName == null && m.StationName != null) entry.StationName = m.StationName;
-      if (entry.TargetLatitude == null && m.TargetLatitude != null) entry.TargetLatitude = +m.TargetLatitude;
-      if (entry.TargetLongitude == null && m.TargetLongitude != null) entry.TargetLongitude = +m.TargetLongitude;
+        // merge into registry
+        for (const m of metaRows) {
+          const code = m.StationCode;
+          const prev = registry.get(code);
+          const entry = prev ?? {
+            StationCode: code,
+            StationName: null,
+            TargetLatitude: null,
+            TargetLongitude: null,
+            lastSampleDate: null,
+            datasets: [],
+            latest: null,
+            recentResults: [],
+            analytes: []
+          };
 
-      // update last date & counts
-      const ld = lastBy[code] ?? null;
-      if (!entry.lastSampleDate || (ld && ld > entry.lastSampleDate)) entry.lastSampleDate = ld;
-      entry.totalDataPoints += countBy[code] ?? 0;
+          // prefer most recent dataset's meta
+          if (entry.StationName == null && m.StationName != null) entry.StationName = m.StationName;
+          if (entry.TargetLatitude == null && m.TargetLatitude != null) entry.TargetLatitude = +m.TargetLatitude;
+          if (entry.TargetLongitude == null && m.TargetLongitude != null) entry.TargetLongitude = +m.TargetLongitude;
 
-      // dataset tag
-      if (!entry.datasets.includes(ds.label)) entry.datasets.push(ds.label);
+          // update last date & counts
+          const ld = lastBy[code] ?? null;
+          if (!entry.lastSampleDate || (ld && ld > entry.lastSampleDate)) entry.lastSampleDate = ld;
 
-      // add any recent rows from this dataset
-      const rec = recentBy.get(code) ?? [];
-      if (rec.length) {
-        for (const r of rec) {
-          entry.recentResults.push({
-            SampleDate: r.SampleDate,
-            Analyte: r.Analyte,
-            Unit: r.Unit,
-            Result: r.Result,
-            MethodName: r.MethodName ?? null
-          });
-          if (!entry.latest || r.SampleDate > entry.latest.SampleDate) {
-            entry.latest = r;
+          // dataset tag
+          if (!entry.datasets.includes(ds.label)) entry.datasets.push(ds.label);
+
+          // add any recent rows
+          const rec = recentBy.get(code) ?? [];
+          if (rec.length) {
+            for (const r of rec) {
+              entry.recentResults.push({
+                SampleDate: r.SampleDate,
+                Analyte: r.Analyte,
+                Unit: r.Unit,
+                Result: r.Result,
+                MethodName: r.MethodName ?? null
+              });
+              if (!entry.latest || r.SampleDate > entry.latest.SampleDate) {
+                entry.latest = r;
+              }
+            }
           }
+
+          // merge EVER analytes
+          if (everBy.has(code)) {
+            const merged = new Set(entry.analytes);
+            for (const a of everBy.get(code)) merged.add(a);
+            entry.analytes = Array.from(merged).sort((x, y) => x.localeCompare(y));
+          }
+
+          registry.set(code, entry);
         }
       }
 
-      registry.set(code, entry);
-    }
-  }
-
-  return Object.fromEntries(registry.entries());
+      return Object.fromEntries(registry.entries());
 }
+
 
 // ##### Station-specific fetch #####
 

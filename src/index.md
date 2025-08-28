@@ -54,7 +54,7 @@ const map = L.map(div, {
   wheelPxPerZoomLevel: 60,
   preferCanvas: true,
   zoomAnimation: true
-}).setView([37.5, -120], 6);    // Initial view centered on California
+}).setView([37.5, -120], 6);    // initial view centered on California
 
 map.createPane("historicalPane");
 map.getPane("historicalPane").style.zIndex = 385;
@@ -66,7 +66,7 @@ map.getPane("recentPane").style.pointerEvents = "auto";
 
 const sharedRenderer = L.canvas({ padding: 0.3 });
 
-// Two groups: fast toggle between recent vs historical
+// Two groups for z order and toggling between recent vs historical
 const recentGroup = L.layerGroup().addTo(map);
 const historicGroup = L.layerGroup();        // start hidden
 const markerMap = {};
@@ -145,7 +145,6 @@ function makeDot(code, st) {
   return dot;
 }
 
-
 // Draw all stations as Canvas dots once
 function drawStationDots() {
   const today = new Date();
@@ -185,7 +184,6 @@ function setRecentOnly(on) {
 }
 
 recentOnly; { setRecentOnly(recentOnly); }
-
 
 // 7) Selection highlighting (ring + bring to front)
 const __state = (globalThis.__wbfMapState ??= {});
@@ -399,7 +397,7 @@ invalidation?.then(() => {
   <div class="card" id="station-info-card" style="margin: 0;">
 
   ```js
-  selectedStation; // make reactive
+  selectedStation;
 
   const code = selectedStation?.code;
   let meta = null;
@@ -484,15 +482,12 @@ invalidation?.then(() => {
   ```js
   import { stationRecordFetch } from "./data-fetch.js";
 
-  console.time("A_fetch");
   selectedStation; // reactive
   let stationRecordStartup = null;
   const code = selectedStation?.code;
   if (code) {
     stationRecordStartup = await stationRecordFetch(code);
   }
-  console.timeEnd("A_fetch");
-
   const { isSaltwater, bacteria, thresholds } =
     await mod.getStationAssessmentSpec(code);
   ```
@@ -511,21 +506,21 @@ invalidation?.then(() => {
 
   if (selectedStation) {
     const candidates = Array.from(new Set([bacteria, "Enterococcus", "E. coli"].filter(Boolean)));
+    const code = selectedStation?.code;
 
-    const hasData = name =>
-      stationRecordStartup?.some(d => d.Analyte === name && Number.isFinite(+d.Result)) ?? false;
-
-    const disabledValues = candidates.filter(name => !hasData(name));
+    const analytesAvailable = stations?.[code]?.analytes ?? [];
+    const hasAny = (name) => analytesAvailable.includes(name);
+    const disabledValues = candidates.filter(name => !hasAny(name));
 
     const defaultAnalyte =
-      (bacteria && hasData(bacteria)) ? bacteria :
-      (candidates.find(hasData) ?? candidates[0]);
+      (bacteria && hasAny(bacteria)) ? bacteria :
+      (candidates.find(hasAny) ?? candidates[0]);
 
     analyte = view(
       Inputs.select(candidates, {
         label: "Display data by bacteria",
         value: defaultAnalyte,
-        format: v => hasData(v) ? v : `${v} (no data in range)`,
+        format: v => hasAny(v) ? v : `${v} (no data)`,
         disabled: disabledValues
       })
     );
@@ -536,20 +531,32 @@ invalidation?.then(() => {
   ```
 
   ```js
-  let timePreset = null;
-  if (selectedStation) {
-    // pick time window
-    const PRESETS = new Map([
-      ["Last 1 year", { kind: "preset", years: 1 }],
-      ["Last 5 years", { kind: "preset", years: 5 }],
-      ["All data",     { kind: "all" }]
-    ]);
+  const PRESETS = new Map([
+    ["Last 1 year", { kind: "preset", years: 1 }],
+    ["Last 5 years", { kind: "preset", years: 5 }],
+    ["All data",     { kind: "all" }]
+  ]);
 
-    timePreset = view(Inputs.select(PRESETS, {
-      label: "Time range",
-      value: PRESETS.get("Last 5 years")
-    }));
-  } else { timePreset = null; }
+  const timeRangeInput = Inputs.select(PRESETS, {
+    label: "Time range",
+    value: PRESETS.get("All data") // default only applied once
+  });
+
+  // Expose the reactive value (persists even if hidden)
+  const timePreset = view(timeRangeInput);
+  ```
+
+  ```js
+  // 2) Mount point that shows/hides the input without recreating it
+  const timeRangeMount = html`<div></div>`;
+  display(timeRangeMount);
+
+  selectedStation; // reactive dependency
+  if (selectedStation) {
+    timeRangeMount.replaceChildren(timeRangeInput);
+  } else {
+    timeRangeMount.replaceChildren(); // hide when no station selected
+  }
   ```
 
   ```js
@@ -568,6 +575,7 @@ invalidation?.then(() => {
   ```
 
   ```js
+  // For fetching further data
   import { stationRecordFetch } from "./data-fetch.js";
 
   selectedStation; timePreset;
@@ -579,9 +587,8 @@ invalidation?.then(() => {
     const ac = new AbortController();
     invalidation.then(() => ac.abort());
 
-    // Map your UI preset → fetcher options
     const presetKind  = timePreset?.kind === "all" ? "all" : "preset";
-    const sinceYears  = timePreset?.kind === "preset" ? timePreset.years : 5; // reuse your 5y default
+    const sinceYears  = timePreset?.kind === "preset" ? timePreset.years : 5; // 5y default
 
     return await stationRecordFetch(code, {
       recentOnly: false,
@@ -619,8 +626,6 @@ invalidation?.then(() => {
 
   } else {
 
-    console.time("status_series");
-
     const statusSeries = await stat.buildStatusSeriesForStation(stationRecord);
 
     const statusByDay = new Map(
@@ -629,9 +634,7 @@ invalidation?.then(() => {
         s
       ])
     );
-    console.timeEnd("status_series");
-
-    console.time("B_prepare");
+ 
     // Process data for plots
     const mapped = stationRecord
       ?.filter(d => d.Analyte === analyte)
@@ -639,7 +642,7 @@ invalidation?.then(() => {
         const date = new Date(d.SampleDate);
         const iso = date.toISOString().slice(0, 10);
         const st = statusByDay.get(iso);
-        const ddpcr = mod.isDdPCR?.(d) ?? false; // requires the helper above
+        const ddpcr = mod.isDdPCR?.(d) ?? false;
 
         return {
           date,
@@ -654,13 +657,11 @@ invalidation?.then(() => {
         };
       })
       .sort((a, b) => a.date - b.date) || [];
-    console.timeEnd("B_prepare");
 
-    console.time("B_C");
     const dataCulture = mapped.filter(d => !d.isDdPCR);
     const dataDdPCR   = mapped.filter(d =>  d.isDdPCR);
 
-    // choose extent from culture; if none, fall back to ddPCR so users still see something
+    // choose extent from culture
     const baseForExtent = dataCulture.length ? dataCulture : dataDdPCR;
     const hasData = baseForExtent.length > 0;
     const dataExtent = hasData ? d3.extent(baseForExtent, d => toDate(d.date)) : [null, null];
@@ -677,7 +678,6 @@ invalidation?.then(() => {
       xDomain = [start, today];
     }
 
-    console.timeEnd("B_C");
     // Build segments with midpoints + reasons pulled from status objects
     const day = 24 * 3600 * 1000;
     const segments = statusSeries.map((s, i) => {
@@ -699,12 +699,12 @@ invalidation?.then(() => {
     const ribbon = Plot.plot({
       title: `Status history`,
       marks: [
-        // base band
+        // status band
         Plot.rectY(segments, { x1: "x1", x2: "x2", y1: 0, y2: 1, fill: "color", title: d => d.name }),
 
         // highlighted rect (nearest xm)
         Plot.rectY(segments, Plot.pointerX({
-          x: "xm",         // snap by midpoint
+          x: "xm",
           x1: "x1", x2: "x2",
           y1: 0,  y2: 1,
           fill: "color",
@@ -713,10 +713,10 @@ invalidation?.then(() => {
           maxRadius: 100
         })),
 
-        // label with status name + reasons (placed in the ribbon mid-height)
+        // text with status name + reasons
         Plot.text(segments, Plot.pointerX({
           x: "xm",
-          y: 0.8,
+          y: 0.75,
           text: d => `${d.name}: \n${d.reasonStr}`,
           dx: 6, dy: -6,
           frameAnchor: "top-left",
@@ -726,7 +726,7 @@ invalidation?.then(() => {
       ],
       x: { domain: xDomain, label: "Date" },
       y: { domain: [0,1], axis: "left", tickSize: 0, label: null, tickFormat: () => "" },
-      height: 80,
+      height: 100,
       width
     });
 
@@ -734,9 +734,7 @@ invalidation?.then(() => {
 
     // 6-week geomean plot ------------------------------
 
-    if (!dataCulture.length) {
-      display(`No culture-method data for ${analyte} at this station.`);
-    } else {
+    if (dataCulture.length) {
       const labelUnit = `${dataCulture[0].analyte} (${dataCulture[0].unit})`;
 
       const all = await mod.getAllThresholds();
@@ -780,11 +778,9 @@ invalidation?.then(() => {
       display(pplot);
     }
 
-  
     // Single results plot ------------------------------
-    if (!dataCulture.length) {
-      display(`No culture-method data for ${analyte} at this station.`);
-    } else {
+
+    if (dataCulture.length) {
       const labelUnit = `${dataCulture[0].analyte} (${dataCulture[0].unit})`;
 
       const all = await mod.getAllThresholds();
@@ -795,7 +791,7 @@ invalidation?.then(() => {
         title: `Single sample results (${dataCulture.length} samples)`,
         marks: [
           Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
+          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 20, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
           Plot.dot(dataCulture, {
             x: "date", y: "result", r: 2, fill: "steelblue",
             stroke: d => (T != null && d.result > T) ? "orange" : "none",
@@ -844,8 +840,6 @@ invalidation?.then(() => {
 
       display(plotDPCR);
     }
-    console.timeEnd("C_plot");
-
   }
   ```
 
