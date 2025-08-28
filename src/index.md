@@ -814,7 +814,7 @@ invalidation?.then(() => {
     if (dataDdPCR.length) {
       const labelUnitDPCR = `${dataDdPCR[0].analyte} (${dataDdPCR[0].unit})`;
       const plotDPCR = Plot.plot({
-        title: `ddPCR results (not used for status) — ${dataDdPCR.length} samples`,
+        title: `ddPCR results - not used for status (${dataDdPCR.length} samples)`,
         marks: [
           Plot.ruleY([{}], { y: 1413, stroke: "gray", opacity: 0.25, strokeWidth: 1, title: `Threshold: 1,413 ${dataDdPCR[0].unit}`}),
           Plot.dot(dataDdPCR, { x: "date", y: "result", r: 2, strokeWidth: 1 }),
