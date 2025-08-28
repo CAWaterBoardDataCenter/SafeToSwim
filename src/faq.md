@@ -28,11 +28,17 @@ The data shown on this map are sourced from the [California Environmental Data E
 
 Most samples are collected by local public health agencies, environmental organizations, and other partners. Samples are typically obtained via grab sampling at designated stations along beaches, rivers, and lakes. The samples are then analyzed in laboratories to measure levels of indicator bacteria such as E. coli and enterococcus. 
 
-Currently, there exist many methods of measuring bacteria concentrations, typically involving culturing bacteria from a water sample. Some local agencies have begun using rapid testing methods such as quantitative real-time PCR (qPCR) and droplet digital PCR (ddPCR). Further information about the latest studies on methodology can be found at the [U.S. EPA's website](https://www.epa.gov/water-research/monitoring-recreational-water-quality).
+Currently, there exist many methods of measuring bacteria concentrations, typically involving culturing bacteria from a water sample. Some local agencies have begun using rapid testing methods such as quantitative real-time PCR (qPCR) and droplet digital polymerase chain reaction (ddPCR). Further information about the latest studies on methodology can be found at the [U.S. EPA's website](https://www.epa.gov/water-research/monitoring-recreational-water-quality).
 
 ### Why do I see different units (CFU vs MPN) for bacteria concentrations?
 
 Methods for reporting concentrations and detection limits may vary by agency. For example, some may report concentrations in CFU/100mL (colony forming units per 100 milliliters) while others may use MPN/100mL (most probable number per 100 milliliters). The methods these units represent are different, but are equivalent and acceptable units of concentration under California's water quality standards.
+
+### What is "ddPCR" and why do some samples have this method?
+
+ddPCR stands for droplet digital polymerase chain reaction, describing a testing method that allows for the precise quantification of DNA in a sample. In May 2022, San Diego County became the first Federal and State approved coastal county in the nation to begin using a ddPCR testing method that offers more rapid results. For enterococcus only, this map uses the ddPCR standard threshold value of 1,413 DNA copies of bacteria per 100 mL, the same threshold value documented on the San Diego County Beach and Bay Water Quality Monitoring Program website. Results above this level may indicate a higher risk of illness.
+
+We provide this information in the interest of transparency, but note that ddPCR is not yet widely used by other agencies in California, and the statewide bacteria water quality objectives do not yet include ddPCR thresholds for safety statuses. Safety statuses on this map are only evaluated using culture-based methods (units of CFU or MPN).
 
 ### How often is data updated?
 
@@ -65,11 +71,11 @@ Based on the 2019 statewide bacteria water quality objectives and the large stud
 
 ## Bacteria Objectives
 
-The results displayed on this map are compared to the statewide bacteria water quality objectives, which the State Water Resources Control Board issued in 2019 to protect recreational users from the effects of pathogens in California water bodies. This section provides more information about these objectives and how they are applied.
+The results displayed on this map are compared to the statewide bacteria water quality objectives, which are designed to protect recreational users from the effects of pathogens in California water bodies. This section provides more information about these objectives and how they are applied.
 
 ### What does "bacteria objectives" mean?
 
-Bacteria objectives are regulatory standards set to protect public health by limiting the concentration of certain bacteria in recreational waters. These objectives are based on scientific studies that correlate bacteria levels with the risk of illness among swimmers and other recreational users. The objectives specify acceptable levels of indicator bacteria, such as E. coli and enterococcus, which are used to assess water quality.
+Bacteria objectives are standards set to protect public health by limiting the concentration of certain bacteria in recreational waters. These objectives are based on scientific studies that find relationships between bacteria levels in water and the risk of illness among recreational users. The objectives specify levels of indicator bacteria, such as E. coli and enterococcus, that correspond to a certain amount of risk.
 
 ### What bacteria objectives are used in this dashboard?
 
@@ -98,6 +104,8 @@ Water quality data is inherently limited by the frequency and locations of sampl
 3. **Weather dependencies:** Precipitation and runoff can significantly impact water quality. Heavy rains can lead to increased levels of contaminants reaching bodies of water, while dry conditions may result in lower water levels. Users should consider recent weather conditions when interpreting water quality data. In particular, avoid water contact for at least 48 hours after significant rainfall events, as runoff can carry pollutants into recreational waters. Water quality can change rapidly, and this dashboard may not reflect the most current conditions.
 
 4. **No connection to real-time closures:** This dashboard does not provide real-time information about water closures or advisories. Users should consult local health departments or agencies for the latest information on water safety and any active closures, which are typically posted physically at the waterbody or on the agency's website. These closures may be based on additional factors not represented in this dashboard, such as sewage spills or other pollution events.
+
+5. **Human error:** Data collection and processing are subject to occasional human error, which can affect the accuracy of the information presented. Users should be aware of this potential limitation.
 
 ## Contact Information
 
