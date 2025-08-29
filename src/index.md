@@ -326,32 +326,13 @@ invalidation?.then(() => {
   <div class="card" id="search-card" style="margin: 0;"><h1>Find stations</h1>
 
   ```js
-  // Create once
-  const stationInput = Inputs.text({ label: "Station code", value: "" });
-  display(stationInput);
-
-  // Publish user edits -> state bus
-  const onInput = () => setSelectedStation(stationInput.value, "input");
-  stationInput.addEventListener("input", onInput);
-  invalidation.then(() => stationInput.removeEventListener("input", onInput));
-  ```
-
-  ```js
-  selectedStation; // make this cell reactive
-  if (selectedStation?.source !== "input") {
-    const v = selectedStation?.code ?? "";
-    if (stationInput.value !== v) stationInput.value = v;
-  }
-  ```
-
-  ```js
   const recentOnly = view(
     Inputs.toggle({
       label: "Recent data only (last 6 weeks)",
       value: true
     })
   );
-  ```
+  ``` 
 
   ```js
   stations; // reactive
@@ -388,7 +369,55 @@ invalidation?.then(() => {
     const visible = markerMap
       ? Object.keys(markerMap).filter(c => !recentOnly || hasRecent.get(c)).length
       : 0;
-    // display(`${visible}/${total} stations visible`);
+  }
+  ```
+
+  ```js
+  // build station options for search
+  const stationOptions = Object.entries(stations ?? {}).map(([code, st]) => {
+    const name = mod?.formatStationName
+      ? mod.formatStationName(st.StationName, code)
+      : (st?.StationName ?? "(unknown)");
+    return { code, name, label: `${name} (${code})` };
+  });
+
+  // filter input
+  const filterBox = view(Inputs.text({ placeholder: "Filter by name or code", width: "100%" }));
+  ```
+
+  ```js
+  // filtered select
+  {
+    const q = String(filterBox ?? "").trim().toLowerCase();
+    const recentFlag = !!recentOnly; // value from the toggle
+
+    // Start from recent-filtered base if needed
+    const base = recentFlag
+      ? stationOptions.filter(d => hasRecent.get(d.code))
+      : stationOptions;
+
+    // Then apply the text filter
+    const matches = q
+      ? base.filter(d =>
+          d.name.toLowerCase().includes(q) || d.code.toLowerCase().includes(q)
+        )
+      : base;
+
+    // select menu (multiple rows, single selection)
+    const sel = Inputs.select(matches, {
+      multiple: 6,                    // show n rows
+      format: d => d.label,
+      width: "100%"
+    });
+    display(sel);
+
+    // update selected station on change
+    const onChange = () => {
+      const first = (sel.value ?? [])[0] ?? null;
+      if (first) setSelectedStation(first.code, "filter-select");
+    };
+    sel.addEventListener?.("input", onChange);
+    invalidation?.then?.(() => sel.removeEventListener?.("input", onChange));
   }
   ```
 

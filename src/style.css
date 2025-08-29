@@ -99,3 +99,13 @@ h6 {
     font-size: 1rem;
   }
 }
+
+/* Let search popovers escape their containers */
+main, .content, .observablehq, .observablehq--inspect, .card, .cell, section {
+  overflow: visible !important;
+}
+
+/* Keep the search popover on top */
+.observablehq--popover, .observablehq--search {
+  z-index: 9999 !important;
+}
