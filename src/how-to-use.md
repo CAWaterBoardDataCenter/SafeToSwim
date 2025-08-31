@@ -12,15 +12,15 @@ The full Safe to Swim map dataset is updated daily on weekdays, depending on sta
 
 ## Exploring the map
 
-Stations are represented by circles, with colors indicating safety status as shown in the map legend. Click on any station marker to see detailed information about that location.
+Stations are represented by circles, with colors indicating safety status as shown in the map legend. Click on a station marker to see detailed information about that location.
 
 ### Finding a station via the map
 
 To find a station on the map, simply pan and zoom until you locate the desired area. You can click on any station marker to view its details. The marker of the selected station will be highlighted with a popup. The map can also be viewed in full screen (note: the browswer must be in full screen for the map to be enlarged).
 
-### Finding a station via the search bar
+### Finding a station via the search menu
 
-To find a station using the search bar, enter the name or code of the station you're looking for. The map will automatically pan and zoom to the location of the station. You may also filter stations using the dropdown menu next to the search bar.
+To find a station using the search menu, enter the name or code of the station you're looking for. This will filter the list of stations in the menu. When you click on a station from the menu, the map will automatically pan to and highlight the station. You may also use arrow keys to change the station selected in the menu.
 
 ## Viewing station details
 
@@ -28,7 +28,7 @@ When you click on a station, a popup will appear on the map with the name and st
 
 ## Understanding the data used
 
-The most important data in this dashboard are bacteria concentrations measured from water samples at each station. To obtain a safety status for a station, these data are compared to thresholds that have been connected with differences in health outcomes from swimming. That is, if concentrations exceed a certain level, the station is considered less safe to swim around. The method used to determine status uses two versions of the data: single samples from the last 30 days, and the geometric mean (of the single samples) from the last 6 weeks. Both versions of data are shown in the Data panel.
+This dashboard displays bacteria concentrations measured from water samples at each station. To obtain a safety status for a station, these data are compared to thresholds that have been connected with differences in health outcomes from swimming: if concentrations exceed a certain level, the station is considered less safe to swim. The method used to determine status uses two versions of the data: single samples from the last 30 days, and the geometric mean (of the single samples) from the last 6 weeks. Both versions of data are shown in the Data panel.
 
 ## Disclaimer
 

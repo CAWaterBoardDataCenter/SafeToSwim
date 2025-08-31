@@ -8,15 +8,15 @@ This page provides further information about the Safe To Swim dashboard by categ
 
 ## Water quality and health
 
-Poor water quality can pose significant health risks to individuals who engage in recreational activities such as swimming, surfing, or wading. Exposure to contaminated water can lead to a variety of illnesses, particularly gastrointestinal infections, skin rashes, and respiratory issues. Vulnerable populations, including children, the elderly, and individuals with compromised immune systems, are at greater risk.
+Poor water quality can pose significant health risks to recreators swimming, surfing, wading, or otherwise coming into contact with water. Exposure to contaminated water can lead to a variety of illnesses, particularly gastrointestinal infections, skin rashes, and respiratory issues. Vulnerable populations, including children, the elderly, and individuals with compromised immune systems, are at greater risk.
 
 ### What kind of activities are considered recreational?
 
-Recreational activities here refer to water contact recreation as defined by the REC-1 beneficial use category, including swimming, surfing, wading, boating, fishing, and other water sports. These activities often involve direct contact with the water and the possibility of ingestion, which can increase the risk of exposure to harmful bacteria and pathogens if the water quality is poor.
+Recreational activities here refer to water contact recreation as formally defined by the REC-1 beneficial use category, including swimming, surfing, wading, boating, fishing, and other water sports. These activities often involve direct contact with the water and the possibility of ingestion, which can increase the risk from harmful bacteria and pathogens.
 
 ### What are "indicator bacteria"?
 
-The term *indicator bacteria* refers to bacteria used to assess the safety of recreational waters. They are not necessarily harmful themselves but indicate the potential presence of pathogens, especially those that can cause gastrointestinal illness from coming into contact with or ingesting contaminated water. Common fecal indicator bacteria include E. coli and enterococcus, which are found in the intestines of warm-blooded animals and can signal fecal contamination in water. This map uses these indicator bacteria to evaluate water quality and determine safety for recreational activities.
+On this dashboard, the term *indicator bacteria* refers to bacteria used to assess the safety of recreational waters. They are not necessarily harmful themselves but indicate the potential presence of pathogens associated with fecal contamination, especially those that can cause gastrointestinal illness from coming into contact with or ingesting contaminated water. Common fecal indicator bacteria include E. coli and enterococcus, which are found in the intestines of warm-blooded animals and can signal fecal contamination in water. This map uses these indicator bacteria to evaluate water quality and determine safety for recreational activities.
 
 ## Data sources and collection
 
@@ -26,19 +26,19 @@ The data shown on this map are sourced from the [California Environmental Data E
 
 ### How is the data collected?
 
-Most samples are collected by local public health agencies, environmental organizations, and other partners. Samples are typically obtained via grab sampling at designated stations along beaches, rivers, and lakes. The samples are then analyzed in laboratories to measure levels of indicator bacteria such as E. coli and enterococcus. 
+Most samples are collected by local public health agencies, environmental organizations, and other partners. Samples are typically obtained via grab sampling at designated stations along beaches, rivers, and lakes. The samples are then analyzed in laboratories to measure levels of indicator bacteria such as E. coli and enterococcus.
 
-Currently, there exist many methods of measuring bacteria concentrations, typically involving culturing bacteria from a water sample. Some local agencies have begun using rapid testing methods such as quantitative real-time PCR (qPCR) and droplet digital polymerase chain reaction (ddPCR). Further information about the latest studies on methodology can be found at the [U.S. EPA's website](https://www.epa.gov/water-research/monitoring-recreational-water-quality).
+There exist many methods of measuring bacteria concentrations, typically involving culturing bacteria from a water sample. Some local agencies have begun using rapid testing methods such as quantitative real-time PCR (qPCR) and droplet digital polymerase chain reaction (ddPCR). Further information about the latest studies on methodology can be found at the [U.S. EPA's website](https://www.epa.gov/water-research/monitoring-recreational-water-quality).
 
 ### Why do I see different units (CFU vs MPN) for bacteria concentrations?
 
-Methods for reporting concentrations and detection limits may vary by agency. For example, some may report concentrations in CFU/100mL (colony forming units per 100 milliliters) while others may use MPN/100mL (most probable number per 100 milliliters). The methods these units represent are different, but are equivalent and acceptable units of concentration under California's water quality standards.
+Methods for reporting concentrations and detection limits may vary by region. For example, some may report concentrations in CFU/100mL (colony forming units per 100 milliliters) while others may use MPN/100mL (most probable number per 100 milliliters). The methods these two units represent are different, but are accepted as equivalent units of concentration under California's water quality standards.
 
 ### What is "ddPCR" and why do some samples have this method?
 
 ddPCR stands for droplet digital polymerase chain reaction, describing a testing method that allows for the precise quantification of DNA in a sample. In May 2022, San Diego County became the first Federal and State approved coastal county in the nation to begin using a ddPCR testing method that offers more rapid results. For enterococcus only, this map uses the ddPCR standard threshold value of 1,413 DNA copies of bacteria per 100 mL, the same threshold value documented on the San Diego County Beach and Bay Water Quality Monitoring Program website. Results above this level may indicate a higher risk of illness.
 
-We provide this information in the interest of transparency, but note that ddPCR is not yet widely used by other agencies in California, and the statewide bacteria water quality objectives do not yet include ddPCR thresholds for safety statuses. Safety statuses on this map are only evaluated using culture-based methods (units of CFU or MPN).
+We provide this information in the interest of transparency, but note that ddPCR is not yet widely used by other agencies in California, and the statewide bacteria water quality objectives do not yet include ddPCR thresholds for safety statuses. Safety statuses shown on this dashboard are only evaluated using culture-based methods (units of CFU or MPN).
 
 ### How often is data updated?
 
@@ -67,7 +67,7 @@ The thresholds used for determining safety statuses also depend on the type of s
 
 ### Why are there only two safety status categories?
 
-Based on the 2019 statewide bacteria water quality objectives and the large studies they are based on, there are two meaningful risk categories that can be used. While there are multiple thresholds used in calculating these statuses, these thresholds aim to simplify how we can determine if a distribution of rapidly varying bacteria concentrations poses a risk. Currently, the data and science is not able to further divide the "Use caution" category into additional levels of risk.
+Based on the 2019 statewide bacteria water quality objectives and the epidemiological studies that inform them, there are two meaningful risk categories that can be used. While there are multiple metrics and thresholds used in calculating these statuses, these thresholds aim to simplify how we can determine if a distribution of rapidly varying bacteria concentrations poses a risk. Currently, we do not have the support to further divide the "Use caution" category into additional levels of risk. There is additional uncertainty that comes from the large variability in exposure from activity and exposure time that we cannot account for in this dashboard.
 
 ## Bacteria Objectives
 
@@ -75,7 +75,7 @@ The results displayed on this map are compared to the statewide bacteria water q
 
 ### What does "bacteria objectives" mean?
 
-Bacteria objectives are standards set to protect public health by limiting the concentration of certain bacteria in recreational waters. These objectives are based on scientific studies that find relationships between bacteria levels in water and the risk of illness among recreational users. The objectives specify levels of indicator bacteria, such as E. coli and enterococcus, that correspond to a certain amount of risk.
+Bacteria objectives are standards set to protect public health by limiting the concentration of certain bacteria in recreational waters. These objectives are based on studies that find relationships between bacteria levels in water and the risk of illness among recreational users. The objectives specify levels of indicator bacteria, such as E. coli and enterococcus, that correspond to a certain amount of risk.
 
 ### What bacteria objectives are used in this dashboard?
 
@@ -91,7 +91,7 @@ Fecal coliforms and total coliforms are frequently used as indicators of water q
 
 ### What do the safety thresholds mean for health?
 
-The established thresholds we use in this dashboard have been shown to reflect conditions in which risk of gastrointestinal illness after water contact is measurably higher than the risk of gastrointestinal illness after no water contact. The language of risk is often challenging to communicate in public health settings—a site with a "Use caution" status cannot say with certainty that a particular swimmer's health will be impacted, but it is important for informing a percentage of swimmers that would contract an illness. We stress that a site with a "Use caution" status is not the same as a closure; the site may still be open, but it is more likely to become sick from water contact.
+The established thresholds we use in this dashboard have been shown to reflect conditions in which risk of gastrointestinal illness after water contact is measurably higher than the risk of gastrointestinal illness after no water contact. The language of risk is often challenging to communicate in public health settings—a site with a "Use caution" status cannot say with certainty that a particular swimmer's health will be impacted, but it is important for informing a percentage of swimmers that would contract an illness. We stress that a site with a "Use caution" status is not the same as a closure; the site may still be open, but it is more likely to become sick from water contact. Further, thresholds are only based on gastrointestinal illness, and do not account for other types of illnesses that may arise from water contact like skin rashes.
 
 ## Limitations
 
