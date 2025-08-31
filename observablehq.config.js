@@ -25,7 +25,21 @@ export default {
   <a href="/development-guide" target="_blank">Development guide</a><br><br>
   <a href="https://www.waterboards.ca.gov/" target="_blank">California State Water Resources Control Board</a><br>
   <a href="https://mywaterquality.ca.gov/" target="_blank">California Water Quality Monitoring Council</a><br><br>
-  Contact <a href="swamp@waterboards.ca.gov" target="__blank">swamp@waterboards.ca.gov</a> for questions and feedback<br>`,
+  Contact <a href="mailto:swamp@waterboards.ca.gov" target="_blank">swamp@waterboards.ca.gov</a> for questions and feedback<br><br>
+
+  <strong>Disclaimer</strong>
+
+  The data shown on this map is collected from various sources and may not be up-to-date or accurate.
+  This map is intended for informational purposes only and should not be used as the sole basis for making decisions about 
+  water contact activities. Always follow local advisories and guidelines when engaging in recreational activities in natural 
+  water bodies. The data can change at any time and should not be used for any particular purpose other than general reference.
+
+  In addition, the safety statuses we provide are approximations of how official state bacteria objectives are applied 
+  (<a href="https://www.waterboards.ca.gov/bacterialobjectives/" target="_blank">check here for current details</a>); we do not
+  recommend using these statuses directly for regulatory or legal purposes. Assessments of water quality for regulatory purposes
+  should be conducted on a case-by-case basis by up-to-date standards from the original data, which is available for download on 
+  the <a href="https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results" target="_blank">California Open Data Portal</a>.
+`,
   sidebar: true, // enable the sidebar
   // toc: true, // whether to show the table of contents
   pager: false, // whether to show previous & next links in the footer

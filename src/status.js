@@ -217,8 +217,9 @@ export async function computeAllStatuses(recordsByStation, asOf = new Date()) {
 }
 
 
+// Status time series for a single station
 
-// ==== utilities ====
+// utilities
 const MS_PER_DAY = 86400000;
 const toDayIndex = (ts) => Math.floor(ts / MS_PER_DAY);
 const fromDayIndex = (d) => new Date(d * MS_PER_DAY);
@@ -245,7 +246,7 @@ const canonicalizeReasons = (arr) =>
     .sort((a, b) => a.localeCompare(b))
     .join("|");
 
-// ==== main ====
+// main
 export async function buildStatusSeriesForStation(stationRecord) {
   const code = stationRecord?.[0]?.StationCode;
   const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
@@ -254,7 +255,7 @@ export async function buildStatusSeriesForStation(stationRecord) {
   const analyte   = pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria);
   const typeRules = selectTypeRules(criteria, { isSaltwater, analyte });
 
-  // windows used by your evaluator (keep in sync with criteria semantics)
+  // windows used by  evaluator
   const W6  = 42; // six weeks: geomean + min samples
   const W30 = 30; // 30 days: p90
 
