@@ -12,11 +12,11 @@ import * as mod from "./modules.js"; // utilities
 import * as stat from "./status.js"; // status helpers
 import { setSelectedStation, selectedStation } from "./station-state.js"; // station selection
 
-import { initHelpTooltips } from "./modules.js";
+import { initHelpTooltips } from "./modules.js"; // for help tooltips
 initHelpTooltips(document);
 
-function toDate(d) { 
-  const t=new Date(d); 
+function toDate(d) {
+  const t = new Date(d);
   return new Date(t.getFullYear(), t.getMonth(), t.getDate());
 }
 ```
@@ -161,7 +161,7 @@ function drawStationDots() {
     if (isRecent) dot.bringToFront(); // ensure recent above historical in the shared canvas
   }
 
-  // safety: bring all recent layers front (e.g., after bulk adds)
+  // safety: bring all recent layers front
   recentGroup.eachLayer(l => l.bringToFront());
 
   invalidation?.then(() => {
@@ -226,7 +226,7 @@ function highlightSelected(code, { pan = true, openPopup = true } = {}) {
   if (openPopup) dot.openPopup();
 }
 
-recentOnly; // reactive
+recentOnly;
 {
   setRecentOnly(recentOnly);
 }
@@ -245,7 +245,7 @@ selectedStation;
 
 ```js
 // LEGEND
-// 1) Lightweight CSS (once)
+// 1) Lightweight CSS
 let legendStyleEl = document.getElementById("map-legend-style");
 if (!legendStyleEl) {
   legendStyleEl = document.createElement("style");
@@ -387,7 +387,7 @@ invalidation?.then(() => {
   ```
 
   ```js
-  // filtered select
+  // filtered select menu
   {
     const q = String(filterBox ?? "").trim().toLowerCase();
     const recentFlag = !!recentOnly; // value from the toggle
@@ -427,6 +427,7 @@ invalidation?.then(() => {
   <div class="card" id="station-info-card" style="margin: 0;">
 
   ```js
+  // get selected station info
   selectedStation;
 
   const code = selectedStation?.code;
@@ -439,8 +440,7 @@ invalidation?.then(() => {
       ? mod.formatStationName(st.StationName, code)
       : st.StationName;
 
-    // last sample date (string -> Date -> YYYY-MM-DD)
-    const lastSampleDateISO = st.lastSampleDate || null;
+const lastSampleDateISO = st.lastSampleDate || null;
     const lastSampleDateObj = lastSampleDateISO ? new Date(lastSampleDateISO) : null;
     const lastSampleDate =
       lastSampleDateObj && !isNaN(+lastSampleDateObj)
@@ -472,16 +472,16 @@ invalidation?.then(() => {
   ```
 
   ```js
+  // Container for the status info, with status color as background color 
   const code = selectedStation?.code ?? selectedStation;
   const st = stations?.[code];
   const status = st?.status?.name ?? " ";
 
-  // Container for the status info, with background color applied
   const container = document.createElement("div");
   container.style.backgroundColor = statusColors[status] || "lightgray";
-  container.style.color = "white";          // make text readable on dark backgrounds
-  container.style.padding = "0.5rem 1rem";  // spacing inside
-  container.style.borderRadius = "6px";     // optional rounded corners
+  container.style.color = "white";
+  container.style.padding = "0.5rem 1rem";
+  container.style.borderRadius = "6px";
 
   container.innerHTML = `
     <br><strong>Status: ${status}</strong><br>
@@ -510,7 +510,7 @@ invalidation?.then(() => {
 <div class="card grid-colspan-3"><h1>Data</h1>
 
   ```js
-  selectedStation; // reactive
+  selectedStation;
   const { isSaltwater, bacteria, thresholds } =
     await mod.getStationAssessmentSpec(selectedStation?.code);
   ```
@@ -548,7 +548,6 @@ invalidation?.then(() => {
       })
     );
   } else {
-    // optional placeholder text instead of dropdown
     analyte = null;
   }
   ```
@@ -565,21 +564,7 @@ invalidation?.then(() => {
     value: PRESETS.get("All data") // default only applied once
   });
 
-  // Expose the reactive value (persists even if hidden)
   const timePreset = view(timeRangeInput);
-  ```
-
-  ```js
-  // 2) Mount point that shows/hides the input without recreating it
-  const timeRangeMount = html`<div></div>`;
-  display(timeRangeMount);
-
-  selectedStation; // reactive dependency
-  if (selectedStation) {
-    timeRangeMount.replaceChildren(timeRangeInput);
-  } else {
-    timeRangeMount.replaceChildren(); // hide when no station selected
-  }
   ```
 
   ```js

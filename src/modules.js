@@ -47,6 +47,7 @@ export function toDate(d) {
   return new Date(t.getFullYear(), t.getMonth(), t.getDate());
 }
 
+// Remove leading station code from station name if present
 export function formatStationName(rawName = "", code = "") {
     if (!rawName) return code;
 
@@ -60,6 +61,7 @@ export function formatStationName(rawName = "", code = "") {
     return rawName;
   }
 
+// Get mapping of status name to color
 export async function getStatusColors() {
   const criteria = await getCriteria();
   const mapping = {};
