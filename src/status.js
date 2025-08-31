@@ -73,22 +73,13 @@ function pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria) {
   const available = (stationRecord || []).map(r => r?.Analyte).filter(Boolean);
   const availSet = makeLowerSet(available);
 
-  // 1) try preferred list in order
+  // try preferred list in order
   for (const name of wantedList) {
     if (availSet.has(String(name).toLowerCase())) return name;
   }
 
-  // 2) otherwise: pick most frequent analyte present
-  if (available.length) {
-    const counts = new Map();
-    for (const a of available) counts.set(a, (counts.get(a) || 0) + 1);
-    return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
-  }
-
   return null; // no analytes found
 }
-
-
 
 // Computes window metrics for a station's records at a given date
 // Safe default for the options bag so destructuring never throws
