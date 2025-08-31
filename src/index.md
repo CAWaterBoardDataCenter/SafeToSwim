@@ -83,22 +83,18 @@ L.tileLayer("https://api.maptiler.com/maps/dataviz/{z}/{x}/{y}.png?key=VDWZb7VXY
 }).addTo(map);
 ```
 
-</div>
+<style>
+  .two-col { display:grid; gap:1rem; align-items:stretch; grid-template-columns:1fr; }
+  @media (min-width: 900px) { .two-col { grid-template-columns: 2fr 1fr; } }
+</style>
 
-<div style="
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1rem;
-  align-items: stretch; /* make columns same height */
-">
+<div class="not-prose mx-auto w-full max-w-screen-md two-col">
+
 <div class="card" id="map-card" style="min-height: 600px; margin: 0">
 
 ```js
 display(div);
 map.invalidateSize();
-
-// // Ensure markers layer is on the map
-// markersLayer.addTo(map);
 ```
 
 ```js
@@ -106,7 +102,7 @@ const statusColors = await mod.getStatusColors();
 const BASE_SIZE = 7;
 const SELECTED_SIZE = 10;
 
-// 2) Colors & sizes
+// colors & sizes
 const BASE_R = 4;
 const SELECTED_R = 7;
 const HILITE_RING = "rgba(230, 2, 255, 0.85)";
