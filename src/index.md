@@ -3,16 +3,6 @@ toc: false
 sidebar: false
 ---
 
-<div class="hero">
-
-  <h1>Safe To Swim Map</h1>
-
-  <h2>The California recreational water quality tool for nerds and adventurers.</h2>
-
-  *This map from the California State Water Resources Control Board shows the latest water quality data to help you make informed decisions about where to swim. See [How to Use](how-to-use) and our [FAQ](faq) for more information.*
-
-</div>
-
 ```js
 import * as L from "npm:leaflet";
 import "npm:leaflet.fullscreen";
@@ -22,11 +12,26 @@ import * as mod from "./modules.js"; // utilities
 import * as stat from "./status.js"; // status helpers
 import { setSelectedStation, selectedStation } from "./station-state.js"; // station selection
 
+import { initHelpTooltips } from "./modules.js";
+initHelpTooltips(document);
+
 function toDate(d) { 
   const t=new Date(d); 
   return new Date(t.getFullYear(), t.getMonth(), t.getDate());
 }
 ```
+
+<div class="hero">
+
+  <h1>Safe To Swim Map</h1>
+
+  <h2>The California recreational water quality tool for nerds and adventurers.</h2>
+
+  \
+  This map from the California State Water Resources Control Board shows the latest water quality data to help you make informed decisions about where to swim. \
+  See [How to Use](how-to-use) and our [FAQ](faq) for more information.
+
+</div>
 
 ```js
 import { loadAllStationsAtStartup } from "./data-fetch.js";
@@ -877,5 +882,38 @@ invalidation?.then(() => {
     }
   }
   ```
+
+</div>
+
+---
+
+<div style="margin-top: 80px;">
+
+## Interpreting safety statuses
+
+The safety status of each station is determined by comparing the bacteria concentrations to established thresholds.
+
+  <div class="grid grid-cols-3" style="width: 80%; gap: 1rem; margin-top: 1rem;">
+    <div class="card">
+      <strong>Low risk</strong><br><br>
+      Both the single sample and the geometric mean are below their respective thresholds. This indicates that the water quality is generally good and poses a low risk for recreational activities.
+    </div>
+    <div class="card"><strong>Use caution</strong><br><br>
+    One or both of the single sample and the geometric mean are near their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact. Carefully consider the amount of time spent in contact with water, what activities might lead to the ingestion of water, and the vulnerability of those involved. Potential health impacts include gastrointestinal illness, skin rashes, and ear, eye, nose, and throat infections.
+    </div>
+    <div class="card"><strong>Not enough data</strong><br><br>
+    There is fewer than 5 samples of the necessary indicator bacteria in the last 6 weeks. This status indicates that there is insufficient data to determine the safety of the water at this time.
+  </div>
+
+</div>
+
+<div style="margin-top: 100px;">
+
+### Disclaimer
+
+The data shown on this map is collected from various sources and may not be up-to-date or accurate.
+This map is intended for informational purposes only and should not be used as the sole basis for making decisions about water contact activities. Always follow local advisories and guidelines when engaging in recreational activities in natural water bodies. The data can change at any time and should not be used for any particular purpose other than general reference.
+
+In addition, the safety statuses we provide are approximations of how official state bacteria objectives are applied ([check here for current details](https://www.waterboards.ca.gov/bacterialobjectives/)); we do not recommend using these statuses directly for regulatory or legal purposes. Assessments of water quality for regulatory purposes should be conducted on a case-by-case basis from the original data by up-to-date standards, which is available for download on the [California Open Data Portal](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results).
 
 </div>

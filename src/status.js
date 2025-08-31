@@ -153,7 +153,7 @@ export function evaluateStatusFromMetrics(
   // 1) Data sufficiency checks (centralized here)
   // Six-week min samples (primary gate)
   if (!Number.isFinite(metrics.sampleCount6W) || metrics.sampleCount6W < min_samples_six_week) {
-    reasons.push("Insufficient samples");
+    reasons.push("Unknown risk");
     return withReasons(S.not_enough_data, reasons, metrics);
   }
 

@@ -1,5 +1,9 @@
 @import url("observablehq:default.css");
 
+p, h1, h2, h3, h4, h5, h6, li, blockquote {
+  max-width: none !important;
+}
+
 :root {
   --theme-foreground: #454241; /* Dark gray for text */
   --theme-foreground-focus: #5dafdc; /* Blue for focus/links */
@@ -20,12 +24,6 @@
   --theme-foreground-faintest: color-mix(in srgb, var(--theme-foreground) 14%, var(--theme-background));
 }
 
-:root {
-  /* Water quality status colors using your palette */
-  --color-safe: #5dafdc; /* Blue for safe water */
-  --color-caution: #f7a072; /* Coral for caution */
-  --color-unsafe: #454241; /* Dark gray for unsafe */
-}
 
 body {
   font-family: var(--sans-serif);
@@ -49,12 +47,10 @@ h6 {
 /* Card styling */
 .card {
   background: var(--theme-background-alt);
-  border: 0px solid var(--color-accent-1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
-  background: var(--color-accent-2);
   border-bottom: 1px solid color-mix(in srgb, var(--theme-foreground) 20%, transparent);
 }
 
@@ -100,12 +96,44 @@ h6 {
   }
 }
 
-/* Let search popovers escape their containers */
-main, .content, .observablehq, .observablehq--inspect, .card, .cell, section {
-  overflow: visible !important;
+/* Help tooltip */
+.help {
+  position: relative;
+  display: inline-inline;
+  cursor: help;
+  color: #555;
+  font-weight: 600;
+  outline: none;
 }
 
-/* Keep the search popover on top */
-.observablehq--popover, .observablehq--search {
-  z-index: 9999 !important;
+.help .tooltip {
+  position: absolute;
+  bottom: 125%;                 /* default: show above the icon */
+  left: 50%;
+  transform: translateX(-25%);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .15s;
+  background: #646464;
+  color: #ffffff;
+  padding: 6px 10px;
+  border-radius: 3px;
+  white-space: normal;
+  min-width: 200px;
+  max-width: 500px;
+  z-index: 1000;
+  line-height: 1.2;
+}
+
+
+/* show on hover OR keyboard focus */
+.help:hover .tooltip,
+.help:focus-within .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .help .tooltip { transition: none; }
 }

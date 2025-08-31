@@ -54,16 +54,16 @@ Raw data is cleaned and validated to ensure accuracy and consistency. This invol
 
 "Low risk" indicates that the water quality meets the established standards for recreational use, while "Use caution" suggests that the water quality may pose an elevated risk to health, and users should exercise caution when engaging in recreational activities. The "Caution" category is used when bacteria levels exceed the threshold for a single sample but do not meet the criteria for "Unsafe," which would require multiple exceedances or a higher level of contamination.
 
-### How are safety statuses determined?
+### How are safety statuses evaluated?
 
-Safety statuses are determined based on the results of water quality testing and comparison to established thresholds. By the most recent [California bacteria objectives](https://www.waterboards.ca.gov/bacterialobjectives/), a station has a "Use caution" status if *either* of the following are true: 
+Safety statuses are based on the results of water quality testing and comparison to established thresholds. By the most recent [California bacteria objectives](https://www.waterboards.ca.gov/bacterialobjectives/), a station has a "Use caution" status if *either* of the following are true:
 
-1. More than 90% of single samples in the last six weeks exceed the single sample threshold.
-2. The 30-day rolling geometric mean exceeds the geometric mean threshold. The rolling window includes samples from the past 30 days, including the most recent sample.
+1. More than 10% of single samples in the last 30 days exceed the single-sample threshold.
+2. The 6-week rolling geometric mean exceeds the geometric mean threshold. The rolling window includes samples from the past 6 weeks, including the most recent sample.
 
-A station is considered "Low risk" if *both* the single sample and 30-day geometric mean are below their respective thresholds. Additionally, if there are fewer than 5 samples in the past 30 days, the station will have a "Not enough data" status.
+A station is considered "Low risk" if *both* the single sample and 6-week geometric mean are below their respective thresholds. If there are fewer than 5 samples in the past 6 weeks, the station will have a "Not enough data" status.
 
-The thresholds used for determining safety statuses also depend on the type of specific indicator bacteria. E. coli is used for freshwater sites, while enterococcus is used for marine and estuarine sites.
+The thresholds used for determining safety statuses also depend on the type of specific indicator bacteria. E. coli is used for freshwater sites, while enterococcus is used for marine and estuarine sites. For full technical details on how safety statuses are calculated, please refer the [Development Guide](development-guide#status-evaluation-detail).
 
 ### Why are there only two safety status categories?
 

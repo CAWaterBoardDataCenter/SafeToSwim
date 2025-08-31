@@ -72,7 +72,7 @@ export async function getStatusColors() {
 // Get saltwater flag, bacteria, and thresholds for a station
 export async function getStationAssessmentSpec(stationCode) {
   if (!stationCode) return { isSaltwater: null, bacteria: null, thresholds: { geomean: null, single_sample: null } };
-  
+
   const [saltFlags, criteria] = await Promise.all([getSaltwaterFlags(), getCriteria()]);
   const isSaltwater = !!saltFlags.get(stationCode);
   const envKey = isSaltwater ? "saltwater" : "freshwater";
@@ -187,7 +187,63 @@ export function isDdPCR(row) {
   return false;
 }
 
-export function debounce(fn, ms = 150) {
-  let t;
-  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+// modules.js
+export function initHelpTooltips(root = document) {
+  const helps = root.querySelectorAll('.help');
+
+  helps.forEach(el => {
+    // Show on keyboard focus as well
+    el.setAttribute('tabindex', '0');
+    const tip = el.querySelector('.tooltip');
+    if (!tip) return;
+
+    const positionSafely = () => {
+      // reset to defaults first
+      tip.style.left = '50%';
+      tip.style.right = 'auto';
+      tip.style.transform = 'translateX(-50%)';
+      tip.style.bottom = '125%';
+      tip.style.top = 'auto';
+      tip.style.maxWidth = '260px';
+
+      // measure
+      tip.style.visibility = 'hidden';
+      tip.style.opacity = '0';
+      // force layout by temporarily showing it offscreen-ish
+      const rect = tip.getBoundingClientRect();
+
+      // horizontal flip if needed
+      if (rect.right > window.innerWidth) {
+        tip.style.left = 'auto';
+        tip.style.right = '0';
+        tip.style.transform = 'none';
+      }
+      if (rect.left < 0) {
+        tip.style.left = '0';
+        tip.style.transform = 'none';
+      }
+
+      // vertical flip if too close to top
+      const newRect = tip.getBoundingClientRect();
+      if (newRect.top < 0) {
+        // place below the icon
+        tip.style.bottom = 'auto';
+        tip.style.top = '125%';
+        // flip arrow
+        tip.style.setProperty('--arrow-dir', 'down');
+        tip.classList.add('below');
+      } else {
+        tip.classList.remove('below');
+        tip.style.removeProperty('--arrow-dir');
+      }
+
+      // restore visibility controlled by CSS hover/focus
+      tip.style.visibility = '';
+      tip.style.opacity = '';
+    };
+
+    // Position on show events
+    el.addEventListener('mouseenter', positionSafely);
+    el.addEventListener('focus', positionSafely, true);
+  });
 }

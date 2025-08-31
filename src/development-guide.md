@@ -42,6 +42,19 @@ Water quality data is fetched fresh from the compiled dataset each time a user l
 - **Applying status logic**: The dashboard uses predefined thresholds to determine the safety status of each station based on the most recent water quality data. This logic is applied both when loading the map (current status) and when viewing detailed station information (historical status).
 - **Preparing data for visualization**: Specific visualizations require additional data processing steps, such as calculating time windows or summary statistics.
 
+### Status evaluation, detail
+
+Safety statuses are based on the results of water quality testing and comparison to established thresholds. By the most recent [California bacteria objectives](https://www.waterboards.ca.gov/bacterialobjectives/), a station has a "Use caution" status if *either* of the following are true:
+
+1. More than 10% of single samples in the last 30 days exceed the single-sample threshold.
+2. The 6-week rolling geometric mean exceeds the geometric mean threshold. The rolling window includes samples from the past 6 weeks, including the most recent sample.
+
+A station is considered "Low risk" if *both* the single sample and 6-week geometric mean are below their respective thresholds. If there are fewer than 5 samples in the past 6 weeks, the station will have a "Not enough data" status.
+
+Statuses are shown in two places in the dashboard code: for the map (current day-of status only) and for the detailed station view (historical status). The logic is implemented in `status.js`. Status is evaluated n a daily grid (i.e. for each day) spanning the first sample date to the current date. For a given station and day, metrics for bacteria data (E. coli for freshwater sites and enterococcus for saltwater sites) from the last 6 weeks are computed: the proportion of single samples from the last 30 days exceeding the single-sample threshold and the 6-week geomean. The single-sample metric uses a binned approximation of the 90th percentile for speed.
+
+Since computing a daily history is expensive, the status history computation is optimized by only re-evaluating status when the data within a time window changes. For example, if 6 weeks ago to today contains the same sample data as 6 weeks from tomorrow to tomorrow, status only needs to be evaluated once for both today and tomorrow.
+
 ## Site deployment
 
 The Safe to Swim Map is a static site generated using [Observable Framework](https://observablehq.com/framework/). Observable Framework uses a reactive programming model to enable dynamic data visualizations, using markdown, customizable html/JavaScript/data loaders. The static site generator creates content that can be served from anywhere. The official site is hosted by the State Water Board web team. A staging version of the site is also hosted as a GitHub Pages site from the `dist/` directory of this repository. Changes made to the site should be tested first at the staging level before being deployed to the official site.
@@ -59,7 +72,7 @@ To maintain the Safe to Swim Map, contributors should follow these deployment pr
 
 ---
 
-### File structure
+### Project structure
 
 The Safe to Swim Map dashboard is organized into several key directories and files to facilitate development, data management, and deployment. Below is an overview of the file structure:
 
@@ -136,7 +149,7 @@ During development, it is recommended that you run:
 npx observable preview
 ```
 
-to preview the site locally.
+to preview the site locally. This will start a local server and open the site in your default web browser. Any changes made to the source files will automatically trigger a rebuild and refresh the browser.
 
 ### What happens during a site build
 
@@ -166,13 +179,14 @@ Regular additions to the dataset will automatically update what is shown on the 
 - New statistics are added (e.g. adding a 7-day rolling average)
 - New status categories are added (e.g. a "Closure" status)
 - Indicator bacteria types change (e.g. adding enterococcus for freshwater)
+- Status depends on new testing methods (e.g. ddPCR)
 
 ### Updates to data flow
 
 - Changes to how data is queried
 - Improvements to how saltwater vs freshwater is determined for each station
 
-### Updates to site content
+### Updates to other site content
 
 - Changes to text and layout in markdown files
 - Changes to CSS styling
