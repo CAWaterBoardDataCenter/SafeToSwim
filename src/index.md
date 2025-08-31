@@ -48,7 +48,7 @@ for (const [code, st] of Object.entries(stations)) {
 
 // Initialize Leaflet map (div is placed later)
 const div = document.createElement("div");
-div.style = `height: 600px; border-radius: 8px; overflow: hidden; width: ${resize(width)}px;`;
+div.style = `height: 650px; border-radius: 8px; overflow: hidden; width: ${resize(width)}px;`;
 
 const map = L.map(div, {
   wheelPxPerZoomLevel: 60,
@@ -509,16 +509,9 @@ invalidation?.then(() => {
 <div class="card grid-colspan-3"><h1>Data</h1>
 
   ```js
-  import { stationRecordFetch } from "./data-fetch.js";
-
   selectedStation; // reactive
-  let stationRecordStartup = null;
-  const code = selectedStation?.code;
-  if (code) {
-    stationRecordStartup = await stationRecordFetch(code);
-  }
   const { isSaltwater, bacteria, thresholds } =
-    await mod.getStationAssessmentSpec(code);
+    await mod.getStationAssessmentSpec(selectedStation?.code);
   ```
 
   ```js
@@ -604,33 +597,50 @@ invalidation?.then(() => {
   ```
 
   ```js
-  // For fetching further data
-  import { stationRecordFetch } from "./data-fetch.js";
+  // fetch cell
+  import { stationRecordFetch, nextStationReqId, getLatestStationReqId } from "./data-fetch.js";
 
   selectedStation; timePreset;
-  let stationRecord = (async () => {
+
+  let stationRecordTemp = (async () => {
     const code = selectedStation?.code;
-    if (!code) return [];
+    if (!code) return { code: null, data: [] };
 
-    // Abort if user switches station/preset mid-fetch
+    const myReqId = nextStationReqId();
+
     const ac = new AbortController();
-    invalidation.then(() => ac.abort());
+    invalidation.then(() => ac.abort("Selection changed too quickly. Please try again."));
 
-    const presetKind  = timePreset?.kind === "all" ? "all" : "preset";
-    const sinceYears  = timePreset?.kind === "preset" ? timePreset.years : 5; // 5y default
+    const presetKind = timePreset?.kind === "all" ? "all" : "preset";
+    const sinceYears = timePreset?.kind === "preset" ? timePreset.years : 5;
 
-    return await stationRecordFetch(code, {
-      recentOnly: false,
-      timePreset: presetKind,
-      sinceYears,
-      signal: ac.signal
-    });
+    try {
+      const data = await stationRecordFetch(code, {
+        recentOnly: false,
+        timePreset: presetKind,
+        sinceYears,
+        signal: ac.signal
+      });
+
+      if (myReqId !== getLatestStationReqId() || ac.signal.aborted) {
+        return { code: null, data: [] };
+      }
+      return { code, data };
+    } catch (err) {
+      if (err?.name === "AbortError") return { code: null, data: [] };
+      console.error(err);
+      return { code: null, data: [] };
+    }
   })();
-  ```
 
+  ```
   ---
 
   ```js
+  const stationRecord = Array.isArray(stationRecordTemp)
+  ? stationRecordTemp
+  : (stationRecordTemp?.data ?? []);
+
   // If no station is selected, show single placeholder plot with message
   if (!selectedStation) {
     const today = toDate(new Date());

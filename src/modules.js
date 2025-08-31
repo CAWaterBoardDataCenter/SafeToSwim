@@ -71,6 +71,8 @@ export async function getStatusColors() {
 
 // Get saltwater flag, bacteria, and thresholds for a station
 export async function getStationAssessmentSpec(stationCode) {
+  if (!stationCode) return { isSaltwater: null, bacteria: null, thresholds: { geomean: null, single_sample: null } };
+  
   const [saltFlags, criteria] = await Promise.all([getSaltwaterFlags(), getCriteria()]);
   const isSaltwater = !!saltFlags.get(stationCode);
   const envKey = isSaltwater ? "saltwater" : "freshwater";
@@ -183,4 +185,9 @@ export function isDdPCR(row) {
   if (unit.includes("copies") || unit.includes("gc/") || unit.includes("gene") || unit.includes("cn/")) return true;
 
   return false;
+}
+
+export function debounce(fn, ms = 150) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }

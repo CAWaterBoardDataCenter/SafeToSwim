@@ -146,6 +146,19 @@ export async function loadAllStationsAtStartup({
 
 // ##### Station-specific fetch #####
 
+// Simple request ID tracker to avoid out-of-order responses
+let latestStationReqId = 0;
+
+export function nextStationReqId() {
+  latestStationReqId += 1;
+  return latestStationReqId;
+}
+
+export function getLatestStationReqId() {
+  return latestStationReqId;
+}
+
+// Fetching
 const ANALYTES = ["Enterococcus", "E. coli"];
 const RESULT_SCALE = 1e6;
 
