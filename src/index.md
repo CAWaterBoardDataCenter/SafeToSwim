@@ -383,7 +383,7 @@ invalidation?.then(() => {
   });
 
   // filter input
-  const filterBox = view(Inputs.text({ placeholder: "Filter by name or code", width: "100%" }));
+  const filterBox = view(Inputs.text({ placeholder: "Search by name or code", width: "100%" }));
   ```
 
   ```js
