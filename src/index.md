@@ -881,13 +881,13 @@ The safety status of each station is determined by comparing the bacteria concen
   <div class="grid grid-cols-3" style="width: 100%; gap: 1rem; margin-top: 1rem;">
     <div class="card">
       <strong>Low risk</strong><br><br>
-      Both the single sample and the geometric mean are below their respective thresholds. This indicates that the water quality is generally good and poses a low risk for recreational activities.
+      Both the single sample and the geometric mean are below their respective thresholds. This indicates that the water quality is generally good and recreation poses a low risk.
     </div>
     <div class="card"><strong>Use caution</strong><br><br>
-    One or both of the single sample and the geometric mean are near their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact. 
+    One or both of the single sample and the geometric mean are near their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact.
     </div>
     <div class="card"><strong>Not enough data</strong><br><br>
-    There is fewer than 5 samples of the necessary indicator bacteria in the last 6 weeks. This status indicates that there is insufficient data to determine the safety of the water at this time.
+    There are fewer than 5 samples of the necessary indicator bacteria in the last 6 weeks. This status indicates that there is insufficient data to determine the safety of the water at this time.
   </div>
 
 </div>
