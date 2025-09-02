@@ -12,7 +12,7 @@ This is a dashboard that provides real-time information on water quality at vari
 
 Data is sourced from the [California Open Data Portal](https://data.ca.gov/), specifically the [Surface Water - Indicator Bacteria Results](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results) dataset. This dataset is updated daily and provides composited information on water quality at various sampling sites across California.
 
-## About this site
+## About this Site
 
 This dashboard was built using the open-source static site generator Observable Framework. Data is fetched from *Surface Water - Indicator Bacteria Results* dataset on the California Open Data Portal. This dataset is updated daily, and the dashboard fetches the latest data automatically.
 
