@@ -137,3 +137,11 @@ h6 {
 @media (prefers-reduced-motion: reduce) {
   .help .tooltip { transition: none; }
 }
+
+/* Thinner margins on small screens */
+@media (max-width: 640px) {
+  #observablehq-center {
+    margin-left: 1rem !important;
+    margin-right: 1rem !important;
+  }
+}
