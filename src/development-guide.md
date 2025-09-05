@@ -135,7 +135,7 @@ The data shown in the plots is dynamically updated based on the user-selected st
 
 ## Building the site
 
-Building the site means generating the static files that will be served to users. To build the site, run the following command:
+Building the site means generating the static files that can be served to users. To build the site locally, run the following command:
 
 ```
 npx observable build
@@ -150,6 +150,8 @@ npx observable preview
 ```
 
 to preview the site locally. This will start a local server and open the site in your default web browser. Any changes made to the source files will automatically trigger a rebuild and refresh the browser.
+
+The site is also built using a GitHub Actions workflow defined in `.github/workflows/deploy.yml` whenever changes are pushed to the GitHub repository. The files in the `dist/` directory are deployed to GitHub Pages, which serves as the staging site for testing changes before they are deployed to the official site. Each build can be found under "Actions" in the GitHub repository and clicking on a workflow run. The `dist/` files can be downloaded under "Artifacts". 
 
 ### What happens during a site build
 
