@@ -54,7 +54,7 @@ function makeLowerSet(arr) {
   return s;
 }
 
-// --- selectTypeRules (fallbacks) ---
+// selectTypeRules (fallbacks)
 export function selectTypeRules(criteria, { isSaltwater }) {
   const c = criteria || {};
   const wb = c.rules?.waterbody_types?.[isSaltwater ? "saltwater" : "freshwater"] || {};
@@ -195,7 +195,9 @@ export async function computeAllStatuses(recordsByStation, asOf = new Date()) {
   for (const [code, records] of recordsByStation.entries()) {
     // normalize salt flag (handles boolean true or string "True")
     const saltFlag = saltFlags.get(code);
-    const isSalt = saltFlag === true || (typeof saltFlag === "string" && saltFlag.toLowerCase() === "true");
+
+    // default to saltwater if missing
+    const isSalt = saltFlag === true || (typeof saltFlag === "string" && saltFlag.toLowerCase() === "true") || saltFlag === undefined;
 
     // environment-specific rules
     const typeRules = criteria?.rules?.waterbody_types?.[isSalt ? "saltwater" : "freshwater"] ?? {};
@@ -250,7 +252,7 @@ const canonicalizeReasons = (arr) =>
 export async function buildStatusSeriesForStation(stationRecord) {
   const code = stationRecord?.[0]?.StationCode;
   const [criteria, saltFlags] = await Promise.all([getCriteria(), getSaltwaterFlags()]);
-  const isSaltwater = saltFlags.get(code) ?? false;
+  const isSaltwater = saltFlags.get(code) ?? true; // default to saltwater if missing
 
   const analyte   = pickAnalyteForEnvironment(stationRecord, isSaltwater, criteria);
   const typeRules = selectTypeRules(criteria, { isSaltwater, analyte });

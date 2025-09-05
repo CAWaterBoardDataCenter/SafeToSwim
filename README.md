@@ -10,11 +10,19 @@ This is a dashboard that provides real-time information on water quality at vari
 
 ## Data Sources
 
-Data is sourced from the [California Open Data Portal](https://data.ca.gov/), specifically the [Surface Water - Indicator Bacteria Results](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results) dataset. This dataset is updated daily and provides composited information on water quality at various sampling sites across California.
+Data is sourced from the [California Open Data Portal](https://data.ca.gov/), specifically the [Surface Water - Indicator Bacteria Results](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results) dataset. This dataset is updated daily and provides composited information on water quality at various sampling sites across California. Auxiliary datasets can be found in the Development Guide.
 
 ## About this Site
 
 This dashboard was built using the open-source static site generator Observable Framework. Data is fetched from *Surface Water - Indicator Bacteria Results* dataset on the California Open Data Portal. This dataset is updated daily, and the dashboard fetches the latest data automatically.
+
+Main frontend packages used in this project are:
+
+- [Observable Framework](https://observablehq.com/@observablehq/observable-framework) - for building the static site
+- [Observable Plot](https://observablehq.com/@observablehq/plot) - for data visualization
+- [Leaflet](https://leafletjs.com/) - for interactive maps
+
+Other dependencies can be found in `package.json`, `package-lock.json`, and `requirements.txt`.
 
 ## Contributing
 

@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-Create Saltwater Classification Flags for Water Quality Monitoring Sites
+Create Saltwater Classification Flags
 
 This script classifies water quality monitoring sites as either saltwater or freshwater
 based on their geographic location relative to saline wetlands, saline lakes, and 
@@ -10,21 +9,18 @@ The script:
 1. Downloads and processes saline wetlands data from CDFW
 2. Processes saline lakes data (requires manual download)
 3. Downloads and processes marine coastal polygons
-4. Fetches water quality monitoring sites from CA Open Data
+4. Fetches water quality monitoring sites from CA Open Data Portal
 5. Classifies each site as saltwater (True) or freshwater (False)
 6. Outputs results to a CSV file
 
-Author: Generated from Jupyter notebook analysis
 Date: July 29, 2025
 """
 
-import argparse
 import geopandas as gpd
 import pandas as pd
 import requests
 import os
 import zipfile
-from shapely.geometry import Point
 from datetime import datetime
 
 

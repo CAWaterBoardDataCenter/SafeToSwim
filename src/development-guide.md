@@ -135,7 +135,7 @@ The data shown in the plots is dynamically updated based on the user-selected st
 
 ## Building the site
 
-Building the site means generating the static files that will be served to users. To build the site, run the following command:
+Building the site means generating the static files that can be served to users. To build the site locally, run the following command:
 
 ```
 npx observable build
@@ -151,11 +151,15 @@ npx observable preview
 
 to preview the site locally. This will start a local server and open the site in your default web browser. Any changes made to the source files will automatically trigger a rebuild and refresh the browser.
 
+The site is also built using a GitHub Actions workflow defined in `.github/workflows/deploy.yml` whenever changes are pushed to the GitHub repository. The files in the `dist/` directory are deployed to GitHub Pages, which serves as the staging site for testing changes before they are deployed to the official site. Each build can be found under "Actions" in the GitHub repository and clicking on a workflow run. The `dist/` files can be downloaded under "Artifacts". 
+
 ### What happens during a site build
 
 The following occur when the command `npx observable build` is run.
 
-First, any pre-build scripts defined in `package.json` are run. Currently, the only pre-build script is `create_saltwater_flags.py`, which generates the saltwater flags for each station and saves them to a csv file. This script requires Python and the dependencies listed in `requirements.txt` to be installed. Then `build-config.js` is run, which converts `criteria.yml` and `site_saltwater_flags.csv` to json files that the dashboard can load. Next, the Observable Framework static site generator processes the markdown files in `src/`, along with any JavaScript and data files they reference, to generate the static files in the `dist/` directory.
+First, `build-config.js` is run, which converts `criteria.yml` and `site_saltwater_flags.csv` to json files that the dashboard can load. Next, the Observable Framework static site generator processes the markdown files in `src/`, along with any JavaScript and data files they reference, to generate the static files in the `dist/` directory.
+
+Note: The `create_saltwater_flags.py` script, which produces `site_saltwater_flags.csv`, must be run manually whenever there are changes to the saltwater classification criteria or the monitoring site data. This script requires Python and the dependencies listed in `requirements.txt` to be installed.
 
 ---
 
@@ -164,6 +168,10 @@ First, any pre-build scripts defined in `package.json` are run. Currently, the o
 ---
 
 The site should be rebuilt when there are changes that affect the data processing, status logic, or site content. The only updates that do not need site rebuilds are changes to the Surface Water - Indicator Bacteria Results dataset values (e.g. if a lat/lon pair is corrected in the dataset, rows are added/deleted). Below are some examples of when a site rebuild is necessary:
+
+### New stations added
+
+Because the saltwater vs freshwater classification is determined by a manual run of `create_saltwater_flags.py`, new stations added to the Surface Water - Indicator Bacteria Results dataset will require a site rebuild to ensure they are correctly classified.
 
 ### Major reorganization of the Surface Water - Indicator Bacteria Results dataset
 
