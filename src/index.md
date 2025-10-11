@@ -23,13 +23,10 @@ function toDate(d) {
 
 <div class="hero">
 
-  <h1>Safe to Swim Map</h1>
+  <h1>Is it Safe to Swim?</h1>
 
-  <h2>The California recreational water quality tool for nerds and adventurers.</h2>
-
-  \
-  This map from the California State Water Resources Control Board shows the latest water quality data to help you make informed decisions about where to swim. \
-  See [How to Use](how-to-use) and our [FAQ](faq) for more information.
+  Use this map to find water quality information at swimming spots in California. \
+  See [How to Use](how-to-use) and [Frequently Asked Questions](faq) for more information.
 
 </div>
 
@@ -324,12 +321,12 @@ invalidation?.then(() => {
     height: 100%; /* match left card's height */
 ">
 
-  <div class="card" id="search-card" style="margin: 0;"><h1>Find stations</h1>
+  <div class="card" id="search-card" style="margin: 0;"><h1>Search sites</h1>
 
   ```js
   const recentOnly = view(
     Inputs.toggle({
-      label: "Recent data only (last 6 weeks)",
+      label: "Only show sites with data from the last 6 weeks",
       value: true
     })
   );
@@ -383,7 +380,7 @@ invalidation?.then(() => {
   });
 
   // filter input
-  const filterBox = view(Inputs.text({ placeholder: "Search by name or code", width: "100%" }));
+  const filterBox = view(Inputs.text({ placeholder: "Enter a location", width: "100%" }));
   ```
 
   ```js
@@ -468,7 +465,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
     ? html`
         <h1><strong>${meta.formattedName}</strong></h1>
       `
-    : html`<h1>Select a station to see details</h1>`
+    : html`<h1>Status</h1>`
   ```
 
   ```js
@@ -488,16 +485,31 @@ const lastSampleDateISO = st.lastSampleDate || null;
     <br><i>${st?.status?.description ?? "<br>"}</i><br><br>
   `;
 
-  display(container);
+  const statusPlaceholder = document.createElement("div");
+  statusPlaceholder.style.backgroundColor = "lightgrey";
+  statusPlaceholder.style.color = "gray";
+  statusPlaceholder.style.padding = "0.5rem 1rem";
+  statusPlaceholder.style.borderRadius = "6px";
+
+  statusPlaceholder.innerHTML = `
+    <br><i>Select a site</i><br>
+  `;
+
+  if (selectedStation) {
+    display(container);
+  } else {
+    display(statusPlaceholder);
+  }
+  
   ```
 
   ```js
   meta
     ? html`
-        <p><strong>Station Code:</strong> ${meta.code}</p>
-        <p><strong>Lat/Lon:</strong> ${meta.lat.toFixed(5)}, ${meta.lon.toFixed(5)}</p>
+        <p><strong>Site code:</strong> ${meta.code}</p>
+        <p><strong>Latitude/longitude:</strong> ${meta.lat.toFixed(5)}, ${meta.lon.toFixed(5)}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
-        <p><strong>Samples in last 6 weeks:</strong> ${meta.recentDataPoints}</p>
+        <p><strong>Number of samples (last 6 weeks):</strong> ${meta.recentDataPoints}</p>
       `
     : html` `
   ```
@@ -518,8 +530,8 @@ const lastSampleDateISO = st.lastSampleDate || null;
   ```js
   meta
     ? html`
-        <p><i>Showing past results from <strong>${meta.formattedName}</strong>.<br>
-        This station is classified as a <strong>${isSaltwater ? "saltwater" : "freshwater"}</strong> station, where status is based on culture samples of the indicator bacteria <strong>${bacteria}.</strong></i></p>
+        <p><i>Showing monitoring data from <strong>${meta.formattedName}</strong>.<br>
+        This site is classified as a <strong>${isSaltwater ? "saltwater" : "freshwater"}</strong> site. Status is based on samples of the indicator bacteria <strong>${bacteria}.</strong></i></p>
       `
     : html` `
   ```
@@ -647,10 +659,9 @@ const lastSampleDateISO = st.lastSampleDate || null;
       ]
     });
 
-    display(placeholder("Select a station to see status history, 6-week averages, and single-sample results"));
+    display(placeholder("Select a site to see status history, 6-week averages, and single-sample results"));
 
   } else {
-
     const statusSeries = await stat.buildStatusSeriesForStation(stationRecord);
 
     const statusByDay = new Map(
@@ -682,6 +693,8 @@ const lastSampleDateISO = st.lastSampleDate || null;
         };
       })
       .sort((a, b) => a.date - b.date) || [];
+
+    console.log(mapped);
 
     const dataCulture = mapped.filter(d => !d.isDdPCR);
     const dataDdPCR   = mapped.filter(d =>  d.isDdPCR);
@@ -776,7 +789,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
       );
 
       const pplot = Plot.plot({
-        title: `6-week average (geometric mean)`,
+        title: `Rolling 6-week average (geometric mean)`,
         marks: [
           ...areaMarks,
           Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
@@ -876,15 +889,14 @@ const lastSampleDateISO = st.lastSampleDate || null;
 
 ## Interpreting safety statuses
 \
-The safety status of each station is determined by comparing the bacteria concentrations to established thresholds. Carefully consider the amount of time spent in contact with water, what activities might lead to the ingestion of water, and the vulnerability of those involved. Potential health impacts include gastrointestinal illness, skin rashes, and ear, eye, nose, and throat infections. Stay informed to have a safe and enjoyable experience in California's waters.
-
+The status at each monitoring site is based on how recent monitoring results compare to the [Statewide Bacteria Water Quality Objectives](https://www.waterboards.ca.gov/bacterialobjectives/). When planning your visit, consider how much time you will spend in the water, whether your activities might lead to ingesting water, and the health needs of everyone in your group. Contact with contaminated water can increase the risk of gastrointestinal illness, skin rashes, and infections of the ears, eyes, nose, or throat.
   <div class="grid grid-cols-3" style="width: 100%; gap: 1rem; margin-top: 1rem;">
     <div class="card">
       <strong>Low risk</strong><br><br>
       Both the single sample and the geometric mean are below their respective thresholds. This indicates that the water quality is generally good and recreation poses a low risk.
     </div>
     <div class="card"><strong>Use caution</strong><br><br>
-    One or both of the single sample and the geometric mean are near their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact.
+    Either the single sample, the geometric mean, or both exceed their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact.
     </div>
     <div class="card"><strong>Not enough data</strong><br><br>
     There are fewer than 5 samples of the necessary indicator bacteria in the last 6 weeks. This status indicates that there is insufficient data to determine the safety of the water at this time.

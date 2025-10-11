@@ -13,20 +13,19 @@ statuses:
 
   low_risk:
     name: "Low risk"
-    description: "Bacteria levels do not exceed safety limits. 
-      Swimming is considered safe."
+    description: "Recent monitoring results do not exceed the bacteria water quality objectives."
     priority: 3
     color: "#1ec7fa"
 
   use_caution:
     name: "Use caution"
-    description: "Bacteria levels exceed one or more safety limits. While a closure may not be in effect, swimming poses an elevated risk of gastrointestinal illness."
+    description: "Recent monitoring results exceed one or more bacteria water quality objectives. While a closure may not be in effect, engaging in water-contact recreation such as swimming may pose an increased risk of illness."
     priority: 4
     color: "#ffa012"
 
   not_enough_data:
     name: "Not enough data"
-    description: "Insufficient number of recent samples to assess risk status."
+    description: "There is not enough recent monitoring data available for this site."
     priority: 5
     color: "#bfbcbb"
 

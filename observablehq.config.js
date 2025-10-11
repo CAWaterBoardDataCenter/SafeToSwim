@@ -21,7 +21,7 @@ export default {
   // header: "", // what to show in the header (HTML)
   footer: `<strong>Resources</strong><br><br>
   <a href="/how-to-use" target="_blank">How to use this map</a><br>
-  <a href="/faq" target="_blank">FAQ</a><br>
+  <a href="/faq" target="_blank">Frequently asked questions</a><br>
   <a href="/development-guide" target="_blank">Development guide</a><br><br>
   <a href="https://www.waterboards.ca.gov/" target="_blank">California State Water Resources Control Board</a><br>
   <a href="https://mywaterquality.ca.gov/" target="_blank">California Water Quality Monitoring Council</a><br><br>
@@ -34,11 +34,10 @@ export default {
   water contact activities. Always follow local advisories and guidelines when engaging in recreational activities in natural 
   water bodies. The data can change at any time and should not be used for any particular purpose other than general reference.
 
-  In addition, the safety statuses we provide are approximations of how official state bacteria objectives are applied 
-  (<a href="https://www.waterboards.ca.gov/bacterialobjectives/" target="_blank">check here for current details</a>); we do not
+  In addition, the safety statuses are approximations of how the <a href="https://www.waterboards.ca.gov/bacterialobjectives/" target="_blank">Statewide Bacteria Water Quality Objectives</a> are applied. We do not
   recommend using these statuses directly for regulatory or legal purposes. Assessments of water quality for regulatory purposes
-  should be conducted on a case-by-case basis by up-to-date standards from the original data, which is available for download on 
-  the <a href="https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results" target="_blank">California Open Data Portal</a>.
+  should be conducted using the original data, which is available for download on 
+  <a href="https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html" target="_blank">BeachWatch</a> and the <a href="https://ceden.org/" target="_blank">California Environmental Data Exchange Network</a> (CEDEN).
 `,
   sidebar: true, // enable the sidebar
   // toc: true, // whether to show the table of contents
