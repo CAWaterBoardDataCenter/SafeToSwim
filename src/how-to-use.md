@@ -4,34 +4,40 @@ title: How to Use
 
 # How to Use the Safe to Swim Map
 
-The Safe to Swim map provides near real-time water quality data for California's recreational waters. Data is organized into "stations," each representing a specific location where water has been monitored. Stations are color-coded based on their safety status, which is determined by levels of certain types of bacteria (i.e. E. coli). Selecting a station will show its current status as well as historical data.
+The Safe to Swim map provides water quality data for popular swimming spots in California. Data is organized by sites, each representing a specific location where monitoring for fecal indicator bacteria, such as enterococci and _E. coli_, has been conducted. Sites are color-coded based on their safety status, which is determined by comparing recent monitoring results to the [Statewide Bacteria Water Quality Objectives](https://www.waterboards.ca.gov/bacterialobjectives/). Selecting a site will display its current status and historical data.
 
-The full Safe to Swim map dataset is updated daily on weekdays, depending on staff availability. The dataset is publically available for download on the [California Open Data Portal](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results).
+The full dataset for the Safe to Swim Map is typically updated on weekdays, depending on staff availability. The dataset is publicly available for download on the [California Open Data Portal](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results).
 
 ---
 
 ## Exploring the map
 
-Stations are represented by circles, with colors indicating safety status as shown in the map legend. Click on a station marker to see detailed information about that location.
+Sites are shown as circles on the map, with colors indicating their current safety status (see the map legend for details). Click on a site marker to view detailed information about that location.
 
-### Finding a station via the map
+### Finding a site on the map
 
-To find a station on the map, simply pan and zoom until you locate the desired area. You can click on any station marker to view its details. The marker of the selected station will be highlighted with a popup. The map can also be viewed in full screen (note: the browswer must be in full screen for the map to be enlarged).
+To find a site, pan and zoom the map to your area of interest. Click any site marker to view its details. The selected site will be highlighted with a popup. You can also expand the map to full screen (note: your browser must be in full-screen mode to enlarge the map).
 
-### Finding a station via the search menu
+### Finding a site using the search menu
 
-To find a station using the search menu, enter the name or code of the station you're looking for. This will filter the list of stations in the menu. When you click on a station from the menu, the map will automatically pan to and highlight the station. You may also use arrow keys to change the station selected in the menu.
+Use the search menu to find a site by entering its name or code. The list will filter as you type. Selecting a site from the menu will automatically pan the map to the location and highlight it. You can also use arrow keys to navigate between sites in the list.
 
-## Viewing station details
+---
 
-When you click on a station, a popup will appear on the map with the name and station code of the station. On the right side is further information about the station, including its current status, a description of that status, and the date of the last sample taken.
+## Viewing site details
+
+When you click on a site, a popup will appear on the map showing the site’s name and code. Additional details will appear on the right side of the screen, including the site’s current status, a description of that status, and the date of the most recent sample.
+
+---
 
 ## Understanding the data used
 
-This dashboard displays bacteria concentrations measured from water samples at each station. To obtain a safety status for a station, these data are compared to thresholds that have been connected with differences in health outcomes from swimming: if concentrations exceed a certain level, the station is considered less safe to swim. The method used to determine status uses two versions of the data: single samples from the last 30 days, and the geometric mean (of the single samples) from the last 6 weeks. Both versions of data are shown in the Data panel.
+This dashboard displays bacteria concentrations measured from water samples taken at each site. To obtain a safety status for a site, the results are compared to the [Statewide Bacteria Water Quality Objectives](https://www.waterboards.ca.gov/bacterialobjectives/). Results that exceed the bacteria objectives indicate an elevated risk of illness. The method used to determine status uses two versions of the data: single samples from the last 30 days, and the rolling geometric mean (of the single samples) from the last six weeks. Both versions of the data are shown in the Data panel.
+
+---
 
 ## Disclaimer
 
-This map is intended for informational purposes only and should not be used as the sole basis for making decisions about water contact activities. Always follow local advisories and guidelines when engaging in recreational activities in natural water bodies. The data can change at any time and should not be used for any particular purpose other than general reference.
+This map is intended for informational purposes only and should not be used as the sole basis for making decisions about water contact activities. Always follow local advisories and guidelines. The data can change at any time and should not be used for any particular purpose other than general reference.
 
-In addition, the safety statuses we provide are approximations of how official state bacteria objectives are applied ([check here for current details](https://www.waterboards.ca.gov/bacterialobjectives/)); we do not recommend using these statuses directly for regulatory or legal purposes. Assessments of water quality for regulatory purposes should be conducted on a case-by-case basis from the original data by up-to-date standards, which is available for download on [BeachWatch](https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html) and the [California Environmental Data Exchange Network](https://ceden.org/) (CEDEN).
+In addition, the statuses provided are approximations of how the [Statewide Bacteria Water Quality Objectives](https://www.waterboards.ca.gov/bacterialobjectives/) are applied; we do not recommend using these statuses directly for regulatory or legal purposes. Assessments of water quality for regulatory purposes should be conducted on a case-by-case basis from the original data by up-to-date standards, which is available for download on [BeachWatch](https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html) and the [California Environmental Data Exchange Network](https://ceden.org/) (CEDEN).
