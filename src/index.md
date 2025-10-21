@@ -893,13 +893,13 @@ The status at each monitoring site is based on how recent monitoring results com
   <div class="grid grid-cols-3" style="width: 100%; gap: 1rem; margin-top: 1rem;">
     <div class="card">
       <strong>Low risk</strong><br><br>
-      Both the single sample and the geometric mean are below their respective thresholds. This indicates that the water quality is generally good and recreation poses a low risk.
+      Both the single sample and the geometric mean are below their respective thresholds. This status indicates that there is generally a low level of risk associated with water contact at this site.
     </div>
     <div class="card"><strong>Use caution</strong><br><br>
-    Either the single sample, the geometric mean, or both exceed their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact.
+      Either the single sample, the geometric mean, or both exceed their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact at this site.
     </div>
     <div class="card"><strong>Not enough data</strong><br><br>
-    There are fewer than 5 samples of the necessary indicator bacteria in the last 6 weeks. This status indicates that there is insufficient data to determine the safety of the water at this time.
-  </div>
+      Fewer than five samples of the relevant indicator bacteria have been collected in the past six weeks. This status indicates that there is insufficient data to assess the current level of risk associated with water contact at this site.
+    </div>
 
 </div>
