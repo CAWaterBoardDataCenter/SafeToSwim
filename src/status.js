@@ -103,7 +103,7 @@ export function computeWindowMetrics(records, asOfDate, opts = {}) {
   };
 
   const inLast = (r, days) => {
-    const dt = toDate(r.SampleDate);
+    const dt = toDate(r.SampleDateTime);
     return dt <= asOf && (asOf - dt) <= days * msPerDay;
   };
 
@@ -261,11 +261,11 @@ export async function buildStatusSeriesForStation(stationRecord) {
   const W6  = 42; // six weeks: geomean + min samples
   const W30 = 30; // 30 days: p90
 
-  // build sample list (ts or SampleDate) and exclude ddPCR like your old computeWindowMetrics
+  // build sample list (ts or SampleDateTime) and exclude ddPCR like your old computeWindowMetrics
   const raw = (stationRecord || [])
-    .filter(r => r?.Analyte === analyte && r?.Result != null && (Number.isFinite(r?.ts) || r?.SampleDate))
+    .filter(r => r?.Analyte === analyte && r?.Result != null && (Number.isFinite(r?.ts) || r?.SampleDateTime))
     .map(r => {
-      const ts = Number.isFinite(r?.ts) ? r.ts : Date.parse(r.SampleDate);
+      const ts = Number.isFinite(r?.ts) ? r.ts : Date.parse(r.SampleDateTime);
       return {
         day: Number.isFinite(ts) ? toDayIndex(ts) : NaN,
         val: +r.Result,

@@ -445,7 +445,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
             year: "numeric",
             month: "short",
             day: "numeric"
-          })
+          }) 
         : null;
 
     meta = {
@@ -675,7 +675,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
     const mapped = stationRecord
       ?.filter(d => d.Analyte === analyte)
       .map(d => {
-        const date = new Date(d.SampleDate);
+        const date = new Date(d.SampleDateTime);
         const iso = date.toISOString().slice(0, 10);
         const st = statusByDay.get(iso);
         const ddpcr = mod.isDdPCR?.(d) ?? false;
@@ -693,8 +693,6 @@ const lastSampleDateISO = st.lastSampleDate || null;
         };
       })
       .sort((a, b) => a.date - b.date) || [];
-
-    console.log(mapped);
 
     const dataCulture = mapped.filter(d => !d.isDdPCR);
     const dataDdPCR   = mapped.filter(d =>  d.isDdPCR);

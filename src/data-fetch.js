@@ -26,6 +26,7 @@ export async function loadAllStationsAtStartup({
   windowDays = 42,
   analytes = ["Enterococcus", "E. coli"]
 } = {}) {
+
   const ordered = DATASETS.slice().sort((a, b) => a.priority - b.priority);
 
   const registry = new Map(); // StationCode -> merged object
@@ -43,15 +44,15 @@ export async function loadAllStationsAtStartup({
         `;
         // 2) last sample date
         const lastQ = `
-          SELECT "StationCode", MAX("SampleDate") AS "LastSampleDate"
+          SELECT "StationCode", MAX("SampleDateTime") AS "LastSampleDate"
           FROM "${id}"
           GROUP BY "StationCode"
         `;
         // 3) recent window (for latest/recentResults)
         const recentQ = `
-          SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
+          SELECT "StationCode","SampleDateTime","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
           FROM "${id}"
-          WHERE "SampleDate" >= '${sinceISO}' AND "Analyte" IN (${analyteList})
+          WHERE "SampleDateTime" >= '${sinceISO}' AND "Analyte" IN (${analyteList})
         `;
         // 4) analytes present in dataset (for filtering)
         const analytesEverQ = `
@@ -74,7 +75,7 @@ export async function loadAllStationsAtStartup({
           recentBy.set(r.StationCode, arr);
         }
 
-        // group EVER analytes per station for this dataset
+        // group analytes (as a set) per station
         const everBy = new Map(); // code -> Set of analytes
         for (const r of analytesEverRows) {
           const code = r.StationCode;
@@ -117,13 +118,13 @@ export async function loadAllStationsAtStartup({
           if (rec.length) {
             for (const r of rec) {
               entry.recentResults.push({
-                SampleDate: r.SampleDate,
+                SampleDateTime: r.SampleDateTime,
                 Analyte: r.Analyte,
                 Unit: r.Unit,
                 Result: r.Result,
                 MethodName: r.MethodName ?? null
               });
-              if (!entry.latest || r.SampleDate > entry.latest.SampleDate) {
+              if (!entry.latest || r.SampleDateTime > entry.latest.SampleDateTime) {
                 entry.latest = r;
               }
             }
@@ -174,14 +175,14 @@ const esc = s => String(s).replace(/'/g, "''");
 // SQL fetcher: from timecutoff (>= since) or all (since=null)
 async function sqlFetchStation(resourceId, stationCode, { signal, analytes = ANALYTES, since = null }) {
   const list = analytes.map(a => `'${esc(a)}'`).join(",");
-  const whereSince = since ? `AND "SampleDate" >= '${since}'` : "";
+  const whereSince = since ? `AND "SampleDateTime" >= '${since}'` : "";
   const sql = `
-    SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
+    SELECT "StationCode","SampleDateTime","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
     FROM "${resourceId}"
     WHERE "StationCode"='${esc(stationCode)}'
       AND "Analyte" IN (${list})
       ${whereSince}
-    ORDER BY "SampleDate" ASC
+    ORDER BY "SampleDateTime" ASC
   `;
   const url = `https://data.ca.gov/api/3/action/datastore_search_sql?sql=${encodeURIComponent(sql)}`;
   const resp = await fetch(url, { signal });
@@ -193,12 +194,12 @@ async function sqlFetchStation(resourceId, stationCode, { signal, analytes = ANA
 async function sqlFetchStationOlder(resourceId, stationCode, { signal, analytes = ANALYTES, olderThan }) {
   const list = analytes.map(a => `'${esc(a)}'`).join(",");
   const sql = `
-    SELECT "StationCode","SampleDate","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
+    SELECT "StationCode","SampleDateTime","Analyte","Unit","Result","6WeekGeoMean","6WeekCount","MethodName"
     FROM "${resourceId}"
     WHERE "StationCode"='${esc(stationCode)}'
       AND "Analyte" IN (${list})
-      AND "SampleDate" < '${olderThan}'
-    ORDER BY "SampleDate" ASC
+      AND "SampleDateTime" < '${olderThan}'
+    ORDER BY "SampleDateTime" ASC
   `;
   const url = `https://data.ca.gov/api/3/action/datastore_search_sql?sql=${encodeURIComponent(sql)}`;
   const resp = await fetch(url, { signal });
@@ -207,10 +208,10 @@ async function sqlFetchStationOlder(resourceId, stationCode, { signal, analytes 
 }
 
 function normalizeRow(r, sourceLabel) {
-  const t = Date.parse(r.SampleDate);
+  const t = Date.parse(r.SampleDateTime);
   return {
     StationCode: r.StationCode,
-    SampleDate: r.SampleDate,
+    SampleDateTime: r.SampleDateTime,
     ts: Number.isFinite(t) ? t : null,
     Analyte: r.Analyte,
     Unit: r.Unit,
@@ -225,7 +226,7 @@ function normalizeRow(r, sourceLabel) {
 function sameKey(a, b) {
   return (
     a.StationCode === b.StationCode &&
-    a.SampleDate === b.SampleDate &&
+    a.SampleDateTime === b.SampleDateTime &&
     a.Analyte === b.Analyte &&
     a.Unit === b.Unit &&
     (a.MethodName ?? null) === (b.MethodName ?? null) &&
@@ -246,8 +247,8 @@ function mergeSortedLists(lists) {
       if (j >= arr.length) continue;
       const cur = arr[j];
       if (!best) { best = cur; k = i; continue; }
-      const ta = cur.ts ?? Date.parse(cur.SampleDate);
-      const tb = best.ts ?? Date.parse(best.SampleDate);
+      const ta = cur.ts ?? Date.parse(cur.SampleDateTime);
+      const tb = best.ts ?? Date.parse(best.SampleDateTime);
       if (ta < tb) { best = cur; k = i; }
     }
     if (k === -1) break;
@@ -314,14 +315,14 @@ export async function stationRecordFetch(
 
   // (A) WINDOW requested: derive from ALL if available
   if (timePreset === "window" && _cache.has(allKey)) {
-    const fromAll = _cache.get(allKey).filter(r => (r.ts ?? Date.parse(r.SampleDate)) >= Date.parse(cutoffISO));
+    const fromAll = _cache.get(allKey).filter(r => (r.ts ?? Date.parse(r.SampleDateTime)) >= Date.parse(cutoffISO));
     _cache.set(winKey, fromAll);
     return fromAll;
   }
   // Piggyback if ALL is currently loading
   if (timePreset === "window" && _inflight.has(allKey)) {
     const p = _inflight.get(allKey).then(rows => {
-      const subset = rows.filter(r => (r.ts ?? Date.parse(r.SampleDate)) >= Date.parse(cutoffISO));
+      const subset = rows.filter(r => (r.ts ?? Date.parse(r.SampleDateTime)) >= Date.parse(cutoffISO));
       _cache.set(winKey, subset);
       return subset;
     });
@@ -334,7 +335,7 @@ export async function stationRecordFetch(
     const supKey = findSupersetWindowKey({ scope, stationCode, cutoffISO, analyteKey: aKey });
     if (supKey) {
       const sup = _cache.get(supKey);
-      const subset = sup.filter(r => (r.ts ?? Date.parse(r.SampleDate)) >= Date.parse(cutoffISO));
+      const subset = sup.filter(r => (r.ts ?? Date.parse(r.SampleDateTime)) >= Date.parse(cutoffISO));
       _cache.set(winKey, subset);
       return subset;
     }
@@ -352,7 +353,7 @@ export async function stationRecordFetch(
     _cache.set(allKey, merged);
     // backfill window if missing (helps future toggles)
     if (!_cache.has(winKey)) {
-      const subset = merged.filter(r => (r.ts ?? Date.parse(r.SampleDate)) >= Date.parse(cutoffISO));
+      const subset = merged.filter(r => (r.ts ?? Date.parse(r.SampleDateTime)) >= Date.parse(cutoffISO));
       _cache.set(winKey, subset);
     }
     return merged;
@@ -372,7 +373,7 @@ export async function stationRecordFetch(
 
     // cross-fill: if we fetched ALL, also seed the window; if we fetched WINDOW, no need to seed ALL
     if (timePreset === "all" && !_cache.has(winKey)) {
-      const subset = merged.filter(r => (r.ts ?? Date.parse(r.SampleDate)) >= Date.parse(cutoffISO));
+      const subset = merged.filter(r => (r.ts ?? Date.parse(r.SampleDateTime)) >= Date.parse(cutoffISO));
       _cache.set(winKey, subset);
     }
     return merged;
