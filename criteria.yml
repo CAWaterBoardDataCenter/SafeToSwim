@@ -19,7 +19,7 @@ statuses:
 
   use_caution:
     name: "Use caution"
-    description: "Recent monitoring results exceed one or more bacteria water quality objectives. While a closure may not be in effect, engaging in water-contact recreation such as swimming may pose an increased risk of illness."
+    description: "Recent monitoring results exceed one or more bacteria water quality objectives. Engaging in water-contact recreation, such as swimming, may pose an increased risk of illness."
     priority: 4
     color: "#ffa012"
 
