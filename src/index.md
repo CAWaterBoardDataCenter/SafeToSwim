@@ -684,6 +684,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
           date,
           result: d.Result != null ? +d.Result : null,
           sixWeekGeoMean: d["6WeekGeoMean"] != null ? +d["6WeekGeoMean"] : null,
+          sixWeekGeoMeanCount: d["6WeekCount"] != null ? +d["6WeekCount"] : null,
           analyte: d.Analyte,
           unit: d.Unit,
           MethodName: d.MethodName ?? null,
@@ -774,15 +775,18 @@ const lastSampleDateISO = st.lastSampleDate || null;
       const labelUnit = `${dataCulture[0].analyte} (${dataCulture[0].unit})`;
 
       const all = await mod.getAllThresholds();
-      const th = mod.thresholdsFor(all, analyte);
-      const T = th?.geomean ?? null;
+      const thresholdInfo = mod.thresholdsFor(all, analyte);
+      const thresholdVal = thresholdInfo?.geomean ?? null;
+
+      // Filter dataset for geomean values with n count >= 5 for compliance with statewide bacteria objectives
+      const dataGM = dataCulture.filter(d => d.sixWeekGeoMeanCount >= 5);
 
       const y = d => d.sixWeekGeoMean;
-      const sorted = dataCulture.slice().sort((a,b) => +a.date - +b.date);
-      const segmentsFill = mod.segmentsAboveThreshold(sorted, y, T);
+      const sorted = dataGM.slice().sort((a,b) => +a.date - +b.date);
+      const segmentsFill = mod.segmentsAboveThreshold(sorted, y, thresholdVal);
       const areaMarks = segmentsFill.map(seg =>
         Plot.areaY(seg, {
-          x: "date", y, y1: T, fill: "orange", fillOpacity: 0.5, curve: "linear", clip: true
+          x: "date", y, y1: thresholdVal, fill: "orange", fillOpacity: 0.5, curve: "linear", clip: true
         })
       );
 
@@ -790,13 +794,13 @@ const lastSampleDateISO = st.lastSampleDate || null;
         title: `Rolling 6-week average (geometric mean)`,
         marks: [
           ...areaMarks,
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 12, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
-          Plot.lineY(dataCulture, { x: "date", y: "sixWeekGeoMean", stroke: "steelblue", curve: "linear"}),
-
-          Plot.ruleX(dataCulture, Plot.pointerX({ x: "date", py: "sixWeekGeoMean", stroke: "lightgray"})),
-          Plot.dot(dataCulture,   Plot.pointerX({ x: "date", y: "sixWeekGeoMean", stroke: "red"})),
-          Plot.text(dataCulture,  Plot.pointerX({
+          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
+          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0, strokeWidth: 12, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
+          Plot.lineY(dataGM, { x: "date", y: "sixWeekGeoMean", stroke: "steelblue", curve: "linear"}),
+  
+          Plot.ruleX(dataGM, Plot.pointerX({ x: "date", py: "sixWeekGeoMean", stroke: "lightgray"})),
+          Plot.dot(dataGM,   Plot.pointerX({ x: "date", y: "sixWeekGeoMean", stroke: "red"})),
+          Plot.text(dataGM,  Plot.pointerX({
             px: "date", py: "sixWeekGeoMean", dy: -17, frameAnchor: "top-right", fontVariant: "tabular-nums",
             text: d => {
               const fmt = date => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
@@ -820,18 +824,18 @@ const lastSampleDateISO = st.lastSampleDate || null;
       const labelUnit = `${dataCulture[0].analyte} (${dataCulture[0].unit})`;
 
       const all = await mod.getAllThresholds();
-      const th = mod.thresholdsFor(all, analyte);
-      const T = th?.single_sample ?? null;
+      const thresholdInfo = mod.thresholdsFor(all, analyte);
+      const thresholdVal = thresholdInfo?.single_sample ?? null;
 
       const plot = Plot.plot({
         title: `Single sample results (${dataCulture.length} samples)`,
         marks: [
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
-          Plot.ruleY([{}], { y: T, stroke: "orange", opacity: 0, strokeWidth: 20, title: `Threshold: ${T} ${dataCulture[0].unit}`}),
+          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
+          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0, strokeWidth: 20, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
           Plot.dot(dataCulture, {
             x: "date", y: "result", r: 2, fill: "steelblue",
-            stroke: d => (T != null && d.result > T) ? "orange" : "none",
-            strokeWidth: d => (T != null && d.result > T) ? 1 : 0
+            stroke: d => (thresholdVal != null && d.result > thresholdVal) ? "orange" : "none",
+            strokeWidth: d => (thresholdVal != null && d.result > thresholdVal) ? 1 : 0
           }),
           Plot.ruleX(dataCulture, Plot.pointerX({ x: "date", py: "result", stroke: "lightgray"})),
           Plot.dot(dataCulture,   Plot.pointerX({ x: "date", y: "result", stroke: "red"})),
@@ -854,10 +858,11 @@ const lastSampleDateISO = st.lastSampleDate || null;
     // ddPCR results plot ------------------------------
     if (dataDdPCR.length) {
       const labelUnitDPCR = `${dataDdPCR[0].analyte} (${dataDdPCR[0].unit})`;
+      const thresholdVal = 1413
       const plotDPCR = Plot.plot({
         title: `ddPCR results - not used for status (${dataDdPCR.length} samples)`,
         marks: [
-          Plot.ruleY([{}], { y: 1413, stroke: "gray", opacity: 0.25, strokeWidth: 1, title: `Threshold: 1,413 ${dataDdPCR[0].unit}`}),
+          Plot.ruleY([{}], { y: thresholdVal, stroke: "gray", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${thresholdVal} ${dataDdPCR[0].unit}`}),
           Plot.dot(dataDdPCR, { x: "date", y: "result", r: 2, strokeWidth: 1 }),
           Plot.ruleX(dataDdPCR, Plot.pointerX({ x: "date", py: "result", stroke: "lightgray"})),
           Plot.dot(dataDdPCR,   Plot.pointerX({ x: "date", y: "result", stroke: "red"})),

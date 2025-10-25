@@ -71,6 +71,8 @@ A site is considered "Low risk" if *both* the single sample and six-week geometr
 
 The thresholds used for determining safety statuses also depend on the type of specific indicator bacteria. _E. coli_ is used for freshwater sites, while enterococcus is used for marine and estuarine sites.
 
+The six-week rolling geometric mean is calculated using enough samples to be statistically reliable, usually at least five samples collected over a six-week period. While the full dataset available on the [California Open Data Portal](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results) includes geometric mean values based on fewer than five samples, this map only displays geometric mean values calculated from five or more samples.
+
 ### Why are there only two safety status categories?
 
 Based on the [Statewide Bacteria Water Quality Objectives](https://www.waterboards.ca.gov/bacterialobjectives/) and the epidemiological studies that inform them, two meaningful risk categories are currently being used. While multiple metrics are involved in determining these statuses, the thresholds aim to simplify how we assess risk from fluctuating bacteria levels. At this time, we do not have the capacity to further divide the "Use caution" category into more detailed risk levels, though this may be considered in the future. It’s also important to note that this dashboard cannot account for the wide variability in individual exposure and activity duration, which adds uncertainty to the risk assessment.
