@@ -783,20 +783,19 @@ const lastSampleDateISO = st.lastSampleDate || null;
 
       const y = d => d.sixWeekGeoMean;
       const sorted = dataGM.slice().sort((a,b) => +a.date - +b.date);
-      const segmentsFill = mod.segmentsAboveThreshold(sorted, y, thresholdVal);
-      const areaMarks = segmentsFill.map(seg =>
-        Plot.areaY(seg, {
-          x: "date", y, y1: thresholdVal, fill: "orange", fillOpacity: 0.5, curve: "linear", clip: true
-        })
-      );
 
       const pplot = Plot.plot({
-        title: `Rolling 6-week average (geometric mean)`,
+        title: `Six-week average (geometric mean)`,
         marks: [
-          ...areaMarks,
           Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
           Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0, strokeWidth: 12, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
-          Plot.lineY(dataGM, { x: "date", y: "sixWeekGeoMean", stroke: "steelblue", curve: "linear"}),
+
+          // 10/26/2025 - Replaced line plot with a dot plot similar to the single sample graph to avoid interpolation or adding new records (with NA/null values) to the dataset
+          Plot.dot(dataGM, {
+            x: "date", y: "sixWeekGeoMean", r: 2, fill: "steelblue",
+            stroke: d => (thresholdVal != null && d.sixWeekGeoMean > thresholdVal) ? "orange" : "none",
+            strokeWidth: d => (thresholdVal != null && d.sixWeekGeoMean > thresholdVal) ? 1 : 0
+          }),
   
           Plot.ruleX(dataGM, Plot.pointerX({ x: "date", py: "sixWeekGeoMean", stroke: "lightgray"})),
           Plot.dot(dataGM,   Plot.pointerX({ x: "date", y: "sixWeekGeoMean", stroke: "red"})),

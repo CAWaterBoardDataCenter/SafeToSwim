@@ -128,7 +128,9 @@ export function thresholdsFor(all, analyte) {
   return all?.[analyte] ?? null;
 }
 
-//  Slice a timeseries into contiguous segments where y(d) >= T, inserting exact crossing points at the threshold.
+// 10/27/2025 - May not longer need this function after replacing the geomean line plot with a dot point. Keep for reference but may remove in the future
+// Slice a timeseries into contiguous segments where y(d) >= T, inserting exact crossing points at the threshold.
+/*
 export function segmentsAboveThreshold(data, y, T) {
   const segs = [];
   let cur = [];
@@ -164,6 +166,7 @@ export function segmentsAboveThreshold(data, y, T) {
 
   return segs;
 }
+*/
 
 export function isWithinWeeks(isoDateStr, weeks = 6, today = new Date()) {
   if (!isoDateStr) return false;
