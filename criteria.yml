@@ -25,7 +25,7 @@ statuses:
 
   not_enough_data:
     name: "Not enough data"
-    description: "There is not enough recent monitoring data available for this site."
+    description: "Recent data is unavailable or insufficient to evaluate current conditions." 
     priority: 5
     color: "#bfbcbb"
 

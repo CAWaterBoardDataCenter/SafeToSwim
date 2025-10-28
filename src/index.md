@@ -901,7 +901,7 @@ The status at each monitoring site is based on how recent monitoring results com
       Either the single sample, the geometric mean, or both exceed their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact at this site.
     </div>
     <div class="card"><strong>Not enough data</strong><br><br>
-      Fewer than five samples of the relevant indicator bacteria have been collected in the past six weeks. This status indicates that there is insufficient data to assess the current level of risk associated with water contact at this site.
+      Fewer than five samples of the relevant indicator bacteria have been collected in the past six weeks. There is insufficient data to assess the current level of risk associated with water contact at this site.
     </div>
 
 </div>
