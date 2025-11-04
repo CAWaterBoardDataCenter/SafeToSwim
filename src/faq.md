@@ -26,13 +26,13 @@ On this dashboard, "indicator bacteria" refers to bacteria used to assess the qu
 
 ### Where does this dashboard get its water quality data?
 
-The data shown on this map are sourced from the [California Environmental Data Exchange Network](http://www.ceden.org/) (CEDEN), [BeachWatch](https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html) database, and [Lower American River Recreational Water Quality Map](https://arcg.is/0ea0zq). While the data from the Lower American River is also included in CEDEN, there may be a delay before the most recent results appear in CEDEN.
+The data shown on this map are sourced from the [California Environmental Data Exchange Network](http://www.ceden.org/) (CEDEN) database, [BeachWatch](https://www.waterboards.ca.gov/water_issues/programs/beaches/search_beach_mon.html) database, and [Lower American River Recreational Water Quality Map](https://arcg.is/0ea0zq). While the data from the Lower American River is also included in CEDEN, there may be a delay before the most recent results appear in CEDEN.
 
 ### How is the data collected?
 
 Most samples are collected by local public health agencies, environmental organizations, and other partners. Samples are typically obtained via grab sample at designated sites along beaches, rivers, and lakes. The samples are then analyzed in laboratories to measure levels of the indicator bacteria such as _E. coli_ and enterococcus.
 
-There exist many methods of measuring bacteria concentrations, typically involving culturing bacteria from a water sample. Some local agencies have begun using rapid testing methods such as quantitative real-time PCR (qPCR) and droplet digital polymerase chain reaction (ddPCR). Further information about the latest studies on methodology can be found on the [U.S. Environmental Protection Agency's (EPA) website](https://www.epa.gov/wqc/recreational-water-quality-criteria-and-methods).
+There exist many methods of measuring bacteria concentrations, typically involving culturing bacteria from a water sample. Some local agencies have begun using rapid testing methods such as quantitative real-time PCR (qPCR) and droplet digital polymerase chain reaction (ddPCR). More information about the latest studies on methodology can be found on the [U.S. Environmental Protection Agency's (EPA) website](https://www.epa.gov/wqc/recreational-water-quality-criteria-and-methods).
 
 ### Why do I see different units (CFU vs MPN) for bacteria concentrations?
 
@@ -50,7 +50,9 @@ Data from CEDEN and BeachWatch are regularly prepared for the Safe to Swim Map a
 
 ### How is data processed for this dashboard?
 
-Raw data is cleaned and validated to ensure accuracy and consistency. This involves removing duplicates, correcting errors, and standardizing formats. The processed data is then aggregated and analyzed to provide meaningful insights for the dashboard.
+Raw data is cleaned and validated to ensure accuracy and consistency. This involves removing duplicates, correcting errors, and standardizing formats. The processed data is then aggregated and analyzed for the dashboard. The Python code used for processing the data is publicly available as a Jupyter notebook file on GitHub: [SafeToSwim-v2-data.ipynb](https://github.com/mmtang/safe-to-swim-v2-data/blob/master/SafeToSwim-v2-data.ipynb). 
+
+Some records are excluded from the final dataset during processing. These typically include duplicate or replicate results, records with missing or invalid result values, or any data that cannot be used to calculate a geometric mean. To promote transparency, a file with all the excluded records is available for download on the [California Open Data Portal](https://data.ca.gov/dataset/surface-water-fecal-indicator-bacteria-results). If you believe a data record was removed in error and should be included, please [contact](#contact) us so we can review it.
 
 ---
 
@@ -93,7 +95,7 @@ This dashboard uses the [2019 Statewide Bacteria Water Quality Objectives](https
 
 ### Are California's standards different from federal standards?
 
-Yes, California has its own set of water quality standards that may differ from federal standards. The state often adopts more stringent regulations to protect public health and the environment. The state often adopts more stringent regulations to protect public health and the environment. The state also may have more frequently updated standards as the understanding of measuring water quality and its impacts evolves.
+Yes, California has its own set of water quality standards that may differ from federal standards. The State often adopts more stringent regulations to protect public health and the environment. The State also may have more frequently updated standards as the understanding of measuring water quality and its impacts evolves.
 
 ### Why aren't fecal coliforms or total coliforms used in this dashboard?
 
@@ -115,7 +117,7 @@ Water quality data is inherently limited by the frequency and locations of sampl
 
 2. **Data lag:** Data collection and submission may involve some manual steps, which can introduce delays. As a result, there may be a lag of several days between when a sample is collected and when the data appears on the dashboard. Users should keep this in mind when interpreting the data.
 
-3. **Weather:** Precipitation and runoff can significantly impact water quality. Heavy rains can lead to increased levels of contaminants reaching bodies of water, while dry conditions may result in lower water levels. Users should consider recent weather conditions when interpreting water quality data. In particular, avoid water contact for at least 48 hours after significant rainfall events, as runoff can carry pollutants into recreational waters. Water quality can change rapidly, and this dashboard may not reflect the most current conditions.
+3. **Weather:** Precipitation and runoff can significantly impact water quality. Heavy rains can lead to increased levels of contaminants reaching bodies of water, while dry conditions may result in lower water levels. Users should consider recent weather conditions when interpreting water quality data. In particular, avoid water contact for at least 72 hours after significant rainfall events, as runoff can carry pollutants into recreational waters. Water quality can change rapidly, and this dashboard may not reflect the most current conditions.
 
 4. **No connection to real-time closures:** This dashboard does not provide real-time information about water closures or advisories. Users should consult local health departments or agencies for the latest information on water safety and any active closures, which are typically posted physically at the waterbody or on the agency's website. These closures may be based on additional factors not represented in this dashboard, such as sewage spills or other pollution events.
 
