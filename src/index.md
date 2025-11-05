@@ -25,7 +25,7 @@ function toDate(d) {
 
   <h1>Is it Safe to Swim?</h1>
 
-  Use this map to find water quality information at swimming spots in California. \
+  Use this map to check water quality conditions at monitoring sites in California.\
   See [How to Use](how-to-use) and [Frequently Asked Questions](faq) for more information.
 
 </div>
@@ -326,7 +326,7 @@ invalidation?.then(() => {
   ```js
   const recentOnly = view(
     Inputs.toggle({
-      label: "Only show sites with data from the last 6 weeks",
+      label: "Only show sites with data from the last six weeks",
       value: true
     })
   );
@@ -380,7 +380,7 @@ invalidation?.then(() => {
   });
 
   // filter input
-  const filterBox = view(Inputs.text({ placeholder: "Enter a location", width: "100%" }));
+  const filterBox = view(Inputs.text({ placeholder: "Search site name or code", width: "100%" }));
   ```
 
   ```js
@@ -509,7 +509,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
         <p><strong>Site code:</strong> ${meta.code}</p>
         <p><strong>Latitude/longitude:</strong> ${meta.lat.toFixed(5)}, ${meta.lon.toFixed(5)}</p>
         <p><strong>Last sample date:</strong> ${meta.lastSampleDate ?? "—"}</p>
-        <p><strong>Number of samples (last 6 weeks):</strong> ${meta.recentDataPoints}</p>
+        <p><strong>Number of samples (last six weeks):</strong> ${meta.recentDataPoints}</p>
       `
     : html` `
   ```
@@ -659,7 +659,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
       ]
     });
 
-    display(placeholder("Select a site to see status history, 6-week averages, and single-sample results"));
+    display(placeholder("Select a site to see status history, 6-week averages, and single sample results"));
 
   } else {
     const statusSeries = await stat.buildStatusSeriesForStation(stationRecord);
@@ -891,7 +891,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
 
 ## Interpreting safety statuses
 \
-The status at each monitoring site is based on how recent monitoring results compare to the [Statewide Bacteria Water Quality Objectives](https://www.waterboards.ca.gov/bacterialobjectives/). When planning your visit, consider how much time you will spend in the water, whether your activities might lead to ingesting water, and the health needs of everyone in your group. Contact with contaminated water can increase the risk of gastrointestinal illness, skin rashes, and infections of the ears, eyes, nose, or throat.
+The status at each monitoring site is based on how recent monitoring results compare to the [Statewide Bacteria Water Quality Objectives](https://www.waterboards.ca.gov/bacterialobjectives/). Many factors can influence your risk of illness, including the level of contamination, the type of activity, and individual health conditions. Contact with contaminated water can increase the risk of gastrointestinal illness, skin rashes, and infections of the ears, eyes, nose, or throat.
   <div class="grid grid-cols-3" style="width: 100%; gap: 1rem; margin-top: 1rem;">
     <div class="card">
       <strong>Low risk</strong><br><br>
