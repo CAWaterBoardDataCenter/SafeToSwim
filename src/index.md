@@ -715,59 +715,101 @@ const lastSampleDateISO = st.lastSampleDate || null;
       xDomain = [start, today];
     }
 
-    // Build segments with midpoints + reasons pulled from status objects
-    const day = 24 * 3600 * 1000;
-    const segments = statusSeries.map((s, i) => {
-      const x1 = toDate(s.date);
-      const x2 = i < statusSeries.length - 1 ? toDate(statusSeries[i + 1].date)
-                                            : new Date(+x1 + 7 * day);
-      const xm = new Date((+x1 + +x2) / 2); // midpoint for pointer snapping
-      const reasons = s.status?._reasons ?? [];
-      return {
-        x1, x2, xm,
-        color: s.status?.color ?? "#eee",
-        name:  s.status?.name ?? s.status_name ?? "",
-        reasons,
-        reasonStr: reasons.length ? reasons.join("\n") : " "
-      };
-    });
-
     // Status ribbon plot ------------------------------
-    const ribbon = Plot.plot({
-      title: `Status history`,
-      marks: [
-        // status band
-        Plot.rectY(segments, { x1: "x1", x2: "x2", y1: 0, y2: 1, fill: "color", title: d => d.name }),
+    if (dataCulture.length) {
+      // Check if the selected bacteria is the same as the default bacteria, which determines status
+      if (analyte === bacteria) {
+        // If the selected bacteria is the same, build segments with midpoints + reasons pulled from status objects
+        const day = 24 * 3600 * 1000;
+        const segments = statusSeries.map((s, i) => {
+          const x1 = toDate(s.date);
+          const x2 = i < statusSeries.length - 1 ? toDate(statusSeries[i + 1].date)
+                                                : new Date(+x1 + 7 * day);
+          const xm = new Date((+x1 + +x2) / 2); // midpoint for pointer snapping
+          const reasons = s.status?._reasons ?? [];
+          return {
+            x1, x2, xm,
+            color: s.status?.color ?? "#eee",
+            name:  s.status?.name ?? s.status_name ?? "",
+            reasons,
+            reasonStr: reasons.length ? reasons.join("\n") : " "
+          };
+        });
+        const ribbon = Plot.plot({
+          title: `Status history`,
+          marks: [
+            // status band
+            Plot.rectY(segments, { x1: "x1", x2: "x2", y1: 0, y2: 1, fill: "color", title: d => d.name }),
 
-        // highlighted rect (nearest xm)
-        Plot.rectY(segments, Plot.pointerX({
-          x: "xm",
-          x1: "x1", x2: "x2",
-          y1: 0,  y2: 1,
-          fill: "color",
-          stroke: "red",
-          strokeWidth: 1,
-          maxRadius: 100
-        })),
+            // highlighted rect (nearest xm) on hover
+            Plot.rectY(segments, Plot.pointerX({
+              x: "xm",
+              x1: "x1", x2: "x2",
+              y1: 0,  y2: 1,
+              fill: "color",
+              stroke: "red",
+              strokeWidth: 1,
+              maxRadius: 100
+            })),
 
-        // text with status name + reasons
-        Plot.text(segments, Plot.pointerX({
-          x: "xm",
-          y: 0.75,
-          text: d => `${d.name}: \n${d.reasonStr}`,
-          dx: 6, dy: -6,
-          frameAnchor: "top-left",
-          lineWidth: 12,
-          maxRadius: 100
-        }))
-      ],
-      x: { domain: xDomain, label: "Date" },
-      y: { domain: [0,1], axis: "left", tickSize: 0, label: null, tickFormat: () => "" },
-      height: 100,
-      width
-    });
+            // Show text with status name + reasons on hover
+            Plot.text(segments, Plot.pointerX({
+              x: "xm",
+              y: 0.75,
+              text: d => `${d.name}: \n${d.reasonStr}`,
+              dx: 6, dy: -6,
+              frameAnchor: "top-left",
+              lineWidth: 12,
+              maxRadius: 100
+            }))
+          ],
+          x: { domain: xDomain, label: "Date" },
+          y: { domain: [0,1], axis: "left", tickSize: 0, label: null, tickFormat: () => "" },
+          height: 100,
+          width
+        });
+        display(ribbon);
+      } else {
+        // If the selected bacteria is different, provide a status of "not enough data" for the entire plot
+        const x1 = xDomain[0];
+        const x2 = xDomain[1];
+        const segments = [
+          {
+            x1, x2,
+            xm: new Date((+x1 + +x2) / 2),
+            color: "#ddd",
+            name: 'Indicator bacteria',
+            reasons: [''],
+            reasonStr: `Status is not evaluated for ${analyte} at this site`
+          }
+        ]
+        const ribbon = Plot.plot({
+          title: `Status history`,
+          marks: [
+            // status band
+            Plot.rectY(segments, { x1: "x1", x2: "x2", y1: 0, y2: 1, fill: "color" }),
 
-    display(ribbon);
+            // Show static text always
+            Plot.text(segments, {
+              x: "xm",
+              y: 0.6,
+              text: d => d.reasonStr,
+              dx: 6, dy: -6,
+              fontSize: 12,
+              frameAnchor: "top",
+              lineWidth: 12,
+              maxRadius: 100
+            })
+          ],
+          x: { domain: xDomain, label: "Date" },
+          y: { domain: [0,1], axis: "left", tickSize: 0, label: null, tickFormat: () => "" },
+          height: 100,
+          width
+        });
+
+        display(ribbon);
+      }
+    }
 
     // 6-week geomean plot ------------------------------
 
