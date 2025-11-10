@@ -254,10 +254,16 @@ if (!legendStyleEl) {
       border-radius: 6px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.25);
       font: 12px/1.3 system-ui, Arial, sans-serif;
+      max-width: 150px;
     }
     .legend-title {
       font-weight: 600;
       margin-bottom: 6px;
+    }
+    .legend-subtitle {
+      font-size: 11px;
+      font-style: italic;
+      padding: 6px 0 2px 0;
     }
     .legend-item {
       display: flex;
@@ -298,13 +304,14 @@ const LegendControl = L.Control.extend({
     div.innerHTML = `
       <div class="legend-title">${this.options.title}</div>
       ${itemsHtml}
+      <div class="legend-subtitle">${this.options.subtitle}</div>
     `;
     return div;
   }
 });
 
 // 3) Add to map
-const legendCtl = new LegendControl({ title: "Safety status", position: "bottomleft" });
+const legendCtl = new LegendControl({ title: "Safety status", subtitle: "Status is based on samples of Enterococcus for saltwater sites and E. coli for freshwater sites" , position: "bottomleft" });
 map.addControl(legendCtl);
 
 invalidation?.then(() => {
@@ -940,7 +947,7 @@ The status at each monitoring site is based on how recent monitoring results com
       Both the single sample and the geometric mean are below their respective thresholds. This status indicates that there is generally a low level of risk associated with water contact at this site.
     </div>
     <div class="card"><strong>Use caution</strong><br><br>
-      Either the single sample, the geometric mean, or both exceed their respective thresholds. This status indicates that there is generally an elevated risk associated with water contact at this site.
+      Either the single sample, the geometric mean, or both exceed their respective thresholds. This status indicates that there is an elevated risk of illness associated with water contact at this site.
     </div>
     <div class="card"><strong>Not enough data</strong><br><br>
       Fewer than five samples of the relevant indicator bacteria have been collected in the past six weeks. There is insufficient data to assess the current level of risk associated with water contact at this site.

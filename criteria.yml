@@ -13,13 +13,13 @@ statuses:
 
   low_risk:
     name: "Low risk"
-    description: "Recent monitoring results do not exceed the bacteria water quality objectives."
+    description: "Recent monitoring results meet the bacteria water quality objectives. Engaging in water-contact activities has a lower risk of illness based on current data."
     priority: 3
     color: "#1ec7fa"
 
   use_caution:
     name: "Use caution"
-    description: "Recent monitoring results exceed one or more bacteria water quality objectives. Engaging in water-contact recreation, such as swimming, may pose an increased risk of illness."
+    description: "Recent monitoring results exceed one or more bacteria water quality objectives. Engaging in water-contact activities has a higher risk of illness based on current data."
     priority: 4
     color: "#ffa012"
 
