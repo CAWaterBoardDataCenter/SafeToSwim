@@ -334,7 +334,7 @@ invalidation?.then(() => {
   const recentOnly = view(
     Inputs.toggle({
       label: "Only show sites with data from the last six weeks",
-      value: true
+      value: false
     })
   );
   ``` 
