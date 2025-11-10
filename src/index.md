@@ -792,7 +792,7 @@ const lastSampleDateISO = st.lastSampleDate || null;
             // Show static text always
             Plot.text(segments, {
               x: "xm",
-              y: 0.6,
+              y: 0.67,
               text: d => d.reasonStr,
               dx: 6, dy: -6,
               fontSize: 12,

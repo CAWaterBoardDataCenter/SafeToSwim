@@ -64,14 +64,22 @@ def load_saline_wetlands(cache_dir):
         gpd.GeoDataFrame: Saline wetlands polygons in EPSG:4326
     """
     print("Loading saline wetlands data...")
+    '''
     saline_wetland_url = ("https://data-cdfw.opendata.arcgis.com/api/download/v1/"
                          "items/86f3f1edf91d44be9a8f237a0afde994/geojson?layers=0")
     wetlands_path = os.path.join(cache_dir, "saline_wetlands.geojson")
+    '''
+
+    saline_wetland_url = 'https://gis.cnra.ca.gov/arcgis/rest/services/Ocean/CSMW_Coastal_Wetlands/MapServer/0/query?where=1=1&outFields=*&outSR=4326&f=json'
     
-    fetch_or_cache(saline_wetland_url, wetlands_path)
-    wetlands = gpd.read_file(wetlands_path).to_crs("EPSG:4326")
+    # fetch_or_cache(saline_wetland_url, wetlands_path)
+    # wetlands = gpd.read_file(wetlands_path).to_crs("EPSG:4326")
+
+    wetlands = gpd.read_file(saline_wetland_url).to_crs("EPSG:4326")
     
     print(f"Loaded {len(wetlands)} saline wetland polygons")
+
+    #wetlands_union = wetlands_exploded.geometry.union_all()
     return wetlands
 
 
@@ -81,6 +89,7 @@ def load_saline_lakes(cache_dir):
     
     Note: Requires manual download of SalineLakeEcosy.zip from:
     https://www.sciencebase.gov/catalog/item/667f1a25d34e2cb7853eaf4f
+    11/06/25 - File is not available on website
     
     Args:
         cache_dir (str): Cache directory path
@@ -124,27 +133,50 @@ def load_marine_coastal_areas(buffer_degrees=0.01):
         gpd.GeoDataFrame: Buffered marine coastal areas in EPSG:4326
     """
     print("Loading marine coastal areas...")
+    '''
     url = (
         "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/"
         "CA_Nature_Terrestrial_and_Marine__AGOL__WebMer_/FeatureServer/0/query"
         "?where=1=1&outFields=*&outSR=4326&f=json"
     )
-    
+    '''
+    # https://services3.arcgis.com/uknczv4rpevve42E/ArcGIS/rest/services/California_Cartographic_Coastal_Polygons/FeatureServer/31/
+    # Another option: https://earthworks.stanford.edu/catalog/stanford-gw439pk0596
+    url = "https://services3.arcgis.com/uknczv4rpevve42E/ArcGIS/rest/services/California_Cartographic_Coastal_Polygons/FeatureServer/31/query?where=1=1&outFields=*&outSR=4326&f=json"
+
     coastal = gpd.read_file(url)
-    
-    # Filter only marine polygons
-    marine = coastal[coastal["TerrMar"].str.lower() == "marine"]
-    print(f"Found {len(marine)} marine polygons")
+    print(f"Found {len(coastal)} marine polygons")
     
     # Apply buffer and union
-    marine_union = marine.geometry.union_all()
-    marine_buffered = marine_union.buffer(buffer_degrees)
+    marine_union = coastal.geometry.union_all()
+    # print(f"Applied {buffer_degrees} degree buffer to marine areas")
     
     # Wrap in GeoDataFrame
-    marine_buffered_gdf = gpd.GeoDataFrame(geometry=[marine_buffered], crs="EPSG:4326")
-    print(f"Applied {buffer_degrees} degree buffer to marine areas")
-    
+    marine_buffered_gdf = gpd.GeoDataFrame(geometry=[marine_union], crs="EPSG:4326")
+
     return marine_buffered_gdf
+
+
+def load_coastal_zone_areas():
+    """
+    Load and process costal zone areas from CA Coastal Commission
+    
+    Args:
+        None
+        
+    Returns:
+        gpd.GeoDataFrame: Coastal zone areas in EPSG:4326
+    """
+    url = "https://services9.arcgis.com/wwVnNW92ZHUIr0V0/arcgis/rest/services/Coastal_Zone_Boundary_Offshore_Polygon/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=json"
+    coastal_zone = gpd.read_file(url)
+    print(f"Found {len(coastal_zone)} coastal zone polygons")
+
+    cz_union = coastal_zone.geometry.union_all()
+
+    # Wrap in GeoDataFrame
+    cz_gdf = gpd.GeoDataFrame(geometry=[cz_union], crs="EPSG:4326")
+
+    return cz_gdf
 
 
 def fetch_ckan_all(resource_id, fields=None):
@@ -263,6 +295,9 @@ def save_results(gdf_sites, cache_dir, output_name="site_saltwater_flags.csv"):
     # Ensure output directory exists
     output_path = os.path.join(cache_dir, output_name)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    # For testing
+    gdf_sites.to_file(os.path.join(cache_dir, 'gdf_sites.shp'), driver='ESRI Shapefile')
     
     # Save only station code and classification flag
     gdf_sites[["StationCode", "saltwater"]].to_csv(output_path, index=False)
@@ -278,17 +313,24 @@ def main():
     cache_dir = setup_cache_directory()
     
     # Load saltwater polygon data sources
-    wetlands = load_saline_wetlands(cache_dir)
+    # wetlands = load_saline_wetlands(cache_dir)
     lakes = load_saline_lakes(cache_dir)
     marine_areas = load_marine_coastal_areas(buffer_degrees=0.01)
+    coastal_zone = load_coastal_zone_areas()
     
     # Combine all saltwater polygons
     print("Combining saltwater polygon sources...")
     saltwater_polygons = gpd.GeoDataFrame(
-        pd.concat([wetlands, lakes, marine_areas], ignore_index=True),
+        pd.concat([lakes, marine_areas, coastal_zone], ignore_index=True),
         crs="EPSG:4326"
     )
     print(f"Total saltwater polygons: {len(saltwater_polygons)}")
+
+    # Apply buffer to all polygons
+    # saltwater_polygons = saltwater_polygons.buffer(0.002)
+
+    # For testing
+    saltwater_polygons.to_file(os.path.join(cache_dir, 'saltwater_polygons.shp'), driver='ESRI Shapefile')
     
     # Load and classify monitoring sites
     gdf_sites = load_monitoring_sites()
