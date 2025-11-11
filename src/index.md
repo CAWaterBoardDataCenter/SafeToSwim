@@ -19,8 +19,92 @@ function toDate(d) {
   const t = new Date(d);
   return new Date(t.getFullYear(), t.getMonth(), t.getDate());
 }
-```
 
+
+// Initialize modal
+```
+<style>
+  /* Modal container */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* Modal content box */
+  .modal-content {
+    background-color: #fff;
+    margin: auto;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    font-size: 0.95rem;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  /* Close button */
+  #close-modal {
+    margin-top: 1.5rem;
+    padding: 0.6rem 1.2rem;
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+
+  #close-modal:hover {
+    background-color: #005fa3;
+  }
+
+  /* Fade-in animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<div id="welcome-modal" class="modal">
+  <div class="modal-content">
+    <h2>Safe to Swim Map - v2</h2>
+    <div>
+      <p>This map is currently under development and does not represent the final product. Data, features, and functionality are subject to change.</p>
+    </div>
+    <div>
+      <strong>Disclaimer:</strong>
+      This map is intended for informational purposes only and should not be used as the sole basis for making decisions about water contact activities. Always follow local advisories and guidelines when engaging in recreational activities in natural water bodies. The data can change at any time and should not be used for any particular purpose other than general reference.
+    </div>
+    <div>
+      <button id="close-modal">Accept</button>
+    </div>
+  </div>
+</div>
+
+```js
+
+// Add modal elements
+const modal = document.getElementById("welcome-modal");
+const closeBtn = document.getElementById("close-modal");
+
+modal.style.display = "flex"; // Show modal
+
+closeBtn.addEventListener("click", () => {
+  modal.style.display = "none";
+});
+
+```
 <div class="hero">
 
   <h1>Is it Safe to Swim?</h1>
