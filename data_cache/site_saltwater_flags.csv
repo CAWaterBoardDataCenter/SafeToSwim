@@ -56,8 +56,8 @@ StationCode,saltwater
 304BEP,False
 304BH9,False
 304BRA,False
-304GAZ,False
-304LOR,False
+304GAZ,True
+304LOR,True
 304RIV,False
 304SCM,False
 304SCO,True
@@ -68,7 +68,7 @@ StationCode,saltwater
 304SOQ,False
 304SOU,False
 304VAL,False
-304WAD,False
+304WAD,True
 304ZAY,False
 305BRI,False
 305CAR,False
@@ -78,7 +78,7 @@ StationCode,saltwater
 305COR2,False
 305FRA,False
 305FUF,False
-305HAR,False
+305HAR,True
 305HOL,False
 305LEA,False
 305LLA,False
@@ -92,15 +92,15 @@ StationCode,saltwater
 305PJP,False
 305SAN,False
 305SJN,False
-305STL,False
+305STL,True
 305TES,False
 305THU,False
 305TRE,False
 305UVA,False
 305VIS,False
 305WSA,False
-306CAR,False
-306ELK,False
+306CAR,True
+306ELK,True
 306MCM,False
 306WAC,False
 307CMD,False
@@ -108,14 +108,14 @@ StationCode,saltwater
 307CMN,False
 307CMU,False
 307TUL,False
-308BGC,True
+308BGC,False
 308BSR,False
 308BSU,False
 308GAR,False
-308LIM,True
+308LIM,False
 308LSR,False
 308LSU,False
-308MIL,True
+308MIL,False
 308SAM,False
 308SJC,False
 308WLO,False
@@ -130,10 +130,10 @@ StationCode,saltwater
 309KNG,False
 309LOK,False
 309LOR,False
-309MOR,False
+309MOR,True
 309NAC,False
-309OLD,False
-309POT,False
+309OLD,True
+309POT,True
 309PSO,False
 309QUA,False
 309RTA,False
@@ -141,18 +141,18 @@ StationCode,saltwater
 309SAN,False
 309SAS,False
 309SAT,False
-309SBR,False
+309SBR,True
 309SDR,False
 309SEC,False
 309SET,False
 309SUN,False
 309TDW,False
-309TEM,False
+309TEM,True
 309TOP,False
 309UAL,False
 309UQA,False
 309USA,False
-310ADC,False
+310ADC,True
 310AGB,False
 310AGF,False
 310AGS,False
@@ -173,13 +173,13 @@ StationCode,saltwater
 310SLC,False
 310SLM,False
 310SLV,False
-310SRO,False
+310SRO,True
 310SRU,False
-310SSC,False
+310SSC,True
 310SSU,False
-310TOR,True
+310TOR,False
 310TUR,False
-310TWB,False
+310TWB,True
 310VIA,False
 311SLE,False
 311SLN,False
@@ -211,7 +211,7 @@ StationCode,saltwater
 312SBC,False
 312SIS,False
 312SIV,False
-312SMA,False
+312SMA,True
 312SMI,False
 313SAB,False
 313SAC,False
@@ -227,12 +227,12 @@ StationCode,saltwater
 314SYP,False
 315ABH,False
 315ABU,False
-315ANN,True
+315ANN,False
 315APC,False
-315ATA,True
+315ATA,False
 315ATU,False
 315BEL,False
-315CAP,True
+315CAP,False
 315CAU,False
 315CRP,False
 315DEV,True
@@ -248,7 +248,7 @@ StationCode,saltwater
 315MTC,False
 315MYC,False
 315RIN,False
-315ROM,True
+315ROM,False
 315RSB,False
 315SCC,False
 315SJC,False
@@ -266,7 +266,7 @@ StationCode,saltwater
 3N,True
 3S,True
 404SMB001,False
-404SMB002,True
+404SMB002,False
 404SMB003,False
 404SMB005,False
 404SMB006,False
@@ -275,7 +275,7 @@ StationCode,saltwater
 404SMB010,False
 404SMB011,False
 404SMB012,True
-404SMB014,False
+404SMB014,True
 404SMB016,False
 404SMB017,False
 404SMB018,True
@@ -286,13 +286,13 @@ StationCode,saltwater
 404SMB026,True
 404SMB028,True
 404SMB029,True
-404SMB031,True
+404SMB031,False
 404SMB032,False
-404SMB033,True
+404SMB033,False
 404SMB034,False
-404SMB035,True
+404SMB035,False
 404SMB037,True
-404SMB038,True
+404SMB038,False
 404SMB039,True
 404SMB040,False
 404SMB042,False
@@ -304,14 +304,14 @@ StationCode,saltwater
 404SMB065,False
 404SMB075,False
 404SMB21A,False
-405DCAMDA,False
-405DCANHM,False
+405DCAMDA,True
+405DCANHM,True
 405DCARVT,False
 405DCARWN,False
-405DCAVLN,False
-405DCMAIN,False
-405DCSVDA,False
-405DCWLTN,False
+405DCAVLN,True
+405DCMAIN,True
+405DCSVDA,True
+405DCWLTN,True
 405LA4098,True
 405LA4226,True
 405LA4274,True
@@ -326,7 +326,7 @@ StationCode,saltwater
 405SMB049,False
 405SMB050,False
 405SMB051,False
-405SMB052,False
+405SMB052,True
 405SMB053,False
 405SMB054,False
 405SMB055,False
@@ -614,10 +614,10 @@ StationCode,saltwater
 723NRRCDN,False
 725SCSLGH,False
 727CRRMD4,False
-728SSDNW2,False
-728SSGS02,False
-728SSGS07,False
-728SSGS09,False
+728SSDNW2,True
+728SSGS02,True
+728SSGS07,True
+728SSGS09,True
 801MSC3 ,False
 801MSC7 ,False
 801MSM5 ,False
@@ -662,55 +662,55 @@ B03_B03W024,True
 B03_B03W200,True
 B03_B03W201,True
 B03_B03W202,True
-B03_BAY0O,False
-B03_BAY0SH,False
-B03_BAY100LO,False
-B03_BAY100LSH,False
-B03_BAY150LO,False
-B03_BAY150LSH,False
-B03_BAY25LO,False
-B03_BAY25LSH,False
-B03_BAY50LO,False
-B03_BAY50LSH,False
-B03_BAYMZO,False
-B03_BAYMZSH,False
+B03_BAY0O,True
+B03_BAY0SH,True
+B03_BAY100LO,True
+B03_BAY100LSH,True
+B03_BAY150LO,True
+B03_BAY150LSH,True
+B03_BAY25LO,True
+B03_BAY25LSH,True
+B03_BAY50LO,True
+B03_BAY50LSH,True
+B03_BAYMZO,True
+B03_BAYMZSH,True
 B03_CORTEZ SHORE,True
 B03_CORTEZ SURF,True
-B03_KEL10O,False
-B03_KEL10SH,False
-B03_KEL1100L,False
-B03_KEL1100LO,False
-B03_KEL1100R,False
-B03_KEL1100RO,False
-B03_KEL125L,False
-B03_KEL125LO,False
-B03_KEL125LSH,False
-B03_KEL125R,False
-B03_KEL125RO,False
-B03_KEL125RSH,False
-B03_KEL145RO,False
-B03_KEL145RSH,False
-B03_KEL150LO,False
-B03_KEL150LSH,False
-B03_KEL1MZ,False
-B03_KEL1MZO,False
-B03_KEL20O,False
-B03_KEL2100L,False
-B03_KEL2100LO,False
-B03_KEL2100R,False
-B03_KEL2100RO,False
-B03_KEL225L,False
-B03_KEL225LO,False
-B03_KEL225R,False
-B03_KEL225RO,False
-B03_KEL225RSH,False
-B03_KEL250LO,False
-B03_KEL250LSH,False
-B03_KEL250RO,False
-B03_KEL250RSH,False
-B03_KEL280LO,False
-B03_KEL280LSH,False
-B03_KEL2O,False
+B03_KEL10O,True
+B03_KEL10SH,True
+B03_KEL1100L,True
+B03_KEL1100LO,True
+B03_KEL1100R,True
+B03_KEL1100RO,True
+B03_KEL125L,True
+B03_KEL125LO,True
+B03_KEL125LSH,True
+B03_KEL125R,True
+B03_KEL125RO,True
+B03_KEL125RSH,True
+B03_KEL145RO,True
+B03_KEL145RSH,True
+B03_KEL150LO,True
+B03_KEL150LSH,True
+B03_KEL1MZ,True
+B03_KEL1MZO,True
+B03_KEL20O,True
+B03_KEL2100L,True
+B03_KEL2100LO,True
+B03_KEL2100R,True
+B03_KEL2100RO,True
+B03_KEL225L,True
+B03_KEL225LO,True
+B03_KEL225R,True
+B03_KEL225RO,True
+B03_KEL225RSH,True
+B03_KEL250LO,True
+B03_KEL250LSH,True
+B03_KEL250RO,True
+B03_KEL250RSH,True
+B03_KEL280LO,True
+B03_KEL280LSH,True
+B03_KEL2O,True
 B03_MMT SHORE,True
 B03_MMT SURF,True
 B03_SEL 0MSL,True
@@ -751,53 +751,53 @@ BDP14,True
 BDP15,True
 BDP16,True
 BDP17,True
-BHH04,False
+BHH04,True
 BHH05,True
 BHH06,False
-BHH08,False
-BHH09,False
-BHH11,False
-BHH12,False
-BHH13,True
-BHH15,False
+BHH08,True
+BHH09,True
+BHH11,True
+BHH12,True
+BHH13,False
+BHH15,True
 BHH16,True
-BNB01,False
-BNB02,False
-BNB03,False
-BNB05,False
-BNB07,False
-BNB09,False
-BNB10,False
-BNB11,False
-BNB12,False
-BNB14,False
-BNB15,False
-BNB17,False
-BNB18,False
-BNB20,False
-BNB21,False
-BNB22,False
+BNB01,True
+BNB02,True
+BNB03,True
+BNB05,True
+BNB07,True
+BNB09,True
+BNB10,True
+BNB11,True
+BNB12,True
+BNB14,True
+BNB15,True
+BNB17,True
+BNB18,True
+BNB20,True
+BNB21,True
+BNB22,True
 BNB23,True
-BNB24E,True
-BNB24M,False
-BNB24N,False
-BNB24W,False
+BNB24E,False
+BNB24M,True
+BNB24N,True
+BNB24W,True
 BNB25,False
 BNB26,True
 BNB28,True
-BNB29,False
-BNB30,False
-BNB31,False
-BNB32,False
-BNB33,False
-BNB34,False
-BNB35,False
+BNB29,True
+BNB30,True
+BNB31,True
+BNB32,True
+BNB33,True
+BNB34,True
+BNB35,True
 BNS01,True
 BNS02,True
 BVC-TWAS-1,False
 Bean Hollow State Beach,True
 C-1,True
-C-2,False
+C-2,True
 C1,True
 CB-01,True
 CB-02,True
@@ -810,8 +810,8 @@ CNB45,True
 CNBBC,True
 CNBBG,True
 CNBCC,True
-CNBCD,False
-CNBCU,True
+CNBCD,True
+CNBCU,False
 CNBEU,False
 CNBMC,True
 CNBND,False
@@ -820,7 +820,7 @@ CNBPP,True
 CNBPW,True
 CNBSA,True
 CSGR1,True
-CSGRM,False
+CSGRM,True
 CSLSC,True
 Cliff's Marina,False
 Crown 2001 Shoreline Dr.,True
@@ -841,26 +841,26 @@ EH-010,True
 EH-020,True
 EH-030,True
 EH-033,True
-EH-041,True
+EH-041,False
 EH-050,True
 EH-053,True
 EH-056,True
 EH-060,True
 EH-062,True
-EH-070,False
-EH-080,False
-EH-090,False
-EH-100,False
-EH-120,False
-EH-140,False
-EH-160,False
-EH-170,False
-EH-190,False
-EH-200,False
-EH-205,False
-EH-210,False
-EH-211,False
-EH-227,False
+EH-070,True
+EH-080,True
+EH-090,True
+EH-100,True
+EH-120,True
+EH-140,True
+EH-160,True
+EH-170,True
+EH-190,True
+EH-200,True
+EH-205,True
+EH-210,True
+EH-211,True
+EH-227,True
 EH-230,True
 EH-240,True
 EH-250,True
@@ -875,11 +875,11 @@ EH-303,True
 EH-305,True
 EH-310,True
 EH-312,True
-EH-320,True
+EH-320,False
 EH-330,True
 EH-340,True
 EH-350,True
-EH-353,True
+EH-353,False
 EH-355,True
 EH-360,True
 EH-370,True
@@ -893,11 +893,11 @@ EH-420,True
 EH-430,True
 EH-435,True
 EH-440,True
-EH-450,False
-EH-452,False
+EH-450,True
+EH-452,True
 EH-455,True
 EH-460,True
-EH-470,True
+EH-470,False
 EH-475,True
 EH-476,True
 EH-477,True
@@ -915,7 +915,7 @@ ENCINAL BEACH NORTH,True
 ENCINAL BEACH SOUTH,True
 ESC-MLS,False
 ESC-TWAS-1,False
-FM-010,False
+FM-010,True
 FM-020,True
 FM-030,True
 FM-040,True
@@ -964,63 +964,63 @@ LPC-TWAS-1,False
 LPC-TWAS-2,False
 Linda Mar Beach #5,True
 Linda Mar Beach #6,True
-MB-010,False
-MB-015,False
-MB-020,False
-MB-030,False
-MB-031,False
-MB-040,False
-MB-041,False
-MB-042,False
-MB-050,False
-MB-051,False
-MB-053,False
-MB-058,False
-MB-060,False
-MB-061,False
-MB-070,False
-MB-071,False
-MB-080,False
-MB-085,False
-MB-090,False
-MB-091,False
-MB-100,False
-MB-101,False
-MB-110,False
-MB-111,False
-MB-120,False
-MB-130,False
-MB-131,False
-MB-132,False
-MB-135,False
-MB-140,False
-MB-150,False
-MB-151,False
-MB-160,False
-MB-161,False
-MB-170,False
+MB-010,True
+MB-015,True
+MB-020,True
+MB-030,True
+MB-031,True
+MB-040,True
+MB-041,True
+MB-042,True
+MB-050,True
+MB-051,True
+MB-053,True
+MB-058,True
+MB-060,True
+MB-061,True
+MB-070,True
+MB-071,True
+MB-080,True
+MB-085,True
+MB-090,True
+MB-091,True
+MB-100,True
+MB-101,True
+MB-110,True
+MB-111,True
+MB-120,True
+MB-130,True
+MB-131,True
+MB-132,True
+MB-135,True
+MB-140,True
+MB-150,True
+MB-151,True
+MB-160,True
+MB-161,True
+MB-170,True
 MB-173,False
-MB-180,False
-MB-190,False
-MB-191,False
+MB-180,True
+MB-190,True
+MB-191,True
 MB-192,False
-MB-193,False
-MB-200,False
-MB-203,False
-MB-205,False
-MB-223,False
-MB-225,False
+MB-193,True
+MB-200,True
+MB-203,True
+MB-205,True
+MB-223,True
+MB-225,True
 MDP10,True
-MDP11,False
-MDP18,False
-MDRH-2,False
+MDP11,True
+MDP18,True
+MDRH-2,True
 ME-CC,False
 ME-SCR,False
 ME-VR2,False
-MHH01,False
+MHH01,True
 MHH07,False
-MHH10,False
-MHH14,False
+MHH10,True
+MHH14,True
 MO-CAM,False
 MO-MEI,False
 MO-OJA,False
@@ -1099,9 +1099,9 @@ ONB39,True
 ONB43,True
 ONB45,True
 OSB01,True
-OSB02,True
+OSB02,False
 OSB03,True
-OSB04,True
+OSB04,False
 OSB05,True
 OSC01,True
 OSL25,True
@@ -1124,7 +1124,7 @@ River Mile 44,False
 Rockaway Beach,True
 Roosevelt State Beach,True
 S-0,True
-S-1,False
+S-1,True
 S-11,True
 S-13,True
 S-15,True
@@ -1193,7 +1193,7 @@ SMB-3-8,True
 SMB-5-1,True
 SMB-5-3,False
 SMB-5-5,True
-SMB-6-5,True
+SMB-6-5,False
 SMB-6-6,True
 SMB-7-1,True
 SMB-7-2,True
@@ -1239,13 +1239,13 @@ Veterans,False
 20000,True
 201AUD020,False
 201RDW010,True
-201ROD035,False
+201ROD035,True
 202-ALPIN-11,False
 202-BEARG-11,False
 202-BUTAN-11,False
 202-CALER-11,False
 202-CALER-12,False
-202-DEERC-12,True
+202-DEERC-12,False
 202-DENNI-11,False
 202-FRENC-11,True
 202-GAZOS-11,True
@@ -1267,7 +1267,7 @@ Veterans,False
 202-SANPE-13,True
 202-SANVI-11,False
 202-TUNIT-11,False
-202-WHITE-12,True
+202-WHITE-12,False
 203BAX030,False
 203TEM050,False
 204AMO080,False
@@ -1289,16 +1289,16 @@ Veterans,False
 25000,True
 26000,True
 27000,True
-28000,True
+28000,False
 29000,True
-29500,True
+29500,False
 3000,True
 30000,True
 304-APTOS-21,False
 304-APTOS-22,False
 304-APTOS-23,True
 304-ARANA-21,False
-304-ARANA-22,False
+304-ARANA-22,True
 304-ARANA-23,False
 304-ARROY-21,False
 304-ARROY-22,False
@@ -1318,7 +1318,7 @@ Veterans,False
 304-LITTL-21,False
 304-MAJOR-21,False
 304-MOLIN-21,False
-304-MOORE-21,True
+304-MOORE-21,False
 304-MOORE-22,False
 304-MOORE-24,False
 304-MOORE-25,False
@@ -1348,30 +1348,30 @@ Veterans,False
 304-WILDE-22,False
 304-ZAYAN-21,False
 304-ZAYAN-22,False
-305-BEACH-21,False
+305-BEACH-21,True
 305-CORRA-21,False
 305-CORRA-22,False
-305-HARKI-21,False
-305-HARKI-22,False
+305-HARKI-21,True
+305-HARKI-22,True
 305-HARKI-23,False
-305-PAJAR-21,False
+305-PAJAR-21,True
 305-PASD-01,False
-305-STRUV-21,False
-305-STRUV-22,False
+305-STRUV-21,True
+305-STRUV-22,True
 305-WATSO-21,False
-305-WATSO-22,False
-305-WATSO-23,False
-305-WSTRU-21,False
+305-WATSO-22,True
+305-WATSO-23,True
+305-WSTRU-21,True
 306-CARNE-31,False
 306-CARNE-32,False
-306-CARNE-33,False
-306-ELKHO-31,False
-306-ELKHO-32,False
-306-ELKHO-33,False
+306-CARNE-33,True
+306-ELKHO-31,True
+306-ELKHO-32,True
+306-ELKHO-33,True
 306-ELKHO-34,False
-306-MOROC-31,False
-306-MOROC-32,False
-306-MOROC-33,False
+306-MOROC-31,True
+306-MOROC-32,True
+306-MOROC-33,True
 307-CARME-33,False
 307-CARME-35,False
 307-CARME-36,False
@@ -1381,17 +1381,17 @@ Veterans,False
 307-CASD-01,False
 307-CASD-02,True
 307-CASD-03,True
-307-CASD-04,False
+307-CASD-04,True
 307-GARZA-31,False
 307-HATTO-31,False
-308-BIGCR-31,True
+308-BIGCR-31,False
 308-BIGSU-31,False
 308-BIGSU-32,False
-308-DANIC-31,True
-308-DOUD-31,True
+308-DANIC-31,False
+308-DOUD-31,False
 308-GARRA-31,False
-308-HOTSP-31,True
-308-LIMEK-31,True
+308-HOTSP-31,False
+308-LIMEK-31,False
 308-MALPA-31,True
 308-MCWAY-31,False
 308-MILLC-31,True
@@ -1401,17 +1401,17 @@ Veterans,False
 308-PREWI-31,False
 308-ROCKY-31,False
 308-SANJO-31,True
-308-SOBER-31,True
+308-SOBER-31,False
 308-SYCAM-31,False
-308-VICEN-31,True
+308-VICEN-31,False
 308-WILDC-31,False
-308-WILLO-31,True
+308-WILLO-31,False
 309-ALISA-32,False
 309-ASILO-31,False
 309-ATASC-41,False
 309-ATASC-42,False
-309-CENTR-31,True
-309-DOLPH-31,True
+309-CENTR-31,False
+309-DOLPH-31,False
 309-GABIL-31,False
 309-GRAVE-41,False
 309-LIBRA-31,False
@@ -1422,7 +1422,7 @@ Veterans,False
 309-NATIV-31,False
 309-PASOR-41,False
 309-PGSD-01,True
-309-PGSD-03,True
+309-PGSD-03,False
 309-PGSD-04,True
 309-PGSD-06,False
 309-PGSD-08,True
@@ -1433,7 +1433,7 @@ Veterans,False
 309-PGSD-13,True
 309-RECDI-31,False
 309-RINCO-41,False
-309-SALIN-31,False
+309-SALIN-31,True
 309-SALIN-32,False
 309-SALIN-33,False
 309-SALIN-44,False
@@ -1447,15 +1447,15 @@ Veterans,False
 309-SSD-01,False
 309-SSD-02,True
 309-SSD-03,False
-309-TEMBL-31,False
+309-TEMBL-31,True
 309-TEMBL-32,True
-309-TEMBL-33,False
+309-TEMBL-33,True
 309-TROUT-41,False
 309-UPPER-31,False
 309-VETER-31,False
 309-YERBA-41,False
 310-ARROY-41,True
-310-ARROY-42,False
+310-ARROY-42,True
 310-CARPO-41,True
 310-LAGUN-41,True
 310-LITTL-41,True
@@ -1479,12 +1479,12 @@ Veterans,False
 310UCR,False
 312SAL,False
 317-ESTRE-43,False
-32000,True
-33000,True
+32000,False
+33000,False
 34000,True
-35000,True
-36000,False
-37000,False
+35000,False
+36000,True
+37000,True
 37500,True
 38000,True
 39000,True
@@ -1500,21 +1500,21 @@ Veterans,False
 405LA4178,True
 405LA4210,True
 405LA4242,True
-405LA4266,False
+405LA4266,True
 405LA4306,True
-405LA4338,False
+405LA4338,True
 405LA4354,True
 405LA4370,True
 405LA4400,True
 405LA4408,True
-405LA4464,False
+405LA4464,True
 405LA4472,True
 405LA4488,True
 405LA4504,True
 405LA4616,True
 405LA4632,True
 405LA4656,True
-405LA4784,False
+405LA4784,True
 405LA4792,True
 41000,True
 42000,True
@@ -1759,25 +1759,25 @@ Veterans,False
 558WRR208,False
 6000,True
 7000,True
-728SSDNW1,False
-728SSGS10,False
+728SSDNW1,True
+728SSGS10,True
 8000,True
 9000,True
 AB8,True
 AB9,True
 Albion River,True
 Anchor Bay,True
-Aquatic Park,False
+Aquatic Park,True
 Arena Cove,True
 B-10,True
-B-14,False
-B-22,False
-B-24,False
-B-25,False
-B-26,False
-B-29,False
+B-14,True
+B-22,True
+B-24,True
+B-25,True
+B-26,True
+B-29,True
 B-3,True
-B-31,False
+B-31,True
 B-5,True
 B-56,True
 B-6,True
@@ -1786,9 +1786,9 @@ B-63,True
 B-64,True
 B-65,True
 B-66,True
-B-67,False
-B-69,False
-B-70,False
+B-67,True
+B-69,True
+B-70,True
 B-8,True
 B03_B03W025,True
 B03_B03W026,True
@@ -1844,13 +1844,13 @@ B03_B03W075,True
 B03_B03W076,True
 B03_B03W077,True
 B03_B03W078,True
-B03_B03W079,False
+B03_B03W079,True
 B03_B03W080,True
 B03_B03W081,True
 B03_B03W082,True
 B03_B03W083,True
 B03_B03W084,True
-B03_B03W085,False
+B03_B03W085,True
 B03_B03W086,True
 B03_B03W087,True
 B03_B03W088,True
@@ -1915,7 +1915,7 @@ B03_BCS25RO,True
 B03_BCS75LO,True
 B03_BCS75RO,True
 B03_B_TM,True
-B03_DC1,False
+B03_DC1,True
 B03_LB0,True
 B03_LB0O,True
 B03_LB225R,True
@@ -1969,7 +1969,7 @@ B03_SGAB 0,True
 B03_SGAB 0 OFF,True
 B03_SGAB 225 L,True
 B03_SGAB 225 L OFF,True
-B03_SGAB 25 L,False
+B03_SGAB 25 L,True
 B03_SGAB 25 L OFF,True
 B03_SGAB 450 L,True
 B03_SGAB 450 L OFF,True
@@ -2005,7 +2005,7 @@ BAY#301.2_SL,True
 BOLINAS,True
 BTQ-010,False
 BTQ-020,False
-BVC-010,False
+BVC-010,True
 BVC-020,False
 BVC-030,False
 Big River,True
@@ -2016,7 +2016,7 @@ CAY15,True
 CBOA,True
 CHICKEN RANCH,True
 CHINA CAMP,True
-Campbell Cove,False
+Campbell Cove,True
 Caspar Headlands,True
 Chadbourne Gulch,True
 Clam Beach Co. Park,True
@@ -2025,7 +2025,7 @@ DHS002,True
 DHS003,True
 DHS005,True
 DHS006,True
-DHS007,True
+DHS007,False
 DHS008,True
 DHS102,True
 DHS103,True
@@ -2033,7 +2033,7 @@ DHS104,True
 DHS105,True
 DHS106,True
 DHS107,True
-DHS108,True
+DHS108,False
 DHS109,True
 DHS110,True
 DHS111,True
@@ -2057,8 +2057,8 @@ EDC-030,False
 EDC-040,False
 EDC-050,False
 EF-HANG,False
-EH-150,False
-GARP,True
+EH-150,True
+GARP,False
 GOLDEN HINDE,False
 GVWAT1,True
 GVWAT2,False
@@ -2070,10 +2070,10 @@ GVWDV21,False
 GVWDV22,False
 GVWDV24,False
 GVWDV25,False
-GVWGA1,True
+GVWGA1,False
 GVWGA2,False
 GVWGS1,True
-GVWLC1,False
+GVWLC1,True
 GVWLC2,False
 GVWLV1,False
 GVWMY1,False
@@ -2111,7 +2111,7 @@ LOP,True
 LPQ-010,True
 LPQ-020,False
 LPQ-030,False
-Lakeshore Park Rec Center,False
+Lakeshore Park Rec Center,True
 Luffenholtz Creek,True
 MB11,True
 MB12,True
@@ -2155,16 +2155,16 @@ OLDE11,True
 OLDE12,True
 OTY-010,False
 OTY-020,False
-OTY-030,False
+OTY-030,True
 Old Home Beach,True
 Oyster Point Marina,True
 PARADISE COVE,True
 PB3,True
 PB4,True
 PB5,True
-PBL-010,False
+PBL-010,True
 PBL-020,False
-PBL-030,False
+PBL-030,True
 PFB,True
 PICO23,True
 Pillar Point #8,True
@@ -2194,13 +2194,13 @@ SDG-010,False
 SDG-020,False
 SEL-010,True
 SEL-020,True
-SEL-030,False
+SEL-030,True
 SEW7,True
 SGT-010,False
 SGT-020,False
 SGT-030,False
 SHELL BEACH,True
-SLR-010,False
+SLR-010,True
 SLR-020,False
 SLR-030,False
 SLR-040,False
@@ -2257,7 +2257,7 @@ WP0000012,True
 WP0000013,True
 WP0000018,True
 WP0000023,True
-WP0000037,False
+WP0000037,True
 WP0000072,True
 WP0000079,True
 WP0000080,True
@@ -2280,7 +2280,7 @@ Westport/Union Landing,True
 310PAS,True
 310SIN,True
 310SPM,True
-310SYB,True
+310SYB,False
 310TID,True
 310WIN,True
 504XSRNHC,False
@@ -2386,8 +2386,8 @@ QVIR_SF16,False
 510XSRFPT,False
 510XSRR44,False
 519XARDPK,False
-B03_BC 0M,False
-B03_BC 5280U,False
+B03_BC 0M,True
+B03_BC 5280U,True
 B03_BCS 225L,True
 B03_BCS 225R,True
 B03_BCS 530L,True
@@ -2427,7 +2427,7 @@ B03_SEL 300RSL,True
 11-359,False
 11-360,False
 111MLB001,True
-113MR1171,False
+113MR1171,True
 113ST0986,False
 12-254,True
 12-255,False
@@ -2440,7 +2440,7 @@ B03_SEL 300RSL,True
 12-356,False
 12-361,False
 1793_Franklin_CB,False
-201LAG005,False
+201LAG005,True
 201LAG030,False
 201LAG038,False
 201LAG045,False
@@ -2455,33 +2455,33 @@ B03_SEL 300RSL,True
 201LAG105,False
 201LAG110,False
 201LAG117,False
-201LAG122,False
+201LAG122,True
 201LAG130,False
 201LAG130_SWAMP,False
 201LAG195,False
 201LAG243,False
-201TBF001,True
-201TBF002,True
+201TBF001,False
+201TBF002,False
 201TBF003,True
-201TBF004,False
+201TBF004,True
 201TBF005,True
 201TMB200,True
 201TMB400,True
 201TMB600,True
-201WLK011,False
+201WLK011,True
 201WLK030,False
 201WLK030_SWAMP,False
 201WLK130,False
 201WLK161,False
 201WLK163,False
 201WTG010,True
-202MBY010-REF,True
+202MBY010-REF,False
 202PIL015,True
 203CAR010-DIS-36,True
 203CAR010-REC,True
 203CAR020-DIS-18,True
 203CAR030-DIS-18,True
-203CAR040-DIS-18,True
+203CAR040-DIS-18,False
 203CAR050-DIS-18,True
 203CAR060-DIS-18,True
 203CAR070-DIS-18,True
@@ -2490,7 +2490,7 @@ B03_SEL 300RSL,True
 203CAR100-DIS-18,True
 203LOB010-REF,True
 203LOB020-REF,True
-203LOB030-REF,True
+203LOB030-REF,False
 203MON010-DIS-36,True
 203MON010-REC,True
 203PAC010-DIS-18,True
@@ -2569,17 +2569,17 @@ B03_SEL 300RSL,True
 205STE065,False
 205STE071,False
 205UPE210,False
-206PET007,False
+206PET007,True
 206PET010,False
 206PET060,False
 206PET070,False
 206PET090,False
-206PET098,False
+206PET098,True
 206PET130,False
-206PET205,False
+206PET205,True
 206PET215,False
 206PET220,False
-206PET260,False
+206PET260,True
 206PET316,False
 206PET350,False
 206PET355,False
@@ -2589,13 +2589,13 @@ B03_SEL 300RSL,True
 206R01319,False
 206SAN010-REF,True
 207BRS010,False
-207LED020,False
+207LED020,True
 207R00843,False
 207R00891,False
 207R01163,False
 207R01271,False
 207R05524,False
-207SSL010,False
+207SSL010,True
 207UAV030,False
 207WAL035,False
 207WAL040,False
@@ -2622,7 +2622,7 @@ B03_SEL 300RSL,True
 304SVC,False
 308BGC008,True
 308BGCB01,True
-308BSR024,False
+308BSR024,True
 308BSRB01,True
 308GAR015,True
 308GARB01,True
@@ -2642,7 +2642,7 @@ B03_SEL 300RSL,True
 310B58,True
 310B5A,True
 310B5B,True
-310B5C,False
+310B5C,True
 310B64,True
 310B65,True
 310B70,True
@@ -2667,12 +2667,12 @@ B03_SEL 300RSL,True
 4-342,True
 4-343,True
 4-344,True
-4-345,True
+4-345,False
 4-346,True
 4-348,True
 4-349,False
 4-350,False
-4-351,True
+4-351,False
 4-352,False
 4-353,False
 4-428,False
@@ -2685,7 +2685,7 @@ B03_SEL 300RSL,True
 43LFL02,False
 49500,True
 5-303,True
-5-304,True
+5-304,False
 5-305,True
 516NEV103,False
 516NEV105,False
@@ -2964,8 +2964,8 @@ B03_SEL 300RSL,True
 902SND100,False
 902USM828,False
 903M20214,False
-AA_Airport 1,False
-AA_Outfall 12,False
+AA_Airport 1,True
+AA_Outfall 12,True
 ACJ01,False
 ACM1,True
 ACM1D,True
@@ -3099,19 +3099,19 @@ CON.30,False
 CON.40,False
 COR_60,True
 COR_BANDEL,False
-COR_SITE5960,True
+COR_SITE5960,False
 COTC_CM_U1,False
 COTC_CM_U2,False
 COTC_TM,False
-CO_16,False
+CO_16,True
 CO_2,False
-CO_27,False
+CO_27,True
 CO_33a,False
 CO_35,False
 CO_36,False
 CO_3a,False
-CO_59,True
-CO_60,True
+CO_59,False
+CO_60,False
 CR-1R,False
 CR-39R,False
 CR-41R,False
@@ -3119,7 +3119,7 @@ CR-46R,False
 CSBBR1d,True
 CSBMP1d,True
 CSD-031,True
-CTL(1),False
+CTL(1),True
 CTPJ01,False
 CT_CAR01,False
 CT_CAR05,False
@@ -3314,8 +3314,8 @@ DSB4D,True
 DSB4U,True
 DSB4Z,True
 DSB4d,True
-DSB5D,True
-DSB5U,True
+DSB5D,False
+DSB5U,False
 DSB5Z,True
 DUMONDD,True
 DUMONDU,True
@@ -3385,7 +3385,7 @@ EN_163SWOUTL,True
 EN_172SWOUTL,False
 EN_375SWOUTL,True
 EN_380SWOUTL,False
-EN_75SWOUTL,True
+EN_75SWOUTL,False
 EN_CBS-1,False
 EN_CBS-2,False
 EN_CBS-4,False
@@ -3476,8 +3476,8 @@ I01-11487-2,True
 IB-068,True
 IB-069,True
 IB-079,True
-IB-K-2,False
-IB_E1A_E1B,False
+IB-K-2,True
+IB_E1A_E1B,True
 IB_F-17,False
 IB_F-34,False
 IND.50,False
@@ -3562,17 +3562,17 @@ L00-12094-1,False
 L01-340-1,False
 L01-404-1,False
 L01-724-4,False
-L01-728-5,False
+L01-728-5,True
 L01-731-1,False
 L01-766-2,False
-L01-PCH,False
+L01-PCH,True
 L01-SDu/s,False
-L01S02,False
-L01S02d/s,False
-L01S02u/s,False
-L01S04,False
-L01S04d/s,False
-L01S04u/s,False
+L01S02,True
+L01S02d/s,True
+L01S02u/s,True
+L01S04,True
+L01S04d/s,True
+L01S04u/s,True
 L01SPD,True
 L02-166-2,False
 L02-166-3,False
@@ -3613,7 +3613,7 @@ LC_RIOCYNRD,False
 LC_RLAGEST,False
 LC_SILVA,False
 LC_USGS,False
-LE-RW-21,False
+LE-RW-21,True
 LEE.10,False
 LEE.15,False
 LEE.17,False
@@ -3675,7 +3675,7 @@ MARIPOD,True
 MARIPOU,True
 MARIPOZ,True
 MARIPOz,True
-MB-086,False
+MB-086,True
 MB-TWAS-1,False
 MB-TWAS-2,False
 MC,False
@@ -3697,8 +3697,8 @@ MCO-025,False
 MC_Up,False
 MDCD,True
 MDCU,True
-MDRH-1,False
-MDRH-3,False
+MDRH-1,True
+MDRH-3,True
 MIL.20,False
 MIL.30,False
 MIL.40,False
@@ -3726,12 +3726,12 @@ Main-C,True
 Main-D,True
 Mapleview_Ashwood,False
 MaxC_Up,False
-MdRH-Basin-E,False
-MdRH-ORB-1,False
-MdRH-ORB-2,False
-MdRH-ORB-3,False
-MdRH-ORB-4,False
-MdRH-ORB-5,False
+MdRH-Basin-E,True
+MdRH-ORB-1,True
+MdRH-ORB-2,True
+MdRH-ORB-3,True
+MdRH-ORB-4,True
+MdRH-ORB-5,True
 Morrison_Prop84_MP_1,False
 Morrison_Prop84_MP_2,False
 NAT-LAS,False
@@ -3740,7 +3740,7 @@ NC_1A,False
 NC_32,False
 NC_40,False
 NC_433,False
-NC_43B,False
+NC_43B,True
 NC_44B,False
 NC_45,False
 NC_46,False
@@ -3813,7 +3813,7 @@ OC_S065,False
 OC_S106,False
 OC_S117,False
 OC_S122,False
-OC_SLR-005,False
+OC_SLR-005,True
 OC_SLR-015,False
 OC_SLR-016,False
 OC_SLR-025,False
@@ -3834,7 +3834,7 @@ OWE.77,False
 OWE.80,False
 OWE.85,False
 OWE.90,False
-Outfall 85,False
+Outfall 85,True
 PAR.20,False
 PAR.30,False
 PDCM01,False
@@ -3864,7 +3864,7 @@ POCHEZ,True
 POCHEd,True
 POCHEu,True
 POCHEz,True
-PORT_CV-1,False
+PORT_CV-1,True
 PO_105,False
 PO_108,False
 PO_111,False
@@ -3894,31 +3894,31 @@ PO_4,False
 PO_54,False
 PO_80,False
 PO_90,False
-PPCD,True
-PPCU,True
+PPCD,False
+PPCU,False
 PT_10. Ferry Landing,False
-PT_1203.1,False
-PT_1206.1,False
-PT_1219.1,False
-PT_2497.1,False
-PT_2709.1,False
-PT_2742.1,False
-PT_2795.1,False
+PT_1203.1,True
+PT_1206.1,True
+PT_1219.1,True
+PT_2497.1,True
+PT_2709.1,True
+PT_2742.1,True
+PT_2795.1,True
 PT_3. America's Cup Harbo,False
 PT_4. Laurel Street,False
 PT_7. Pepper Park,False
 PT_Alt. 2. Harbor Island,False
-PT_C3-2.1,False
-PT_CSD145,False
+PT_C3-2.1,True
+PT_CSD145,True
 PT_CV1-1,False
-PT_CV1-1.1,False
+PT_CV1-1.1,True
 Peninsula-RW1,True
 Peninsula-RW2,True
 Peninsula-SD1,False
-Peninsula-SD2,True
+Peninsula-SD2,False
 Pillar Point #5,True
 Pillar Point #9,True
-Pump Station 7,False
+Pump Station 7,True
 Q1,False
 Q1.5,False
 Q2,False
@@ -4020,7 +4020,7 @@ SC-56R,False
 SCCS52D,True
 SCCS52U,True
 SCCS52Z,True
-SCK01,True
+SCK01,False
 SCM1D,True
 SCM1U,True
 SCM1Z,True
@@ -4043,7 +4043,7 @@ SD_DW0001,False
 SD_DW001,False
 SD_DW0024,False
 SD_DW0025,False
-SD_DW0033,False
+SD_DW0033,True
 SD_DW0036,False
 SD_DW0036-D,False
 SD_DW004,False
@@ -4063,7 +4063,7 @@ SD_DW0171,False
 SD_DW0179,False
 SD_DW018,False
 SD_DW020,False
-SD_DW0203,False
+SD_DW0203,True
 SD_DW021,False
 SD_DW022,False
 SD_DW0223,False
@@ -4234,8 +4234,8 @@ SD_DW806,False
 SD_DW812,False
 SD_DW823,False
 SD_DW839,False
-SE-In-1,False
-SE-In-2,False
+SE-In-1,True
+SE-In-2,True
 SEA-4,True
 SF1-UCD-Tate,False
 SF10-UCD-Tate,False
@@ -4268,7 +4268,7 @@ SJC1Z,True
 SJC1d,True
 SJC1u,True
 SJC1z,True
-SJCL01,False
+SJCL01,True
 SJNL01,False
 SJRI_16,False
 SJRI_17,False
@@ -4276,7 +4276,7 @@ SLINDALZ,True
 SLINDALz,True
 SLR#1,False
 SLR#2,False
-SLR#3,False
+SLR#3,True
 SLR#4,True
 SLR-OCB,True
 SLR-TWAS-2,False
@@ -4305,8 +4305,8 @@ SMB-2-11,True
 SMB-3-6,True
 SMB-5-2,True
 SMB-5-4,True
-SMB-6-1,True
-SMB-6-2,True
+SMB-6-1,False
+SMB-6-2,False
 SMB-6-3,True
 SMB-6-4,True
 SMG05,False
@@ -4367,8 +4367,8 @@ TNFMOKE_BCG,False
 TNFMOKE_BTM,False
 TNFMOKE_LG,False
 TNFMOKE_LLG,False
-TRFCYND,True
-TRFCYNU,True
+TRFCYND,False
+TRFCYNU,False
 TRFCYNZ,True
 TRFCYNz,True
 TRIB1MLS,False
@@ -4454,7 +4454,7 @@ Wharf-East,True
 Woodside_Tunnel,False
 ZMB,True
 ZST,False
-01T_ODD3_EDI,False
+01T_ODD3_EDI,True
 05T_HONDO,False
 06T_LONG2,False
 103CDCHHR,False
@@ -4471,8 +4471,8 @@ ZST,False
 107PR7848,False
 108HBOHB1,True
 108LF0001,True
-108LR0001,False
-108LR0663,False
+108LR0001,True
+108LR0663,True
 108MC1250,False
 108ML0001,True
 108SC0550,True
@@ -4481,32 +4481,32 @@ ZST,False
 109SW0001,True
 109UNTANKR,False
 110CG5000,False
-110DJXNRD,False
+110DJXNRD,True
 110DSEIDL,False
-110EL1278,False
+110EL1278,True
 110ER6642,False
 110FR4642,False
 110GG0100,False
 110GR0500,False
-110GS1625,False
+110GS1625,True
 110GS5000,False
 110GS6500,False
-110HS5050,False
+110HS5050,True
 110JC0966,False
 110JC6316,False
 110JG0264,False
 110MD3750,False
-110MS1481,False
+110MS1481,True
 110MS6750,False
 110SA1680,False
 110SF1612,False
-110SS9000,False
-110UNSJXN,False
-110UNSLPHR,False
-110UNSRNCH,False
-110US09HC,False
-110US18VC,False
-110US27LP,False
+110SS9000,True
+110UNSJXN,True
+110UNSLPHR,True
+110UNSRNCH,True
+110US09HC,True
+110US18VC,True
+110US27LP,True
 111AL1359,False
 111CF1805,False
 111CW0458,False
@@ -4546,10 +4546,10 @@ ZST,False
 114MW0930_SWAMP,False
 114PA3647,False
 114PI0729,False
-114RR0066,False
-114RR0898,False
-114RR1325,False
-114RR1898,False
+114RR0066,True
+114RR0898,True
+114RR1325,True
+114RR1898,True
 114RR2036,False
 114RR2940,False
 114RR3119,False
@@ -4594,10 +4594,10 @@ ZST,False
 206MUR100,False
 206MUR200,False
 206NAC100,False
-206NAP010,False
-206NAP020,False
-206NAP025,False
-206NAP030,False
+206NAP010,True
+206NAP020,True
+206NAP025,True
+206NAP030,True
 206NAP055,False
 206NAP090,False
 206NAP140,False
@@ -4609,10 +4609,10 @@ ZST,False
 206PET002,True
 206PET392,False
 206PET393,False
-206SCH009,False
+206SCH009,True
 206SCH00903,False
 206SCH00904,False
-206SCH00905,False
+206SCH00905,True
 206SLV040,False
 206SLV100,False
 206SON011,False
@@ -4675,15 +4675,15 @@ ZST,False
 304-SCSD-05,False
 304-SOQUE-26,False
 304-SOQUE-28,False
-305-HANSO-21,False
+305-HANSO-21,True
 305-WATSO-24,False
 305-WSTRU-22,False
-305-WSTRU-23,False
-305-WSTRU-24,False
+305-WSTRU-23,True
+305-WSTRU-24,True
 306-CARNE-33A,False
-306-CARNE-36,False
+306-CARNE-36,True
 306-CORNC-31,False
-306-MOROC-34,False
+306-MOROC-34,True
 306-POND-A,False
 306-POND-C,False
 306-POND-E,False
@@ -4698,9 +4698,9 @@ ZST,False
 307-CARME-366,False
 307-CASD-05,True
 307-CASD-06,False
-307-CVSD-01,False
-308-SYCAM-32,True
-309-PGSD-03 u/S,True
+307-CVSD-01,True
+308-SYCAM-32,False
+309-PGSD-03 u/S,False
 309-PGSD-14,True
 309-SALIN-46,False
 309-SKYLI-31,False
@@ -4712,7 +4712,7 @@ ZST,False
 309SMLOSP,False
 310-PENN-41,False
 310-SANSI-42,False
-310-SANTA-43,False
+310-SANTA-43,True
 310APN,False
 310LVR,False
 310UPN,False
@@ -4908,13 +4908,13 @@ ZST,False
 628SHP001,False
 64THST,False
 6St,True
-AB10,True
+AB10,False
 AHL-010,False
 AHL-020,False
 AHL-030,False
 BAY#202_LAGOON,True
-BAY#220_SL,False
-BAY#320_SL,False
+BAY#220_SL,True
+BAY#320_SL,True
 BUCBEACH-NREF,True
 BUCBEACH-S,True
 BUCBEACH-SREF,True
@@ -4925,7 +4925,7 @@ Bean Hollow Creek,True
 CAY16,True
 CHICKEN RANCH DITCH,True
 CHINOCRK,False
-CMWAP00,True
+CMWAP00,False
 CMWCL00,True
 CMWCM00,True
 CMWCM01,True
@@ -4940,7 +4940,7 @@ D3,False
 D4,False
 D5,False
 DRY-CAM4,False
-DRY-HUE3,False
+DRY-HUE3,True
 DRY-MPK2,False
 DRY-OJA6,False
 DRY-OXN2,False
@@ -4956,7 +4956,7 @@ DW0154-E-VCH-N,False
 EFMNTCR1,False
 EFMNTCR2,False
 EH-505,False
-Erckenbrack Park,False
+Erckenbrack Park,True
 Frenchmans Creek,True
 GVPC_12.0,False
 GVPC_12.1,False
@@ -4972,14 +4972,14 @@ GVPC_SPR6,False
 GVPC_SPR7,False
 GVWDV20,True
 Gazos Creek,True
-"Gull Park, Foster City",False
+"Gull Park, Foster City",True
 HSB23,True
 HYPCB2,True
 J25c2,False
 JA,True
-JOLANDSCENIC,True
+JOLANDSCENIC,False
 Junipero x 18th,False
-K1,True
+K1,False
 K2,False
 K3,False
 K4,False
@@ -4987,7 +4987,7 @@ LA-CON,False
 LA-DS-GAR,False
 LA-GAR,False
 LA-OS,False
-LA-PCH,False
+LA-PCH,True
 LA-PSB,True
 LA-RDO-SPR,False
 LACSDS7,True
@@ -5016,7 +5016,7 @@ LC8k-3 CG,False
 LC8k-4,False
 LC8k-4 CG,False
 LC8k-5,False
-LITTLERIVER101,False
+LITTLERIVER101,True
 LPMH-01,False
 LPMH-03,False
 LPQ-040,False
@@ -5031,7 +5031,7 @@ MLLCR2,False
 MNTCR1,False
 MNTCR2,False
 MSR SDR 35,False
-Ma1,True
+Ma1,False
 Ma2,False
 Marlin Park,True
 Martini Creek,True
@@ -5060,10 +5060,10 @@ P3-SBC1,False
 P4-RC1,False
 P4-RC2,False
 P4-SBC1,False
-PARKERCRBEACH,True
+PARKERCRBEACH,False
 PARKERCRWSTHVN,False
-PATRICKCLAM,True
-PBL-015,False
+PATRICKCLAM,False
+PBL-015,True
 PBL-016,False
 PBL-040,False
 PR1SDInlet,False
@@ -5091,7 +5091,7 @@ SB_MST_A02,True
 SB_MST_A03,True
 SB_MST_A04,True
 SB_MST_A05,True
-SB_MST_A06,True
+SB_MST_A06,False
 SB_MST_B-Duck,True
 SB_MST_CP-GW1,True
 SB_MST_CP-GW2,True
@@ -5117,7 +5117,7 @@ SB_MST_E04,True
 SB_MST_E05,True
 SB_MST_E06,True
 SB_MST_E07,True
-SB_MST_E08,False
+SB_MST_E08,True
 SB_MST_E09,False
 SB_MST_E09A,False
 SB_MST_E10,True
@@ -5125,7 +5125,7 @@ SB_MST_E11,True
 SB_MST_E11D,True
 SB_MST_E12,False
 SB_MST_E12A,False
-SB_MST_E12B,False
+SB_MST_E12B,True
 SB_MST_EB-GW1,True
 SB_MST_EB-GW2,True
 SB_MST_EB-GW3,True
@@ -5162,12 +5162,12 @@ SB_MST_G06A,True
 SB_MST_G07,True
 SB_MST_G08,True
 SB_MST_G09,False
-SB_MST_G10,False
-SB_MST_G10A,False
-SB_MST_G11,False
-SB_MST_G12,False
-SB_MST_G12A,False
-SB_MST_G12B,False
+SB_MST_G10,True
+SB_MST_G10A,True
+SB_MST_G11,True
+SB_MST_G12,True
+SB_MST_G12A,True
+SB_MST_G12B,True
 SB_MST_G13,True
 SB_MST_GB-GW1,True
 SB_MST_GB-GW2,True
@@ -5193,7 +5193,7 @@ SB_MST_L06,True
 SB_MST_L06A,True
 SB_MST_L06B,True
 SB_MST_L07,True
-SB_MST_L08,True
+SB_MST_L08,False
 SB_MST_L09,False
 SB_MST_L09A,False
 SB_MST_L09B,False
@@ -5245,7 +5245,7 @@ SD_DW1035,False
 SD_DW1111,False
 SGT-025,False
 SGT-028,False
-SGT-051,False
+SGT-051,True
 SMB-1-17,True
 SMB-1-3,True
 SMB-O-01,True
@@ -5253,12 +5253,12 @@ SMB-O-02,True
 STRAWARTHUR,False
 STRAWCENTRAL,False
 SW1-TDN,False
-SW2-TDN,True
+SW2-TDN,False
 SW3-TDN,False
-SW4a-TDN,True
-SW4b-TDN,True
+SW4a-TDN,False
+SW4b-TDN,False
 SW4c-TDN,False
-SW5-TDN,True
+SW5-TDN,False
 SWT-021,False
 San Gregorio Creek,True
 San Pedro Creek,True
@@ -5286,7 +5286,7 @@ UPRG_M33,False
 UPRG_M34,False
 UPRG_M35,False
 V1,True
-V2,True
+V2,False
 V3,False
 V4,False
 V5,False
@@ -5329,15 +5329,15 @@ WW-M6,False
 202AGUS,False
 202CAP001,True
 202CAP025,True
-202DEN005,True
-202DEN017,True
+202DEN005,False
+202DEN017,False
 202DEN020,False
-202DNDS,True
+202DNDS,False
 202DNUS,False
 202DRUS,False
 202DRVL,False
 202FRE010,True
-202FRE050,False
+202FRE050,True
 202FRE100,False
 202PES138,False
 202PES142,False
@@ -5359,11 +5359,11 @@ WW-M6,False
 202SGR081,False
 202SGR700,False
 203BAX045,False
-204LME005,False
-204LME015,False
-204LME025,False
-204LME030,False
-204LME050,False
+204LME005,True
+204LME015,True
+204LME025,True
+204LME030,True
+204LME050,True
 204R01519,False
 204SAU055,False
 204SAU110,False
@@ -5518,10 +5518,10 @@ P3-OC1,False
 P3-OC10,False
 P3-OC11,False
 P3-OC3,True
-P3-OC5,True
+P3-OC5,False
 P3-OC6,True
 P3-OC7,False
-P3-OC8,False
+P3-OC8,True
 P3-OC9,False
 P4-OC1,False
 Pre_Norm,False
@@ -5545,7 +5545,7 @@ LeoCarilloSouthBeach_B,True
 LeoCarilloSouthBeach_C,True
 MS4-SDR-035 ,False
 P4-OC2,True
-P4-OC3,False
+P4-OC3,True
 191UP01,False
 201WLK170,False
 201WLK185,False
@@ -5605,7 +5605,7 @@ CSD_I40,True
 CSD_I5,False
 CSD_I7,False
 CSD_I8,True
-CSD_I9,True
+CSD_I9,False
 CSD_S0,False
 CSD_S10,True
 CSD_S11,True
@@ -5629,7 +5629,7 @@ CV_SS-10-1,False
 CV_SS-11,False
 DC-66R,False
 DM_40-CST-M,True
-DM_65-28ST-M,False
+DM_65-28ST-M,True
 DM_S-14,False
 DPH 125,True
 DPH 126,True
@@ -5637,7 +5637,7 @@ DW0067-UP,False
 DW0081,False
 DW0088,False
 DW0133-E,False
-DW0133-Outlet,False
+DW0133-Outlet,True
 DW0133-S-Busway,False
 DW0133-S-Rosecrans,False
 DW0133-W,False
@@ -5657,7 +5657,7 @@ DW0954-SW,False
 DW0954-UP,False
 DW1063,False
 DW1132-UP01,False
-EH-063,False
+EH-063,True
 EH-250-SD2,True
 EH-253A,True
 EH-253B,True
@@ -5672,18 +5672,18 @@ EH-395,True
 EH-421,True
 EH-422,True
 EH-423,True
-EH-530,False
-EH-535,False
-EH-540,False
-EH-545,False
-EH-550,False
-EH-555,False
-EH-560,False
-EH-565,False
-EH-566,False
-EH-567,False
-EH-568,False
-EH-569,False
+EH-530,True
+EH-535,True
+EH-540,True
+EH-545,True
+EH-550,True
+EH-555,True
+EH-560,True
+EH-565,True
+EH-566,True
+EH-567,True
+EH-568,True
+EH-569,True
 EH-570,True
 EH-571,True
 EH-572,True
@@ -5698,8 +5698,8 @@ LC02,False
 LG_Site 69-A,False
 LM_OF-UNI-2-A,False
 LM_OF-UNI-2-B,False
-MB-125,False
-MB-226,False
+MB-125,True
+MB-226,True
 MURR_902MS44063,False
 MV_BMP-Total-EFF,False
 MV_BMP1-EFF,False
@@ -5715,14 +5715,14 @@ PL-082,True
 "PO_302-1749, 1",False
 "PO_306-1755, 1(W)",False
 PT_2558,False
-PT_2742,False
+PT_2742,True
 RCFC_1060,False
 RCFC_1084,False
 SD_DW0033-UP1,False
 SD_DW0036-UP1,False
 SD_DW0078-UP1,False
 SD_DW0088,False
-SD_DW0152-UP2,True
+SD_DW0152-UP2,False
 SD_DW0176,False
 SD_DW0284-UP1,False
 SD_DW0382-UP2,False
@@ -5813,7 +5813,7 @@ EH-4-E,False
 ES_ESC_108,False
 ES_ESC_146,False
 ES_HDG_111,False
-GREEN BRIDGE_Lagunitas Creek,False
+GREEN BRIDGE_Lagunitas Creek,True
 IB-045,True
 IB-067,True
 LC8f-1.1,False
@@ -5859,7 +5859,7 @@ SM_OUT10236-1,False
 WP00000519(2),True
 WP0000519,True
 WP0000520,True
-Whitehouse Pool,False
+Whitehouse Pool,True
 114CCBL,False
 114CCDSP1,False
 114CCDSP2,False
@@ -5868,11 +5868,11 @@ Whitehouse Pool,False
 202DER100,False
 202FRE002,True
 202FRE004,True
-202FRE020,False
-202FRE049,False
+202FRE020,True
+202FRE049,True
 202FRE140,False
 202FRE500,False
-202PIL019,False
+202PIL019,True
 202PIL050,False
 202PIL075,False
 202PIL210,False
@@ -5977,8 +5977,8 @@ CSD_F35,True
 CSD_F36,True
 EH-254,True
 EH-574,True
-EH-575,False
-EH-576,False
-MB-045,False
-MB-046,False
-MB-047,False
+EH-575,True
+EH-576,True
+MB-045,True
+MB-046,True
+MB-047,True

@@ -6,14 +6,17 @@ based on their geographic location relative to saline wetlands, saline lakes, an
 marine coastal areas in California.
 
 The script:
-1. Downloads and processes saline wetlands data from CDFW
+1. Downloads and processes coastal wetlands
 2. Processes saline lakes data (requires manual download)
 3. Downloads and processes marine coastal polygons
-4. Fetches water quality monitoring sites from CA Open Data Portal
-5. Classifies each site as saltwater (True) or freshwater (False)
-6. Outputs results to a CSV file
+4. Downloads and proceses bays/estuaries data
+5. Fetches water quality monitoring sites from CA Open Data Portal
+6. Classifies each site as saltwater (True) or freshwater (False)
+7. Outputs results to a CSV file
 
-Date: July 29, 2025
+The CSV output should be saved to the data_cache folder in root
+
+Date: November 21, 2025
 """
 
 import geopandas as gpd
@@ -53,55 +56,61 @@ def fetch_or_cache(url, local_path):
             raise FileNotFoundError(f"No cached copy for {url}")
 
 
-def load_saline_wetlands(cache_dir):
+def load_wetlands(buffer_meters=10):
     """
-    Load saline wetlands data from CDFW.
+    Load the saline wetlands dataset from the California Coastal Sediment Management Workgroup (CSMW). This service is hosted on the CNRA GIS server.
+
+    CSMW link: https://dbw.parks.ca.gov/?page_id=28708
+    Service link: https://gis.cnra.ca.gov/arcgis/rest/services/Ocean/CSMW_Coastal_Wetlands/MapServer
     
     Args:
-        cache_dir (str): Cache directory path
+        buffer_meters (float): Buffer distance in meters
         
     Returns:
-        gpd.GeoDataFrame: Saline wetlands polygons in EPSG:4326
+        gpd.GeoDataFrame: Saline wetlands polygons in EPSG:3310
     """
     print("Loading saline wetlands data...")
-    '''
-    saline_wetland_url = ("https://data-cdfw.opendata.arcgis.com/api/download/v1/"
-                         "items/86f3f1edf91d44be9a8f237a0afde994/geojson?layers=0")
-    wetlands_path = os.path.join(cache_dir, "saline_wetlands.geojson")
-    '''
 
-    saline_wetland_url = 'https://gis.cnra.ca.gov/arcgis/rest/services/Ocean/CSMW_Coastal_Wetlands/MapServer/0/query?where=1=1&outFields=*&outSR=4326&f=json'
-    
-    # fetch_or_cache(saline_wetland_url, wetlands_path)
-    # wetlands = gpd.read_file(wetlands_path).to_crs("EPSG:4326")
+    # Specify EPSG:3310 in the query
+    saline_wetland_url = 'https://gis.cnra.ca.gov/arcgis/rest/services/Ocean/CSMW_Coastal_Wetlands/MapServer/0/query?where=1=1&outSR=3310&outFields=*&f=json' 
 
-    wetlands = gpd.read_file(saline_wetland_url).to_crs("EPSG:4326")
-    
+    wetlands = gpd.read_file(saline_wetland_url)
     print(f"Loaded {len(wetlands)} saline wetland polygons")
 
-    #wetlands_union = wetlands_exploded.geometry.union_all()
+    wetlands = wetlands.explode(index_parts=False) # Convert multipolgygon to multiple single polygons
+    wetlands = wetlands.buffer(buffer_meters) 
     return wetlands
 
 
-def load_saline_lakes(cache_dir):
+def load_saline_lakes(cache_dir, buffer_meters=50):
     """
-    Load saline lakes data from extracted shapefile.
-    
+    Load and combine saline lakes data from:
+
+    1) Saline Lake Ecosystems IWAA Lakes
+
     Note: Requires manual download of SalineLakeEcosy.zip from:
     https://www.sciencebase.gov/catalog/item/667f1a25d34e2cb7853eaf4f
-    11/06/25 - File is not available on website
+    11/06/25 - File "SalineLakeEcosy.zip" is not available on website. Service is not working either. Using "SalineLakeBnd.zip" seems to work. This dataset does not include Salton Sea.
+
+    2) CA Named Lakes 
+
+    Link: https://gispublic.waterboards.ca.gov/portal/home/item.html?id=9ca35044184e48f28ae4a8586d65b8d4&sublayer=1
+    This Water Boards GIS service is derived from the candidate high-resolution National Hydrography Dataset (NHD). It is being used to query the Salton Sea polygon.
     
     Args:
         cache_dir (str): Cache directory path
+        buffer_meters (float): Buffer distance in meters
         
     Returns:
-        gpd.GeoDataFrame: Saline lake polygons in EPSG:4326
+        gpd.GeoDataFrame: Saline lake polygons in EPSG:3310
         
     Raises:
         FileNotFoundError: If zip file not found and directory not extracted
     """
     print("Loading saline lakes data...")
-    lake_zip_path = os.path.join(cache_dir, "SalineLakeEcosy.zip")
+
+    # Check for Saline Lake Ecosystems IWAA Lakes data
+    lake_zip_path = os.path.join(cache_dir, "SalineLakeBnd.zip")
     print(f"Expected zip file at: {lake_zip_path}")
     lakes_dir = os.path.join(cache_dir, "SalineLakeBnd")
     lakes_path = os.path.join(lakes_dir, "SalineLakeBnd.shp")
@@ -109,7 +118,7 @@ def load_saline_lakes(cache_dir):
     if not os.path.exists(lakes_dir):
         if not os.path.exists(lake_zip_path):
             raise FileNotFoundError(
-                "Please manually download SalineLakeEcosy.zip to data_cache/ and rerun"
+                "Please manually download SalineLakeBnd.zip to data_cache/ and rerun"
             )
         print("Extracting Saline Lake zip...")
         with zipfile.ZipFile(lake_zip_path, 'r') as zip_ref:
@@ -117,66 +126,82 @@ def load_saline_lakes(cache_dir):
     else:
         print("Using existing extracted SalineLakeBnd directory")
 
-    lakes = gpd.read_file(lakes_path).to_crs("EPSG:4326")
-    print(f"Loaded {len(lakes)} saline lake polygons")
-    return lakes
+    # Load Saline Lake Ecosystems IWAA Lakes data
+    lakes = gpd.read_file(lakes_path)
+    lakes = lakes.set_crs('EPSG:5070') # Define projection as EPSG:5070 (https://www.sciencebase.gov/catalog/item/667f1a25d34e2cb7853eaf4f)
+    lakes = lakes.to_crs('EPSG:3310') # Reproject to EPSG:3310
+    lakes = lakes.buffer(buffer_meters)
+
+    # Load CA Named Lakes dataset (Salton Sea polygon)
+    named_lakes_url = "https://gispublic.waterboards.ca.gov/portalserver/rest/services/Hosted/All_CA_Named_Streams_and_Lakes/FeatureServer/1/query?where=name%3D%27Salton+Sea%27&outFields=*&returnGeometry=true&f=json" # Filter for Salton Sea
+    salton_sea = gpd.read_file(named_lakes_url)
+    salton_sea = salton_sea.set_crs('EPSG:3310') # Define projection as EPSG:3310, verified in ArcGIS
+    salton_sea = salton_sea.buffer(buffer_meters) 
+
+    # Combine all lake polygons into one gdf
+    all_lakes = pd.concat([lakes, salton_sea], ignore_index=True)
+    all_lakes_gdf = gpd.GeoDataFrame(geometry=all_lakes, crs='EPSG:3310')
+
+    print(f"Loaded {len(all_lakes_gdf)} saline lake polygons")
+    return all_lakes_gdf
 
 
-def load_marine_coastal_areas(buffer_degrees=0.01):
+def load_marine_coastal_areas(buffer_meters=50):
     """
-    Load and process marine coastal areas from CA Nature data.
+    Load and process CA Cartographic Coastal Polygons from CDT?. This dataset was developed based on NOAA data. 
+    Link: https://services3.arcgis.com/uknczv4rpevve42E/ArcGIS/rest/services/California_Cartographic_Coastal_Polygons/FeatureServer/31
     
     Args:
-        buffer_degrees (float): Buffer distance in degrees to apply to marine areas
+        buffer_meters (float): Buffer distance in meters
         
     Returns:
         gpd.GeoDataFrame: Buffered marine coastal areas in EPSG:4326
     """
-    print("Loading marine coastal areas...")
-    '''
-    url = (
-        "https://services8.arcgis.com/JFYbogndXme7ddg8/arcgis/rest/services/"
-        "CA_Nature_Terrestrial_and_Marine__AGOL__WebMer_/FeatureServer/0/query"
-        "?where=1=1&outFields=*&outSR=4326&f=json"
-    )
-    '''
-    # https://services3.arcgis.com/uknczv4rpevve42E/ArcGIS/rest/services/California_Cartographic_Coastal_Polygons/FeatureServer/31/
-    # Another option: https://earthworks.stanford.edu/catalog/stanford-gw439pk0596
-    url = "https://services3.arcgis.com/uknczv4rpevve42E/ArcGIS/rest/services/California_Cartographic_Coastal_Polygons/FeatureServer/31/query?where=1=1&outFields=*&outSR=4326&f=json"
 
-    coastal = gpd.read_file(url)
+    print("Loading marine coastal areas...")
+    url = "https://services3.arcgis.com/uknczv4rpevve42E/ArcGIS/rest/services/California_Cartographic_Coastal_Polygons/FeatureServer/31/query?where=1=1&outFields=*&outSR=4326&f=json"
+    coastal = gpd.read_file(url) # Imported as EPSG:4326
+    coastal = coastal.to_crs('EPSG:3310') # Convert to EPSG:3310
     print(f"Found {len(coastal)} marine polygons")
-    
-    # Apply buffer and union
+
+    # Union and apply buffer
     marine_union = coastal.geometry.union_all()
-    # print(f"Applied {buffer_degrees} degree buffer to marine areas")
+    marine_union = marine_union.buffer(buffer_meters)
+    print(f"Applied {buffer_meters} meter buffer to marine areas")
     
     # Wrap in GeoDataFrame
-    marine_buffered_gdf = gpd.GeoDataFrame(geometry=[marine_union], crs="EPSG:4326")
+    marine_buffered_gdf = gpd.GeoDataFrame(geometry=[marine_union], crs="EPSG:3310")
 
     return marine_buffered_gdf
 
 
-def load_coastal_zone_areas():
+def load_estuaries(buffer_meters=50):
     """
-    Load and process costal zone areas from CA Coastal Commission
+    Load current and historical estuary extent data from CDFW
+    Link: https://www.arcgis.com/home/item.html?id=c0b97243451f46db84b51d044424b51a
     
     Args:
-        None
+        buffer_meters (float): Buffer distance in meters
         
     Returns:
-        gpd.GeoDataFrame: Coastal zone areas in EPSG:4326
+        gpd.GeoDataFrame: Estuary polygons in EPSG:3310
     """
-    url = "https://services9.arcgis.com/wwVnNW92ZHUIr0V0/arcgis/rest/services/Coastal_Zone_Boundary_Offshore_Polygon/FeatureServer/0/query?where=1=1&outFields=*&outSR=4326&f=json"
-    coastal_zone = gpd.read_file(url)
-    print(f"Found {len(coastal_zone)} coastal zone polygons")
+    # Filter out CMECS_Class == "Major River Delta" as these features extend too far inland to the Lower American
+    url = "https://services2.arcgis.com/Uq9r85Potqm3MfRV/ArcGIS/rest/services/biosds2792_fpu/FeatureServer/0/query?where=CMECS_Class+%3C%3E+%27Major+River+Delta%27&outFields=*&returnGeometry=true&f=json"
+    estuaries = gpd.read_file(url)
+    estuaries = estuaries.explode(index_parts=False) # Convert multipolgygon to multiple single polygons
 
-    cz_union = coastal_zone.geometry.union_all()
+    estuaries = estuaries.set_crs('EPSG:3857') # Define projection as EPSG:3857 based on service page metadata
+    estuaries = estuaries.to_crs('EPSG:3310') # Reproject to EPSG:3310
+    print(f"Found {len(estuaries)} estuary polygons")
+
+    # estuary_union = estuaries.geometry.union_all()
+    estuary_buffer = estuaries.buffer(buffer_meters)
 
     # Wrap in GeoDataFrame
-    cz_gdf = gpd.GeoDataFrame(geometry=[cz_union], crs="EPSG:4326")
+    estuary_gdf = gpd.GeoDataFrame(geometry=estuary_buffer, crs="EPSG:3310")
 
-    return cz_gdf
+    return estuary_gdf
 
 
 def fetch_ckan_all(resource_id, fields=None):
@@ -249,6 +274,9 @@ def load_monitoring_sites():
     # Remove sites with invalid coordinates
     gdf_sites = gdf_sites.dropna(subset=["geometry"])
     print(f"Sites with valid coordinates: {len(gdf_sites)}")
+
+    # Convert to EPSG:3310
+    gdf_sites = gdf_sites.to_crs('EPSG:3310')
     
     return gdf_sites
 
@@ -313,25 +341,31 @@ def main():
     cache_dir = setup_cache_directory()
     
     # Load saltwater polygon data sources
-    # wetlands = load_saline_wetlands(cache_dir)
-    lakes = load_saline_lakes(cache_dir)
-    marine_areas = load_marine_coastal_areas(buffer_degrees=0.01)
-    coastal_zone = load_coastal_zone_areas()
-    
+    wetlands = load_wetlands(buffer_meters=10)
+    lakes = load_saline_lakes(cache_dir, buffer_meters=50)
+    marine_areas = load_marine_coastal_areas(buffer_meters=80)
+    estuaries = load_estuaries(buffer_meters=50)
+
+    # For testing: Save saltwater features to file for review
+    # wetlands.to_file(os.path.join(cache_dir, 'saline_wetlands.shp'), driver='ESRI Shapefile')
+    # lakes.to_file(os.path.join(cache_dir, 'saline_lakes.shp'), driver='ESRI Shapefile')
+    # marine_areas.to_file(os.path.join(cache_dir, 'saline_marine_areas.shp'), driver='ESRI Shapefile')
+    # estuaries.to_file(os.path.join(cache_dir, 'saline_estuaries.shp'), driver='ESRI Shapefile')
+
     # Combine all saltwater polygons
     print("Combining saltwater polygon sources...")
+    geoms = pd.concat([
+        wetlands.geometry,
+        lakes.geometry,
+        marine_areas.geometry,
+        estuaries.geometry
+    ], ignore_index=True)
     saltwater_polygons = gpd.GeoDataFrame(
-        pd.concat([lakes, marine_areas, coastal_zone], ignore_index=True),
-        crs="EPSG:4326"
+        geometry = geoms,
+        crs="EPSG:3310"
     )
     print(f"Total saltwater polygons: {len(saltwater_polygons)}")
 
-    # Apply buffer to all polygons
-    # saltwater_polygons = saltwater_polygons.buffer(0.002)
-
-    # For testing
-    saltwater_polygons.to_file(os.path.join(cache_dir, 'saltwater_polygons.shp'), driver='ESRI Shapefile')
-    
     # Load and classify monitoring sites
     gdf_sites = load_monitoring_sites()
     gdf_sites = classify_sites(gdf_sites, saltwater_polygons)
