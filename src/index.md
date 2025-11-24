@@ -920,8 +920,16 @@ const lastSampleDateISO = st.lastSampleDate || null;
       const pplot = Plot.plot({
         title: `Six-week average (geometric mean)`,
         marks: [
-          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
-          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0, strokeWidth: 12, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
+          Plot.ruleY(
+            [{ y: thresholdVal, label: `Threshold: ${thresholdVal} ${dataCulture[0].unit}` }], 
+            { 
+              y: "y", 
+              stroke: "orange",
+              opacity: 0.4, 
+              strokeWidth: 2, 
+              title: 'label'
+            }
+          ),
 
           // 10/26/2025 - Replaced line plot with a dot plot similar to the single sample graph to avoid interpolation or adding new records (with NA/null values) to the dataset
           Plot.dot(dataGM, {
@@ -933,14 +941,32 @@ const lastSampleDateISO = st.lastSampleDate || null;
           Plot.ruleX(dataGM, Plot.pointerX({ x: "date", py: "sixWeekGeoMean", stroke: "lightgray"})),
           Plot.dot(dataGM,   Plot.pointerX({ x: "date", y: "sixWeekGeoMean", stroke: "red"})),
           Plot.text(dataGM,  Plot.pointerX({
-            px: "date", py: "sixWeekGeoMean", dy: -17, frameAnchor: "top-right", fontVariant: "tabular-nums",
+            px: "date", 
+            py: "sixWeekGeoMean", 
+            dy: -17, 
+            frameAnchor: "top-right", 
+            fontVariant: "tabular-nums",
+            fontSize: 11.5,
             text: d => {
               const fmt = date => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
               const start = new Date(d.date.getTime() - 30 * 24 * 60 * 60 * 1000);
               const end = d.date;
               return [`${d.sixWeekGeoMean} ${d.unit}`, `${fmt(start)} – ${fmt(end)}`].join("\n");
             }
-          }))
+          })),
+          // Label for the threshold line, placed last to show on top of other elements
+          Plot.text(
+            [{ x: new Date(), y: thresholdVal, label: `Threshold: ${thresholdVal} ${dataCulture[0].unit}` }],
+            {
+              x: "x", 
+              y: "y", 
+              text: "label", 
+              dy: -10, 
+              textAnchor: "end", 
+              fill: "#000",
+              fontSize: 11.5
+            }
+          )
         ],
         x: { domain: xDomain, label: "Date" },
         y: { label: labelUnit, type: "log", nice: true },
@@ -962,8 +988,16 @@ const lastSampleDateISO = st.lastSampleDate || null;
       const plot = Plot.plot({
         title: `Single sample results (${dataCulture.length} samples)`,
         marks: [
-          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
-          Plot.ruleY([{}], { y: thresholdVal, stroke: "orange", opacity: 0, strokeWidth: 20, title: `Threshold: ${thresholdVal} ${dataCulture[0].unit}`}),
+          Plot.ruleY(
+            [{ y: thresholdVal, label: `Threshold: ${thresholdVal} ${dataCulture[0].unit}` }], 
+            { 
+              y: 'y', 
+              stroke: "orange", 
+              opacity: 0.4, 
+              strokeWidth: 2, 
+              title: 'label'
+            }
+          ),
           Plot.dot(dataCulture, {
             x: "date", y: "result", r: 2, fill: "steelblue",
             stroke: d => (thresholdVal != null && d.result > thresholdVal) ? "orange" : "none",
@@ -972,12 +1006,31 @@ const lastSampleDateISO = st.lastSampleDate || null;
           Plot.ruleX(dataCulture, Plot.pointerX({ x: "date", py: "result", stroke: "lightgray"})),
           Plot.dot(dataCulture,   Plot.pointerX({ x: "date", y: "result", stroke: "red"})),
           Plot.text(dataCulture,  Plot.pointerX({
-            px: "date", py: "result", dy: -17, frameAnchor: "top-right", fontVariant: "tabular-nums",
+            px: "date", 
+            py: "result", 
+            dy: -17, 
+            frameAnchor: "top-right", 
+            fontVariant: "tabular-nums",
+            fontSize: 11.5,
             text: d => {
               const fmt = date => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
               return [`${d.result?.toFixed?.(2) ?? d.result} ${d.unit}`, fmt(d.date)].join("\n");
             }
-          }))
+          })),
+          // Label for the threshold line, placed last to show on top of other elements
+          Plot.text(
+            [{ x: new Date(), y: thresholdVal, label: `Threshold: ${thresholdVal} ${dataCulture[0].unit}` }],
+            {
+              x: "x", 
+              y: "y", 
+              text: "label", 
+              dy: -10, 
+              textAnchor: "end", 
+              fill: "#000",
+              fontSize: 11.5,
+              fontWeight: 400
+            }
+          )
         ],
         x: { domain: xDomain, label: "Date" },
         y: { label: labelUnit, type: "log", nice: true },
@@ -994,17 +1047,45 @@ const lastSampleDateISO = st.lastSampleDate || null;
       const plotDPCR = Plot.plot({
         title: `ddPCR results - not used for status (${dataDdPCR.length} samples)`,
         marks: [
-          Plot.ruleY([{}], { y: thresholdVal, stroke: "gray", opacity: 0.25, strokeWidth: 1, title: `Threshold: ${thresholdVal} ${dataDdPCR[0].unit}`}),
+          Plot.ruleY(
+            [{ y: thresholdVal, label: `Threshold: ${thresholdVal} ${dataDdPCR[0].unit}` }], 
+            { 
+              y: 'y', 
+              stroke: "gray", 
+              opacity: 0.4, 
+              strokeWidth: 2, 
+              title: 'label'
+            }
+          ),
           Plot.dot(dataDdPCR, { x: "date", y: "result", r: 2, strokeWidth: 1 }),
           Plot.ruleX(dataDdPCR, Plot.pointerX({ x: "date", py: "result", stroke: "lightgray"})),
           Plot.dot(dataDdPCR,   Plot.pointerX({ x: "date", y: "result", stroke: "red"})),
           Plot.text(dataDdPCR,  Plot.pointerX({
-            px: "date", py: "result", dy: -17, frameAnchor: "top-right", fontVariant: "tabular-nums",
+            px: "date", 
+            py: "result", 
+            dy: -17, 
+            frameAnchor: "top-right", 
+            fontVariant: "tabular-nums",
+            fontSize: 11.5,
             text: d => {
               const fmt = date => date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
               return [`${d.result?.toFixed?.(2) ?? d.result} ${d.unit}`, fmt(d.date)].join("\n");
             }
-          }))
+          })),
+          // Label for the threshold line, placed last to show on top of other elements
+          Plot.text(
+            [{ x: new Date(), y: thresholdVal, label: `Threshold: ${thresholdVal} ${dataCulture[0].unit}` }],
+            {
+              x: "x", 
+              y: "y", 
+              text: "label", 
+              dy: -10, 
+              textAnchor: "end", 
+              fill: "#000",
+              fontSize: 11.5,
+              fontWeight: 400
+            }
+          )
         ],
         x: { domain: xDomain, label: "Date" },
         y: { label: labelUnitDPCR, type: "log", nice: true },
